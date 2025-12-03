@@ -769,6 +769,498 @@ pub extern "C" fn pdf_name_eq(_ctx: Handle, a: PdfObjHandle, b: PdfObjHandle) ->
 }
 
 // ============================================================================
+// PDF Array Get/Put Operations
+// ============================================================================
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_array_get(_ctx: Handle, array: PdfObjHandle, index: i32) -> PdfObjHandle {
+    let obj = with_obj(array, None, |o| match &o.obj_type {
+        PdfObjType::Array(arr) => {
+            let idx = index as usize;
+            if idx < arr.len() {
+                Some(arr[idx].clone())
+            } else {
+                None
+            }
+        }
+        _ => None,
+    });
+
+    match obj {
+        Some(o) => PDF_OBJECTS.insert(o),
+        None => 0, // Return null handle
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_array_put(_ctx: Handle, array: PdfObjHandle, index: i32, obj: PdfObjHandle) {
+    let obj_to_put = with_obj(obj, None, |o| Some(o.clone()));
+
+    if let Some(obj_clone) = obj_to_put {
+        with_obj_mut(array, (), |arr| {
+            if let PdfObjType::Array(ref mut a) = arr.obj_type {
+                let idx = index as usize;
+                if idx < a.len() {
+                    a[idx] = obj_clone;
+                    arr.dirty = true;
+                } else if idx == a.len() {
+                    // Allow appending at the end
+                    a.push(obj_clone);
+                    arr.dirty = true;
+                }
+            }
+        });
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_array_insert(_ctx: Handle, array: PdfObjHandle, index: i32, obj: PdfObjHandle) {
+    let obj_to_insert = with_obj(obj, None, |o| Some(o.clone()));
+
+    if let Some(obj_clone) = obj_to_insert {
+        with_obj_mut(array, (), |arr| {
+            if let PdfObjType::Array(ref mut a) = arr.obj_type {
+                let idx = (index as usize).min(a.len());
+                a.insert(idx, obj_clone);
+                arr.dirty = true;
+            }
+        });
+    }
+}
+
+// ============================================================================
+// PDF Dictionary Get/Put Operations
+// ============================================================================
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_dict_get(_ctx: Handle, dict: PdfObjHandle, key: PdfObjHandle) -> PdfObjHandle {
+    let key_name = with_obj(key, None, |o| match &o.obj_type {
+        PdfObjType::Name(s) => Some(s.clone()),
+        _ => None,
+    });
+
+    let key_str = match key_name {
+        Some(k) => k,
+        None => return 0,
+    };
+
+    let obj = with_obj(dict, None, |o| match &o.obj_type {
+        PdfObjType::Dict(entries) => {
+            entries.iter()
+                .find(|(k, _)| k == &key_str)
+                .map(|(_, v)| v.clone())
+        }
+        _ => None,
+    });
+
+    match obj {
+        Some(o) => PDF_OBJECTS.insert(o),
+        None => 0,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_dict_gets(_ctx: Handle, dict: PdfObjHandle, key: *const c_char) -> PdfObjHandle {
+    if key.is_null() {
+        return 0;
+    }
+
+    #[allow(unsafe_code)]
+    let key_str = unsafe { CStr::from_ptr(key) }
+        .to_str()
+        .unwrap_or("")
+        .to_string();
+
+    let obj = with_obj(dict, None, |o| match &o.obj_type {
+        PdfObjType::Dict(entries) => {
+            entries.iter()
+                .find(|(k, _)| k == &key_str)
+                .map(|(_, v)| v.clone())
+        }
+        _ => None,
+    });
+
+    match obj {
+        Some(o) => PDF_OBJECTS.insert(o),
+        None => 0,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_dict_put(_ctx: Handle, dict: PdfObjHandle, key: PdfObjHandle, val: PdfObjHandle) {
+    let key_name = with_obj(key, None, |o| match &o.obj_type {
+        PdfObjType::Name(s) => Some(s.clone()),
+        _ => None,
+    });
+
+    let key_str = match key_name {
+        Some(k) => k,
+        None => return,
+    };
+
+    let val_obj = with_obj(val, None, |o| Some(o.clone()));
+
+    if let Some(val_clone) = val_obj {
+        with_obj_mut(dict, (), |d| {
+            if let PdfObjType::Dict(ref mut entries) = d.obj_type {
+                if let Some(entry) = entries.iter_mut().find(|(k, _)| k == &key_str) {
+                    entry.1 = val_clone;
+                } else {
+                    entries.push((key_str.clone(), val_clone));
+                }
+                d.dirty = true;
+            }
+        });
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_dict_put_name(_ctx: Handle, dict: PdfObjHandle, key: PdfObjHandle, name: *const c_char) {
+    if name.is_null() {
+        return;
+    }
+
+    let key_name = with_obj(key, None, |o| match &o.obj_type {
+        PdfObjType::Name(s) => Some(s.clone()),
+        _ => None,
+    });
+
+    let key_str = match key_name {
+        Some(k) => k,
+        None => return,
+    };
+
+    #[allow(unsafe_code)]
+    let name_str = unsafe { CStr::from_ptr(name) }
+        .to_str()
+        .unwrap_or("");
+
+    with_obj_mut(dict, (), |d| {
+        if let PdfObjType::Dict(ref mut entries) = d.obj_type {
+            let val = PdfObj::new_name(name_str);
+            if let Some(entry) = entries.iter_mut().find(|(k, _)| k == &key_str) {
+                entry.1 = val;
+            } else {
+                entries.push((key_str.clone(), val));
+            }
+            d.dirty = true;
+        }
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_dict_put_string(_ctx: Handle, dict: PdfObjHandle, key: PdfObjHandle, str: *const c_char, len: usize) {
+    let key_name = with_obj(key, None, |o| match &o.obj_type {
+        PdfObjType::Name(s) => Some(s.clone()),
+        _ => None,
+    });
+
+    let key_str = match key_name {
+        Some(k) => k,
+        None => return,
+    };
+
+    let data = if str.is_null() || len == 0 {
+        Vec::new()
+    } else {
+        #[allow(unsafe_code)]
+        unsafe { std::slice::from_raw_parts(str as *const u8, len) }.to_vec()
+    };
+
+    with_obj_mut(dict, (), |d| {
+        if let PdfObjType::Dict(ref mut entries) = d.obj_type {
+            let val = PdfObj::new_string(&data);
+            if let Some(entry) = entries.iter_mut().find(|(k, _)| k == &key_str) {
+                entry.1 = val;
+            } else {
+                entries.push((key_str.clone(), val));
+            }
+            d.dirty = true;
+        }
+    });
+}
+
+// ============================================================================
+// PDF String Extraction
+// ============================================================================
+
+static STRING_STORAGE: LazyLock<Mutex<Vec<Vec<u8>>>> = LazyLock::new(|| Mutex::new(Vec::new()));
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_to_string(_ctx: Handle, obj: PdfObjHandle, sizep: *mut usize) -> *const c_char {
+    let data = with_obj(obj, None, |o| match &o.obj_type {
+        PdfObjType::String(s) => Some(s.clone()),
+        _ => None,
+    });
+
+    match data {
+        Some(s) => {
+            if !sizep.is_null() {
+                #[allow(unsafe_code)]
+                unsafe { *sizep = s.len(); }
+            }
+            let ptr = s.as_ptr() as *const c_char;
+            if let Ok(mut storage) = STRING_STORAGE.lock() {
+                storage.push(s);
+            }
+            ptr
+        }
+        None => {
+            if !sizep.is_null() {
+                #[allow(unsafe_code)]
+                unsafe { *sizep = 0; }
+            }
+            std::ptr::null()
+        }
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_to_str_buf(_ctx: Handle, obj: PdfObjHandle) -> *const c_char {
+    pdf_to_string(_ctx, obj, std::ptr::null_mut())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_to_str_len(_ctx: Handle, obj: PdfObjHandle) -> usize {
+    with_obj(obj, 0, |o| match &o.obj_type {
+        PdfObjType::String(s) => s.len(),
+        _ => 0,
+    })
+}
+
+// ============================================================================
+// PDF Object Copy Operations
+// ============================================================================
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_copy_array(_ctx: Handle, _doc: Handle, array: PdfObjHandle) -> PdfObjHandle {
+    let copied = with_obj(array, None, |o| match &o.obj_type {
+        PdfObjType::Array(arr) => {
+            let mut new_arr = PdfObj::new_array(arr.len());
+            if let PdfObjType::Array(ref mut new_vec) = new_arr.obj_type {
+                for item in arr {
+                    new_vec.push(item.clone());
+                }
+            }
+            Some(new_arr)
+        }
+        _ => None,
+    });
+
+    match copied {
+        Some(obj) => PDF_OBJECTS.insert(obj),
+        None => 0,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_copy_dict(_ctx: Handle, _doc: Handle, dict: PdfObjHandle) -> PdfObjHandle {
+    let copied = with_obj(dict, None, |o| match &o.obj_type {
+        PdfObjType::Dict(entries) => {
+            let mut new_dict = PdfObj::new_dict(entries.len());
+            if let PdfObjType::Dict(ref mut new_entries) = new_dict.obj_type {
+                for (k, v) in entries {
+                    new_entries.push((k.clone(), v.clone()));
+                }
+            }
+            Some(new_dict)
+        }
+        _ => None,
+    });
+
+    match copied {
+        Some(obj) => PDF_OBJECTS.insert(obj),
+        None => 0,
+    }
+}
+
+fn deep_copy_obj_inner(obj: &PdfObj) -> PdfObj {
+    let new_type = match &obj.obj_type {
+        PdfObjType::Null => PdfObjType::Null,
+        PdfObjType::Bool(b) => PdfObjType::Bool(*b),
+        PdfObjType::Int(i) => PdfObjType::Int(*i),
+        PdfObjType::Real(r) => PdfObjType::Real(*r),
+        PdfObjType::Name(s) => PdfObjType::Name(s.clone()),
+        PdfObjType::String(s) => PdfObjType::String(s.clone()),
+        PdfObjType::Array(arr) => {
+            PdfObjType::Array(arr.iter().map(deep_copy_obj_inner).collect())
+        }
+        PdfObjType::Dict(entries) => {
+            PdfObjType::Dict(
+                entries.iter()
+                    .map(|(k, v)| (k.clone(), deep_copy_obj_inner(v)))
+                    .collect()
+            )
+        }
+        PdfObjType::Indirect { num, generation } => {
+            PdfObjType::Indirect { num: *num, generation: *generation }
+        }
+        PdfObjType::Stream { dict, data } => {
+            PdfObjType::Stream {
+                dict: Box::new(deep_copy_obj_inner(dict)),
+                data: data.clone(),
+            }
+        }
+    };
+
+    PdfObj {
+        obj_type: new_type,
+        marked: false,
+        dirty: false,
+        parent_num: 0,
+        refs: 1,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_deep_copy_obj(_ctx: Handle, _doc: Handle, obj: PdfObjHandle) -> PdfObjHandle {
+    let copied = with_obj(obj, None, |o| Some(deep_copy_obj_inner(o)));
+
+    match copied {
+        Some(new_obj) => PDF_OBJECTS.insert(new_obj),
+        None => 0,
+    }
+}
+
+// ============================================================================
+// PDF Geometry Object Creation
+// ============================================================================
+
+/// Create a PDF array representing a point [x, y]
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_new_point(_ctx: Handle, _doc: Handle, x: f32, y: f32) -> PdfObjHandle {
+    let mut arr = PdfObj::new_array(2);
+    if let PdfObjType::Array(ref mut a) = arr.obj_type {
+        a.push(PdfObj::new_real(x as f64));
+        a.push(PdfObj::new_real(y as f64));
+    }
+    PDF_OBJECTS.insert(arr)
+}
+
+/// Create a PDF array representing a rect [x0, y0, x1, y1]
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_new_rect(_ctx: Handle, _doc: Handle, x0: f32, y0: f32, x1: f32, y1: f32) -> PdfObjHandle {
+    let mut arr = PdfObj::new_array(4);
+    if let PdfObjType::Array(ref mut a) = arr.obj_type {
+        a.push(PdfObj::new_real(x0 as f64));
+        a.push(PdfObj::new_real(y0 as f64));
+        a.push(PdfObj::new_real(x1 as f64));
+        a.push(PdfObj::new_real(y1 as f64));
+    }
+    PDF_OBJECTS.insert(arr)
+}
+
+/// Create a PDF array representing a matrix [a, b, c, d, e, f]
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_new_matrix(_ctx: Handle, _doc: Handle, a: f32, b: f32, c: f32, d: f32, e: f32, f: f32) -> PdfObjHandle {
+    let mut arr = PdfObj::new_array(6);
+    if let PdfObjType::Array(ref mut arr_vec) = arr.obj_type {
+        arr_vec.push(PdfObj::new_real(a as f64));
+        arr_vec.push(PdfObj::new_real(b as f64));
+        arr_vec.push(PdfObj::new_real(c as f64));
+        arr_vec.push(PdfObj::new_real(d as f64));
+        arr_vec.push(PdfObj::new_real(e as f64));
+        arr_vec.push(PdfObj::new_real(f as f64));
+    }
+    PDF_OBJECTS.insert(arr)
+}
+
+/// Create a PDF date string from components
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_new_date(_ctx: Handle, _doc: Handle, year: i32, month: i32, day: i32, hour: i32, minute: i32, second: i32) -> PdfObjHandle {
+    // PDF date format: D:YYYYMMDDHHmmSS
+    let date_str = format!(
+        "D:{:04}{:02}{:02}{:02}{:02}{:02}",
+        year, month, day, hour, minute, second
+    );
+    PDF_OBJECTS.insert(PdfObj::new_string(date_str.as_bytes()))
+}
+
+// ============================================================================
+// PDF Array/Dict Key Access
+// ============================================================================
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_dict_get_key(_ctx: Handle, dict: PdfObjHandle, index: i32) -> PdfObjHandle {
+    let key = with_obj(dict, None, |o| match &o.obj_type {
+        PdfObjType::Dict(entries) => {
+            let idx = index as usize;
+            if idx < entries.len() {
+                Some(PdfObj::new_name(&entries[idx].0))
+            } else {
+                None
+            }
+        }
+        _ => None,
+    });
+
+    match key {
+        Some(k) => PDF_OBJECTS.insert(k),
+        None => 0,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_dict_get_val(_ctx: Handle, dict: PdfObjHandle, index: i32) -> PdfObjHandle {
+    let val = with_obj(dict, None, |o| match &o.obj_type {
+        PdfObjType::Dict(entries) => {
+            let idx = index as usize;
+            if idx < entries.len() {
+                Some(entries[idx].1.clone())
+            } else {
+                None
+            }
+        }
+        _ => None,
+    });
+
+    match val {
+        Some(v) => PDF_OBJECTS.insert(v),
+        None => 0,
+    }
+}
+
+// ============================================================================
+// PDF Array Push Name/String
+// ============================================================================
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_array_push_name(_ctx: Handle, array: PdfObjHandle, name: *const c_char) {
+    if name.is_null() {
+        return;
+    }
+
+    #[allow(unsafe_code)]
+    let name_str = unsafe { CStr::from_ptr(name) }
+        .to_str()
+        .unwrap_or("");
+
+    with_obj_mut(array, (), |arr| {
+        if let PdfObjType::Array(ref mut a) = arr.obj_type {
+            a.push(PdfObj::new_name(name_str));
+            arr.dirty = true;
+        }
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_array_push_string(_ctx: Handle, array: PdfObjHandle, str: *const c_char, len: usize) {
+    let data = if str.is_null() || len == 0 {
+        Vec::new()
+    } else {
+        #[allow(unsafe_code)]
+        unsafe { std::slice::from_raw_parts(str as *const u8, len) }.to_vec()
+    };
+
+    with_obj_mut(array, (), |arr| {
+        if let PdfObjType::Array(ref mut a) = arr.obj_type {
+            a.push(PdfObj::new_string(&data));
+            arr.dirty = true;
+        }
+    });
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -1289,5 +1781,297 @@ mod tests {
         } else {
             panic!("Expected indirect");
         }
+    }
+
+    // ============================================================================
+    // Array Get/Put Tests
+    // ============================================================================
+
+    #[test]
+    fn test_pdf_array_get() {
+        let arr = pdf_new_array(0, 0, 10);
+        pdf_array_push_int(0, arr, 100);
+        pdf_array_push_int(0, arr, 200);
+        pdf_array_push_int(0, arr, 300);
+
+        let elem0 = pdf_array_get(0, arr, 0);
+        assert_eq!(pdf_to_int(0, elem0), 100);
+
+        let elem1 = pdf_array_get(0, arr, 1);
+        assert_eq!(pdf_to_int(0, elem1), 200);
+
+        let elem2 = pdf_array_get(0, arr, 2);
+        assert_eq!(pdf_to_int(0, elem2), 300);
+
+        // Out of bounds
+        let elem3 = pdf_array_get(0, arr, 10);
+        assert_eq!(elem3, 0);
+    }
+
+    #[test]
+    fn test_pdf_array_put() {
+        let arr = pdf_new_array(0, 0, 10);
+        pdf_array_push_int(0, arr, 100);
+        pdf_array_push_int(0, arr, 200);
+
+        let new_val = pdf_new_int(0, 999);
+        pdf_array_put(0, arr, 0, new_val);
+
+        let elem0 = pdf_array_get(0, arr, 0);
+        assert_eq!(pdf_to_int(0, elem0), 999);
+
+        // Put at end (append)
+        let append_val = pdf_new_int(0, 300);
+        pdf_array_put(0, arr, 2, append_val);
+        assert_eq!(pdf_array_len(0, arr), 3);
+    }
+
+    #[test]
+    fn test_pdf_array_insert() {
+        let arr = pdf_new_array(0, 0, 10);
+        pdf_array_push_int(0, arr, 100);
+        pdf_array_push_int(0, arr, 300);
+
+        let insert_val = pdf_new_int(0, 200);
+        pdf_array_insert(0, arr, 1, insert_val);
+
+        assert_eq!(pdf_array_len(0, arr), 3);
+        let elem1 = pdf_array_get(0, arr, 1);
+        assert_eq!(pdf_to_int(0, elem1), 200);
+    }
+
+    // ============================================================================
+    // Dictionary Get/Put Tests
+    // ============================================================================
+
+    #[test]
+    fn test_pdf_dict_get() {
+        let dict = pdf_new_dict(0, 0, 10);
+        let key = pdf_new_name(0, b"Type\0".as_ptr() as *const c_char);
+        pdf_dict_put_int(0, dict, key, 42);
+
+        let val = pdf_dict_get(0, dict, key);
+        assert_eq!(pdf_to_int(0, val), 42);
+
+        // Non-existent key
+        let bad_key = pdf_new_name(0, b"NotExist\0".as_ptr() as *const c_char);
+        let bad_val = pdf_dict_get(0, dict, bad_key);
+        assert_eq!(bad_val, 0);
+    }
+
+    #[test]
+    fn test_pdf_dict_gets() {
+        let dict = pdf_new_dict(0, 0, 10);
+        let key = pdf_new_name(0, b"Width\0".as_ptr() as *const c_char);
+        pdf_dict_put_int(0, dict, key, 100);
+
+        let val = pdf_dict_gets(0, dict, b"Width\0".as_ptr() as *const c_char);
+        assert_eq!(pdf_to_int(0, val), 100);
+
+        // Non-existent key
+        let bad_val = pdf_dict_gets(0, dict, b"Height\0".as_ptr() as *const c_char);
+        assert_eq!(bad_val, 0);
+
+        // Null key
+        let null_val = pdf_dict_gets(0, dict, std::ptr::null());
+        assert_eq!(null_val, 0);
+    }
+
+    #[test]
+    fn test_pdf_dict_put() {
+        let dict = pdf_new_dict(0, 0, 10);
+        let key = pdf_new_name(0, b"Value\0".as_ptr() as *const c_char);
+        let val = pdf_new_int(0, 42);
+
+        pdf_dict_put(0, dict, key, val);
+        assert_eq!(pdf_dict_len(0, dict), 1);
+
+        let retrieved = pdf_dict_get(0, dict, key);
+        assert_eq!(pdf_to_int(0, retrieved), 42);
+    }
+
+    #[test]
+    fn test_pdf_dict_put_name() {
+        let dict = pdf_new_dict(0, 0, 10);
+        let key = pdf_new_name(0, b"Type\0".as_ptr() as *const c_char);
+
+        pdf_dict_put_name(0, dict, key, b"Page\0".as_ptr() as *const c_char);
+
+        let val = pdf_dict_get(0, dict, key);
+        assert_eq!(pdf_is_name(0, val), 1);
+    }
+
+    #[test]
+    fn test_pdf_dict_get_key_val() {
+        let dict = pdf_new_dict(0, 0, 10);
+        let key = pdf_new_name(0, b"Type\0".as_ptr() as *const c_char);
+        pdf_dict_put_int(0, dict, key, 42);
+
+        let key0 = pdf_dict_get_key(0, dict, 0);
+        assert_eq!(pdf_is_name(0, key0), 1);
+
+        let val0 = pdf_dict_get_val(0, dict, 0);
+        assert_eq!(pdf_to_int(0, val0), 42);
+
+        // Out of bounds
+        let key_bad = pdf_dict_get_key(0, dict, 10);
+        assert_eq!(key_bad, 0);
+    }
+
+    // ============================================================================
+    // String Extraction Tests
+    // ============================================================================
+
+    #[test]
+    fn test_pdf_to_string() {
+        let data = b"Hello PDF";
+        let str_obj = pdf_new_string(0, data.as_ptr() as *const c_char, data.len());
+
+        let mut size: usize = 0;
+        let ptr = pdf_to_string(0, str_obj, &mut size as *mut usize);
+        assert!(!ptr.is_null());
+        assert_eq!(size, data.len());
+    }
+
+    #[test]
+    fn test_pdf_to_str_len() {
+        let data = b"Test String";
+        let str_obj = pdf_new_string(0, data.as_ptr() as *const c_char, data.len());
+
+        assert_eq!(pdf_to_str_len(0, str_obj), data.len());
+
+        // Non-string returns 0
+        let int_obj = pdf_new_int(0, 42);
+        assert_eq!(pdf_to_str_len(0, int_obj), 0);
+    }
+
+    // ============================================================================
+    // Copy Operations Tests
+    // ============================================================================
+
+    #[test]
+    fn test_pdf_copy_array() {
+        let arr = pdf_new_array(0, 0, 10);
+        pdf_array_push_int(0, arr, 100);
+        pdf_array_push_int(0, arr, 200);
+
+        let copy = pdf_copy_array(0, 0, arr);
+        assert_eq!(pdf_array_len(0, copy), 2);
+
+        // Modify original, copy should be unchanged
+        pdf_array_push_int(0, arr, 300);
+        assert_eq!(pdf_array_len(0, arr), 3);
+        assert_eq!(pdf_array_len(0, copy), 2);
+    }
+
+    #[test]
+    fn test_pdf_copy_dict() {
+        let dict = pdf_new_dict(0, 0, 10);
+        let key = pdf_new_name(0, b"Key\0".as_ptr() as *const c_char);
+        pdf_dict_put_int(0, dict, key, 42);
+
+        let copy = pdf_copy_dict(0, 0, dict);
+        assert_eq!(pdf_dict_len(0, copy), 1);
+
+        // Modify original, copy should be unchanged
+        let key2 = pdf_new_name(0, b"Key2\0".as_ptr() as *const c_char);
+        pdf_dict_put_int(0, dict, key2, 100);
+        assert_eq!(pdf_dict_len(0, dict), 2);
+        assert_eq!(pdf_dict_len(0, copy), 1);
+    }
+
+    #[test]
+    fn test_pdf_deep_copy_obj() {
+        // Deep copy a nested structure
+        let arr = pdf_new_array(0, 0, 10);
+        let inner_dict = pdf_new_dict(0, 0, 5);
+        let key = pdf_new_name(0, b"Inner\0".as_ptr() as *const c_char);
+        pdf_dict_put_int(0, inner_dict, key, 99);
+        pdf_array_push(0, arr, inner_dict);
+
+        let copy = pdf_deep_copy_obj(0, 0, arr);
+        assert_eq!(pdf_array_len(0, copy), 1);
+
+        // The inner dict should also be copied
+        let copied_inner = pdf_array_get(0, copy, 0);
+        assert_eq!(pdf_is_dict(0, copied_inner), 1);
+    }
+
+    // ============================================================================
+    // Geometry Object Creation Tests
+    // ============================================================================
+
+    #[test]
+    fn test_pdf_new_point() {
+        let point = pdf_new_point(0, 0, 10.0, 20.0);
+        assert_eq!(pdf_is_array(0, point), 1);
+        assert_eq!(pdf_array_len(0, point), 2);
+
+        let x = pdf_array_get(0, point, 0);
+        let y = pdf_array_get(0, point, 1);
+        assert!((pdf_to_real(0, x) - 10.0).abs() < 0.01);
+        assert!((pdf_to_real(0, y) - 20.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_pdf_new_rect() {
+        let rect = pdf_new_rect(0, 0, 0.0, 0.0, 100.0, 200.0);
+        assert_eq!(pdf_is_array(0, rect), 1);
+        assert_eq!(pdf_array_len(0, rect), 4);
+
+        let x0 = pdf_array_get(0, rect, 0);
+        let y0 = pdf_array_get(0, rect, 1);
+        let x1 = pdf_array_get(0, rect, 2);
+        let y1 = pdf_array_get(0, rect, 3);
+
+        assert!((pdf_to_real(0, x0) - 0.0).abs() < 0.01);
+        assert!((pdf_to_real(0, y0) - 0.0).abs() < 0.01);
+        assert!((pdf_to_real(0, x1) - 100.0).abs() < 0.01);
+        assert!((pdf_to_real(0, y1) - 200.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_pdf_new_matrix() {
+        let matrix = pdf_new_matrix(0, 0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+        assert_eq!(pdf_is_array(0, matrix), 1);
+        assert_eq!(pdf_array_len(0, matrix), 6);
+
+        let a = pdf_array_get(0, matrix, 0);
+        let d = pdf_array_get(0, matrix, 3);
+        assert!((pdf_to_real(0, a) - 1.0).abs() < 0.01);
+        assert!((pdf_to_real(0, d) - 1.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_pdf_new_date() {
+        let date = pdf_new_date(0, 0, 2024, 12, 3, 15, 30, 45);
+        assert_eq!(pdf_is_string(0, date), 1);
+        assert!(pdf_to_str_len(0, date) > 0);
+    }
+
+    // ============================================================================
+    // Array Push Name/String Tests
+    // ============================================================================
+
+    #[test]
+    fn test_pdf_array_push_name() {
+        let arr = pdf_new_array(0, 0, 10);
+        pdf_array_push_name(0, arr, b"Type\0".as_ptr() as *const c_char);
+
+        assert_eq!(pdf_array_len(0, arr), 1);
+        let elem = pdf_array_get(0, arr, 0);
+        assert_eq!(pdf_is_name(0, elem), 1);
+    }
+
+    #[test]
+    fn test_pdf_array_push_string() {
+        let arr = pdf_new_array(0, 0, 10);
+        let data = b"Hello";
+        pdf_array_push_string(0, arr, data.as_ptr() as *const c_char, data.len());
+
+        assert_eq!(pdf_array_len(0, arr), 1);
+        let elem = pdf_array_get(0, arr, 0);
+        assert_eq!(pdf_is_string(0, elem), 1);
+        assert_eq!(pdf_to_str_len(0, elem), 5);
     }
 }
