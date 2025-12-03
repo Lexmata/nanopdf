@@ -1,5 +1,5 @@
 ---
-alwaysApply: true
+alwaysApply: false
 ---
 # Rust 2024 Code Generation Standards
 
@@ -359,7 +359,7 @@ use crate::other::SomeType;
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_specific_function() {
         // Test code here
