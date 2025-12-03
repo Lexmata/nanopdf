@@ -778,7 +778,7 @@ mod tests {
         let outer = fz_rect { x0: 0.0, y0: 0.0, x1: 100.0, y1: 100.0 };
         let inner = fz_rect { x0: 10.0, y0: 10.0, x1: 50.0, y1: 50.0 };
         let outside = fz_rect { x0: 200.0, y0: 200.0, x1: 300.0, y1: 300.0 };
-        
+
         assert_eq!(fz_contains_rect(outer, inner), 1);
         assert_eq!(fz_contains_rect(outer, outside), 0);
     }
@@ -788,7 +788,7 @@ mod tests {
         let r1 = fz_rect { x0: 0.0, y0: 0.0, x1: 50.0, y1: 50.0 };
         let r2 = fz_rect { x0: 25.0, y0: 25.0, x1: 75.0, y1: 75.0 };
         let r3 = fz_rect { x0: 100.0, y0: 100.0, x1: 150.0, y1: 150.0 };
-        
+
         assert_eq!(fz_overlaps_rect(r1, r2), 1);
         assert_eq!(fz_overlaps_rect(r1, r3), 0);
     }
@@ -861,7 +861,7 @@ mod tests {
     fn test_static_values() {
         assert_eq!(fz_identity.a, 1.0);
         assert_eq!(fz_identity.d, 1.0);
-        
+
         // Empty rect uses infinity
         assert!(fz_empty_rect.x0.is_infinite());
         assert_eq!(fz_unit_rect.x1, 1.0);

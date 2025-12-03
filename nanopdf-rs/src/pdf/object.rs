@@ -160,7 +160,7 @@ mod tests {
     fn test_object_bool() {
         let obj_true = Object::Bool(true);
         let obj_false = Object::Bool(false);
-        
+
         assert!(!obj_true.is_null());
         assert_eq!(obj_true.as_bool(), Some(true));
         assert_eq!(obj_false.as_bool(), Some(false));
@@ -216,7 +216,7 @@ mod tests {
         let mut dict = HashMap::new();
         dict.insert(Name::new("Length"), Object::Int(5));
         let obj = Object::Stream { dict, data: b"Hello".to_vec() };
-        
+
         if let Object::Stream { dict, data } = obj {
             assert_eq!(data, b"Hello");
             assert!(dict.contains_key(&Name::new("Length")));
@@ -261,21 +261,21 @@ mod tests {
     fn test_complex_nested_structure() {
         let mut inner_dict = HashMap::new();
         inner_dict.insert(Name::new("Key"), Object::String(PdfString::new(b"Value".to_vec())));
-        
+
         let arr = vec![
             Object::Int(1),
             Object::Real(2.5),
             Object::Dict(inner_dict),
         ];
-        
+
         let mut outer_dict = HashMap::new();
         outer_dict.insert(Name::new("Array"), Object::Array(arr));
-        
+
         let obj = Object::Dict(outer_dict);
         let d = obj.as_dict().unwrap();
         let arr_obj = d.get(&Name::new("Array")).unwrap();
         let inner_arr = arr_obj.as_array().unwrap();
-        
+
         assert_eq!(inner_arr.len(), 3);
         assert_eq!(inner_arr[0].as_int(), Some(1));
         assert_eq!(inner_arr[1].as_real(), Some(2.5));

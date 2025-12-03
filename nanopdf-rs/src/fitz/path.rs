@@ -90,7 +90,7 @@ mod tests {
         let mut path = Path::new();
         path.move_to(Point::new(0.0, 0.0));
         path.line_to(Point::new(100.0, 50.0));
-        
+
         let bounds = path.bounds();
         assert_eq!(bounds.x0, 0.0);
         assert_eq!(bounds.y0, 0.0);
@@ -107,7 +107,7 @@ mod tests {
             Point::new(100.0, 100.0),
             Point::new(150.0, 0.0),
         );
-        
+
         let bounds = path.bounds();
         assert_eq!(bounds.x0, 0.0);
         assert_eq!(bounds.y0, 0.0);
@@ -128,7 +128,7 @@ mod tests {
         path.move_to(Point::new(0.0, 0.0));
         path.line_to(Point::new(10.0, 10.0));
         path.close();
-        
+
         let bounds = path.bounds();
         assert_eq!(bounds.x0, 0.0);
         assert_eq!(bounds.y0, 0.0);
@@ -144,7 +144,7 @@ mod tests {
         path.line_to(Point::new(100.0, 50.0));
         path.line_to(Point::new(0.0, 50.0));
         path.close();
-        
+
         let bounds = path.bounds();
         assert_eq!(bounds.width(), 100.0);
         assert_eq!(bounds.height(), 50.0);

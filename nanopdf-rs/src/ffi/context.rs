@@ -259,29 +259,29 @@ mod tests {
     #[test]
     fn test_fz_user_context() {
         let ctx = fz_new_context(std::ptr::null(), std::ptr::null(), 0);
-        
+
         // Initially null
         let user = fz_user_context(ctx);
         assert!(user.is_null());
-        
+
         // Set user data
         let data: usize = 0x12345678;
         fz_set_user_context(ctx, data as *mut c_void);
-        
+
         // Get it back
         let user = fz_user_context(ctx);
         assert_eq!(user as usize, data);
-        
+
         fz_drop_context(ctx);
     }
 
     #[test]
     fn test_fz_caught() {
         let ctx = fz_new_context(std::ptr::null(), std::ptr::null(), 0);
-        
+
         // Initially 0
         assert_eq!(fz_caught(ctx), 0);
-        
+
         fz_drop_context(ctx);
     }
 
@@ -296,33 +296,33 @@ mod tests {
     #[test]
     fn test_fz_malloc() {
         let ctx = fz_new_context(std::ptr::null(), std::ptr::null(), 0);
-        
+
         // Zero size returns null
         let ptr = fz_malloc(ctx, 0);
         assert!(ptr.is_null());
-        
+
         // Normal allocation
         let ptr = fz_malloc(ctx, 100);
         assert!(!ptr.is_null());
         fz_free(ctx, ptr);
-        
+
         fz_drop_context(ctx);
     }
 
     #[test]
     fn test_fz_strdup() {
         let ctx = fz_new_context(std::ptr::null(), std::ptr::null(), 0);
-        
+
         // Null input returns null
         let result = fz_strdup(ctx, std::ptr::null());
         assert!(result.is_null());
-        
+
         // Valid string
         let s = c"Hello, World!";
         let result = fz_strdup(ctx, s.as_ptr());
         assert!(!result.is_null());
         fz_free(ctx, result as *mut c_void);
-        
+
         fz_drop_context(ctx);
     }
 

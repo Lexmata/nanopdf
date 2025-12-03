@@ -126,7 +126,7 @@ mod tests {
         samples[0] = 255;
         samples[1] = 128;
         samples[2] = 64;
-        
+
         let samples_read = pm.samples();
         assert_eq!(samples_read[0], 255);
         assert_eq!(samples_read[1], 128);
@@ -138,7 +138,7 @@ mod tests {
         let cs = Colorspace::device_rgb();
         let mut pm = Pixmap::new(Some(cs), 10, 10, false).unwrap();
         pm.clear(128);
-        
+
         assert!(pm.samples().iter().all(|&b| b == 128));
     }
 
@@ -146,13 +146,13 @@ mod tests {
     fn test_pixmap_get_pixel() {
         let cs = Colorspace::device_rgb();
         let mut pm = Pixmap::new(Some(cs), 10, 10, false).unwrap();
-        
+
         // Set pixel at (2, 3)
         let offset = 3 * 30 + 2 * 3; // y * stride + x * n
         pm.samples_mut()[offset] = 255;
         pm.samples_mut()[offset + 1] = 128;
         pm.samples_mut()[offset + 2] = 64;
-        
+
         let pixel = pm.get_pixel(2, 3).unwrap();
         assert_eq!(pixel, &[255, 128, 64]);
     }
@@ -161,7 +161,7 @@ mod tests {
     fn test_pixmap_get_pixel_out_of_bounds() {
         let cs = Colorspace::device_rgb();
         let pm = Pixmap::new(Some(cs), 10, 10, false).unwrap();
-        
+
         assert!(pm.get_pixel(-1, 0).is_none());
         assert!(pm.get_pixel(0, -1).is_none());
         assert!(pm.get_pixel(10, 0).is_none());
@@ -172,7 +172,7 @@ mod tests {
     fn test_pixmap_colorspace() {
         let cs = Colorspace::device_rgb();
         let pm = Pixmap::new(Some(cs), 10, 10, false).unwrap();
-        
+
         let cs_ref = pm.colorspace().unwrap();
         assert_eq!(cs_ref.name(), "DeviceRGB");
     }
@@ -182,7 +182,7 @@ mod tests {
         let cs = Colorspace::device_rgb();
         let pm1 = Pixmap::new(Some(cs), 10, 10, false).unwrap();
         let pm2 = pm1.clone();
-        
+
         assert_eq!(pm1.width(), pm2.width());
         assert_eq!(pm1.height(), pm2.height());
         assert_eq!(pm1.n(), pm2.n());

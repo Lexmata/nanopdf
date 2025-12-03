@@ -423,7 +423,7 @@ mod tests {
 
         let mut datap: *mut u8 = std::ptr::null_mut();
         let size = fz_buffer_storage(0, handle, &mut datap);
-        
+
         // Size should be the length of the buffer
         assert_eq!(size, 2);
         // datap will be null because we can't safely return internal pointer

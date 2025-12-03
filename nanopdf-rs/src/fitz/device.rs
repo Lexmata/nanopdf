@@ -54,7 +54,7 @@ mod tests {
         let path = Path::new();
         let cs = Colorspace::device_rgb();
         let color = [1.0, 0.0, 0.0];
-        
+
         // Should not panic
         device.fill_path(&path, Matrix::IDENTITY, &cs, &color, 1.0);
     }
@@ -66,7 +66,7 @@ mod tests {
         let cs = Colorspace::device_rgb();
         let color = [0.0, 1.0, 0.0];
         let stroke = StrokeState::default();
-        
+
         // Should not panic
         device.stroke_path(&path, &stroke, Matrix::IDENTITY, &cs, &color, 1.0);
     }
@@ -77,7 +77,7 @@ mod tests {
         let text = TextSpan::new();
         let cs = Colorspace::device_rgb();
         let color = [0.0, 0.0, 0.0];
-        
+
         // Should not panic
         device.fill_text(&text, Matrix::IDENTITY, &cs, &color, 1.0);
     }
@@ -86,7 +86,7 @@ mod tests {
     fn test_null_device_fill_image() {
         let mut device = NullDevice;
         let image = Image::new(100, 100, None);
-        
+
         // Should not panic
         device.fill_image(&image, Matrix::IDENTITY, 1.0);
     }

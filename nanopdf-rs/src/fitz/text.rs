@@ -51,7 +51,7 @@ mod tests {
         let mut span = TextSpan::new();
         span.add_char('H', make_quad(0.0, 0.0, 10.0, 12.0));
         span.add_char('i', make_quad(10.0, 0.0, 5.0, 12.0));
-        
+
         assert_eq!(span.len(), 2);
         assert!(!span.is_empty());
         assert_eq!(span.text(), "Hi");
@@ -63,7 +63,7 @@ mod tests {
         span.add_char('日', make_quad(0.0, 0.0, 12.0, 12.0));
         span.add_char('本', make_quad(12.0, 0.0, 12.0, 12.0));
         span.add_char('語', make_quad(24.0, 0.0, 12.0, 12.0));
-        
+
         assert_eq!(span.text(), "日本語");
     }
 
@@ -83,15 +83,15 @@ mod tests {
     #[test]
     fn test_text_page_add_span() {
         let mut page = TextPage::new();
-        
+
         let mut span1 = TextSpan::new();
         span1.add_char('A', make_quad(0.0, 0.0, 10.0, 12.0));
         page.add_span(span1);
-        
+
         let mut span2 = TextSpan::new();
         span2.add_char('B', make_quad(0.0, 12.0, 10.0, 12.0));
         page.add_span(span2);
-        
+
         assert_eq!(page.len(), 2);
         assert!(!page.is_empty());
     }
@@ -99,11 +99,11 @@ mod tests {
     #[test]
     fn test_text_page_spans() {
         let mut page = TextPage::new();
-        
+
         let mut span = TextSpan::new();
         span.add_char('X', make_quad(0.0, 0.0, 10.0, 12.0));
         page.add_span(span);
-        
+
         let spans = page.spans();
         assert_eq!(spans.len(), 1);
         assert_eq!(spans[0].text(), "X");
@@ -113,7 +113,7 @@ mod tests {
     fn test_text_char_fields() {
         let quad = make_quad(5.0, 10.0, 8.0, 12.0);
         let tc = TextChar { c: 'Z', quad };
-        
+
         assert_eq!(tc.c, 'Z');
         assert_eq!(tc.quad.ul.x, 5.0);
         assert_eq!(tc.quad.ul.y, 10.0);

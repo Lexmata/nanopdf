@@ -308,7 +308,7 @@ mod tests {
     fn test_convert_color_gray_to_rgb() {
         let src = [0.5f32];
         let mut dst = [0.0f32; 3];
-        
+
         fz_convert_color(
             0,
             FZ_COLORSPACE_GRAY,
@@ -317,7 +317,7 @@ mod tests {
             dst.as_mut_ptr(),
             0,
         );
-        
+
         assert!((dst[0] - 0.5).abs() < 0.01);
         assert!((dst[1] - 0.5).abs() < 0.01);
         assert!((dst[2] - 0.5).abs() < 0.01);
@@ -327,7 +327,7 @@ mod tests {
     fn test_convert_color_rgb_to_gray() {
         let src = [1.0f32, 1.0, 1.0]; // White
         let mut dst = [0.0f32];
-        
+
         fz_convert_color(
             0,
             FZ_COLORSPACE_RGB,
@@ -336,7 +336,7 @@ mod tests {
             dst.as_mut_ptr(),
             0,
         );
-        
+
         // Luminance should be close to 1.0 for white
         assert!((dst[0] - 1.0).abs() < 0.01);
     }
@@ -345,7 +345,7 @@ mod tests {
     fn test_convert_color_rgb_to_cmyk() {
         let src = [1.0f32, 0.0, 0.0]; // Red
         let mut dst = [0.0f32; 4];
-        
+
         fz_convert_color(
             0,
             FZ_COLORSPACE_RGB,
@@ -354,7 +354,7 @@ mod tests {
             dst.as_mut_ptr(),
             0,
         );
-        
+
         // Red in CMYK: C=0, M=1, Y=1, K=0
         assert!(dst[0] < 0.1); // Cyan should be low
         assert_eq!(dst[3], 0.0); // Black should be 0
@@ -364,7 +364,7 @@ mod tests {
     fn test_convert_color_cmyk_to_rgb() {
         let src = [0.0f32, 0.0, 0.0, 0.0]; // No ink = white
         let mut dst = [0.0f32; 3];
-        
+
         fz_convert_color(
             0,
             FZ_COLORSPACE_CMYK,
@@ -373,7 +373,7 @@ mod tests {
             dst.as_mut_ptr(),
             0,
         );
-        
+
         assert!((dst[0] - 1.0).abs() < 0.01);
         assert!((dst[1] - 1.0).abs() < 0.01);
         assert!((dst[2] - 1.0).abs() < 0.01);
@@ -383,7 +383,7 @@ mod tests {
     fn test_convert_color_same_colorspace() {
         let src = [0.25f32, 0.5, 0.75];
         let mut dst = [0.0f32; 3];
-        
+
         fz_convert_color(
             0,
             FZ_COLORSPACE_RGB,
@@ -392,7 +392,7 @@ mod tests {
             dst.as_mut_ptr(),
             0,
         );
-        
+
         assert_eq!(dst, src);
     }
 
@@ -406,7 +406,7 @@ mod tests {
     fn test_convert_color_invalid_colorspace() {
         let src = [0.5f32];
         let mut dst = [1.0f32; 3];
-        
+
         // Invalid source colorspace - dst should be filled with zeros
         fz_convert_color(0, 99, src.as_ptr(), FZ_COLORSPACE_RGB, dst.as_mut_ptr(), 0);
         // Operation should not panic even with invalid colorspace

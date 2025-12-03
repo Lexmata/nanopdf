@@ -157,11 +157,11 @@ mod tests {
         fn returns_ok() -> Result<i32> {
             Ok(42)
         }
-        
+
         fn returns_err() -> Result<i32> {
             Err(Error::generic("error"))
         }
-        
+
         assert_eq!(returns_ok().unwrap(), 42);
         assert!(returns_err().is_err());
     }

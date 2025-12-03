@@ -30,11 +30,11 @@ mod tests {
         let cs = Colorspace::device_rgb();
         let pm = Pixmap::new(Some(cs), 100, 50, false).unwrap();
         let img = Image::new(100, 50, Some(pm));
-        
+
         assert_eq!(img.width(), 100);
         assert_eq!(img.height(), 50);
         assert!(img.pixmap().is_some());
-        
+
         let pm_ref = img.pixmap().unwrap();
         assert_eq!(pm_ref.width(), 100);
         assert_eq!(pm_ref.height(), 50);

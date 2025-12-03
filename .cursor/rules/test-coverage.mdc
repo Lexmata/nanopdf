@@ -190,7 +190,7 @@ Coverage is checked in CI. PRs must maintain minimum coverage:
 # .github/workflows/coverage.yml
 - name: Run coverage
   run: cargo tarpaulin --out Xml
-  
+
 - name: Check coverage threshold
   run: |
     COVERAGE=$(cargo tarpaulin --out Stdout | grep "Coverage" | awk '{print $2}')
