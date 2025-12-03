@@ -55,13 +55,13 @@ mod tests {
 
         // Encode to JPEG
         let encoded = encode_dct(&data, width, height, 85).unwrap();
-        
+
         // Should start with JPEG magic bytes
         assert_eq!(&encoded[0..2], &[0xFF, 0xD8]);
-        
+
         // Decode back
         let decoded = decode_dct(&encoded, None).unwrap();
-        
+
         // Decoded data should be same dimensions (may have slight differences due to JPEG compression)
         assert_eq!(decoded.len(), data.len());
     }
@@ -76,7 +76,7 @@ mod tests {
     #[test]
     fn test_encode_dct_invalid_dimensions() {
         let data = vec![255, 0, 0]; // 3 bytes (1 pixel)
-        
+
         // Try to encode as 10x10 (should fail, not enough data)
         let result = encode_dct(&data, 10, 10, 85);
         assert!(result.is_err());
@@ -102,11 +102,11 @@ mod tests {
         ];
 
         let encoded = encode_dct(&data, width, height, 85).unwrap();
-        
+
         // Decode with parameters (parameters are ignored but function should still work)
         let params = DCTDecodeParams::default();
         let decoded = decode_dct(&encoded, Some(&params)).unwrap();
-        
+
         assert_eq!(decoded.len(), data.len());
     }
 
@@ -119,7 +119,7 @@ mod tests {
         // Note: quality parameter is currently ignored, but test should pass
         let encoded_low = encode_dct(&data, width, height, 10).unwrap();
         let encoded_high = encode_dct(&data, width, height, 95).unwrap();
-        
+
         // Both should be valid JPEG
         assert_eq!(&encoded_low[0..2], &[0xFF, 0xD8]);
         assert_eq!(&encoded_high[0..2], &[0xFF, 0xD8]);

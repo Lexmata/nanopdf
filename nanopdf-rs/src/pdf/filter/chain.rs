@@ -114,10 +114,10 @@ mod tests {
 
         let original = b"Encode test data";
         let encoded = chain.encode(original.to_vec()).unwrap();
-        
+
         // Should be compressed
         assert!(encoded.len() > 0);
-        
+
         // Decode it back
         let decoded = chain.decode(encoded).unwrap();
         assert_eq!(decoded, original);
@@ -131,7 +131,7 @@ mod tests {
 
         let original = b"Multiple encode test";
         let encoded = chain.encode(original.to_vec()).unwrap();
-        
+
         // Decode it back
         let decoded = chain.decode(encoded).unwrap();
         assert_eq!(decoded, original);
@@ -180,7 +180,7 @@ mod tests {
 
         let original = b"Crypt pass-through";
         let decoded = chain.decode(original.to_vec()).unwrap();
-        
+
         // Crypt is a no-op in the filter chain
         assert_eq!(decoded, original);
     }
@@ -192,7 +192,7 @@ mod tests {
 
         let original = b"Test";
         let result = chain.encode(original.to_vec());
-        
+
         assert!(result.is_err());
     }
 
@@ -203,7 +203,7 @@ mod tests {
 
         let original = b"Test";
         let result = chain.encode(original.to_vec());
-        
+
         assert!(result.is_err());
     }
 
@@ -214,7 +214,7 @@ mod tests {
 
         let original = b"Test";
         let result = chain.encode(original.to_vec());
-        
+
         assert!(result.is_err());
     }
 
@@ -225,7 +225,7 @@ mod tests {
 
         let original = b"Test";
         let result = chain.encode(original.to_vec());
-        
+
         assert!(result.is_err());
     }
 

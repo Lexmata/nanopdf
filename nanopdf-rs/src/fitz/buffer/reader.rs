@@ -301,7 +301,7 @@ mod tests {
     fn test_buffer_reader_position() {
         let buf = Buffer::from_slice(b"01234");
         let mut reader = BufferReader::new(buf);
-        
+
         assert_eq!(reader.position(), 0);
         reader.read_byte();
         assert_eq!(reader.position(), 1);
@@ -313,7 +313,7 @@ mod tests {
     fn test_buffer_reader_is_eof() {
         let buf = Buffer::from_slice(b"AB");
         let mut reader = BufferReader::new(buf);
-        
+
         assert!(!reader.is_eof());
         reader.read_byte();
         assert!(!reader.is_eof());
@@ -325,7 +325,7 @@ mod tests {
     fn test_buffer_reader_peek() {
         let buf = Buffer::from_slice(b"Hello");
         let mut reader = BufferReader::new(buf);
-        
+
         assert_eq!(reader.peek(), Some(b'H'));
         assert_eq!(reader.peek(), Some(b'H')); // Peek doesn't consume
         assert_eq!(reader.read_byte(), Some(b'H'));
@@ -336,7 +336,7 @@ mod tests {
     fn test_buffer_reader_peek_eof() {
         let buf = Buffer::from_slice(b"A");
         let mut reader = BufferReader::new(buf);
-        
+
         reader.read_byte();
         assert_eq!(reader.peek(), None);
     }
@@ -345,7 +345,7 @@ mod tests {
     fn test_buffer_reader_remaining_slice() {
         let buf = Buffer::from_slice(b"0123456789");
         let mut reader = BufferReader::new(buf);
-        
+
         assert_eq!(reader.remaining_slice(), b"0123456789");
         reader.read_byte();
         assert_eq!(reader.remaining_slice(), b"123456789");
@@ -357,7 +357,7 @@ mod tests {
     fn test_buffer_reader_read_u24_be() {
         let buf = Buffer::from_slice(&[0x12, 0x34, 0x56, 0x78]);
         let mut reader = BufferReader::new(buf);
-        
+
         assert_eq!(reader.read_u24_be(), Some(0x123456));
         assert_eq!(reader.read_u24_be(), None); // Not enough bytes
     }
@@ -366,7 +366,7 @@ mod tests {
     fn test_buffer_reader_read_i16_be() {
         let buf = Buffer::from_slice(&[0x80, 0x00, 0x7F, 0xFF]);
         let mut reader = BufferReader::new(buf);
-        
+
         assert_eq!(reader.read_i16_be(), Some(-32768)); // 0x8000
         assert_eq!(reader.read_i16_be(), Some(32767));  // 0x7FFF
     }
@@ -375,7 +375,7 @@ mod tests {
     fn test_buffer_reader_read_i32_be() {
         let buf = Buffer::from_slice(&[0x80, 0x00, 0x00, 0x00, 0x7F, 0xFF, 0xFF, 0xFF]);
         let mut reader = BufferReader::new(buf);
-        
+
         assert_eq!(reader.read_i32_be(), Some(-2147483648)); // 0x80000000
         assert_eq!(reader.read_i32_be(), Some(2147483647));  // 0x7FFFFFFF
     }
@@ -384,7 +384,7 @@ mod tests {
     fn test_buffer_reader_read_i16_le() {
         let buf = Buffer::from_slice(&[0x00, 0x80, 0xFF, 0x7F]);
         let mut reader = BufferReader::new(buf);
-        
+
         assert_eq!(reader.read_i16_le(), Some(-32768)); // 0x8000 (LE)
         assert_eq!(reader.read_i16_le(), Some(32767));  // 0x7FFF (LE)
     }
@@ -393,7 +393,7 @@ mod tests {
     fn test_buffer_reader_read_i32_le() {
         let buf = Buffer::from_slice(&[0x00, 0x00, 0x00, 0x80, 0xFF, 0xFF, 0xFF, 0x7F]);
         let mut reader = BufferReader::new(buf);
-        
+
         assert_eq!(reader.read_i32_le(), Some(-2147483648)); // 0x80000000 (LE)
         assert_eq!(reader.read_i32_le(), Some(2147483647));  // 0x7FFFFFFF (LE)
     }
@@ -402,12 +402,12 @@ mod tests {
     fn test_buffer_reader_read_trait() {
         let buf = Buffer::from_slice(b"Hello, World!");
         let mut reader = BufferReader::new(buf);
-        
+
         let mut bytes = [0u8; 5];
         let n = reader.read(&mut bytes).unwrap();
         assert_eq!(n, 5);
         assert_eq!(&bytes, b"Hello");
-        
+
         let mut bytes = [0u8; 100];
         let n = reader.read(&mut bytes).unwrap();
         assert_eq!(n, 8); // ", World!" remaining
@@ -418,7 +418,7 @@ mod tests {
     fn test_buffer_reader_read_exact_insufficient() {
         let buf = Buffer::from_slice(b"Short");
         let mut reader = BufferReader::new(buf);
-        
+
         let mut bytes = [0u8; 10];
         assert!(!reader.read_exact(&mut bytes)); // Not enough data
     }
@@ -427,7 +427,7 @@ mod tests {
     fn test_buffer_reader_read_u16_be_insufficient() {
         let buf = Buffer::from_slice(&[0x12]);
         let mut reader = BufferReader::new(buf);
-        
+
         assert_eq!(reader.read_u16_be(), None);
     }
 
@@ -435,7 +435,7 @@ mod tests {
     fn test_buffer_reader_read_u32_be_insufficient() {
         let buf = Buffer::from_slice(&[0x12, 0x34]);
         let mut reader = BufferReader::new(buf);
-        
+
         assert_eq!(reader.read_u32_be(), None);
     }
 
@@ -443,7 +443,7 @@ mod tests {
     fn test_buffer_reader_read_u16_le_insufficient() {
         let buf = Buffer::from_slice(&[0x12]);
         let mut reader = BufferReader::new(buf);
-        
+
         assert_eq!(reader.read_u16_le(), None);
     }
 
@@ -451,7 +451,7 @@ mod tests {
     fn test_buffer_reader_read_u32_le_insufficient() {
         let buf = Buffer::from_slice(&[0x12, 0x34, 0x56]);
         let mut reader = BufferReader::new(buf);
-        
+
         assert_eq!(reader.read_u32_le(), None);
     }
 
@@ -459,7 +459,7 @@ mod tests {
     fn test_buffer_reader_seek_past_end() {
         let buf = Buffer::from_slice(b"Short");
         let mut reader = BufferReader::new(buf);
-        
+
         reader.seek(1000); // Beyond buffer
         assert!(reader.is_eof());
         assert_eq!(reader.remaining(), 0);
@@ -469,7 +469,7 @@ mod tests {
     fn test_buffer_reader_skip_past_end() {
         let buf = Buffer::from_slice(b"Test");
         let mut reader = BufferReader::new(buf);
-        
+
         reader.skip(100); // Skip way past end
         assert!(reader.is_eof());
         assert_eq!(reader.read_byte(), None);
@@ -479,7 +479,7 @@ mod tests {
     fn test_buffer_reader_read_line_empty() {
         let buf = Buffer::from_slice(b"");
         let mut reader = BufferReader::new(buf);
-        
+
         assert_eq!(reader.read_line(), None);
     }
 
@@ -487,7 +487,7 @@ mod tests {
     fn test_buffer_reader_empty_buffer() {
         let buf = Buffer::new(0);
         let mut reader = BufferReader::new(buf);
-        
+
         assert!(reader.is_eof());
         assert_eq!(reader.remaining(), 0);
         assert_eq!(reader.read_byte(), None);

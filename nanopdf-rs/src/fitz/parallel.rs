@@ -248,7 +248,7 @@ mod tests {
         ];
 
         let results: Vec<Result<usize>> = process_buffers_result(&buffers, |b| Ok(b.len()));
-        
+
         assert_eq!(results.len(), 2);
         assert!(results[0].is_ok());
         assert_eq!(results[0].as_ref().unwrap(), &3);
@@ -286,7 +286,7 @@ mod tests {
     fn test_batch_process_result() {
         let items = vec![1, 2, 3, 4, 5];
         let results: Vec<Result<i32>> = batch_process_result(items, |x| Ok(x * 2));
-        
+
         assert_eq!(results.len(), 5);
         assert_eq!(results[0].as_ref().unwrap(), &2);
         assert_eq!(results[4].as_ref().unwrap(), &10);
@@ -296,7 +296,7 @@ mod tests {
     fn test_parallel_find() {
         let items = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         let found = parallel_find(&items, |x| *x == 7);
-        
+
         assert!(found.is_some());
         assert_eq!(*found.unwrap(), 7);
     }
@@ -305,7 +305,7 @@ mod tests {
     fn test_parallel_find_none() {
         let items = vec![1, 2, 3, 4, 5];
         let found = parallel_find(&items, |x| *x > 10);
-        
+
         assert!(found.is_none());
     }
 
