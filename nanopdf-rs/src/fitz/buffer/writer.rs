@@ -211,7 +211,7 @@ mod tests {
         writer.write_all(b"Hello").unwrap();
         writer.write_byte(b' ');
         writer.write_all(b"World").unwrap();
-        
+
         let buf = writer.into_buffer();
         assert_eq!(buf.to_vec(), b"Hello World");
     }
@@ -223,7 +223,7 @@ mod tests {
         writer.write_u32_be(0x12345678);
         writer.write_u16_le(0x1234);
         writer.write_u32_le(0x12345678);
-        
+
         let buf = writer.into_buffer();
         assert_eq!(buf.len(), 12);
     }
@@ -233,9 +233,104 @@ mod tests {
         let mut writer = BufferWriter::new();
         writer.write_all(b"Test").unwrap();
         assert_eq!(writer.len(), 4);
-        
+
         writer.clear();
         assert_eq!(writer.len(), 0);
         assert!(writer.is_empty());
+    }
+
+    #[test]
+    fn test_buffer_writer_with_capacity() {
+        let writer = BufferWriter::with_capacity(1024);
+        assert_eq!(writer.len(), 0);
+        assert!(writer.is_empty());
+    }
+
+    #[test]
+    fn test_buffer_writer_as_slice() {
+        let mut writer = BufferWriter::new();
+        writer.write_all(b"Test data").unwrap();
+        
+        let slice = writer.as_slice();
+        assert_eq!(slice, b"Test data");
+    }
+
+    #[test]
+    fn test_buffer_writer_into_bytes() {
+        let mut writer = BufferWriter::new();
+        writer.write_all(b"Convert to bytes").unwrap();
+        
+        let bytes = writer.into_bytes();
+        assert_eq!(bytes.as_ref(), b"Convert to bytes");
+    }
+
+    #[test]
+    fn test_buffer_writer_default() {
+        let writer = BufferWriter::default();
+        assert_eq!(writer.len(), 0);
+        assert!(writer.is_empty());
+    }
+
+    #[test]
+    fn test_buffer_writer_write_trait() {
+        let mut writer = BufferWriter::new();
+        
+        // Test Write::write
+        let n = writer.write(b"Hello").unwrap();
+        assert_eq!(n, 5);
+        
+        // Test Write::flush
+        writer.flush().unwrap();
+        
+        assert_eq!(writer.len(), 5);
+        assert_eq!(writer.as_slice(), b"Hello");
+    }
+
+    #[test]
+    fn test_buffer_writer_multiple_writes() {
+        let mut writer = BufferWriter::new();
+        
+        writer.write_byte(0x01);
+        writer.write_u16_be(0x0203);
+        writer.write_u32_be(0x04050607);
+        writer.write_u16_le(0x0809);
+        writer.write_u32_le(0x0A0B0C0D);
+        
+        let buf = writer.into_buffer();
+        assert_eq!(buf.len(), 13); // 1 + 2 + 4 + 2 + 4
+    }
+
+    #[test]
+    fn test_buffer_writer_empty() {
+        let writer = BufferWriter::new();
+        assert!(writer.is_empty());
+        assert_eq!(writer.len(), 0);
+        
+        let buf = writer.into_buffer();
+        assert!(buf.is_empty());
+    }
+
+    #[test]
+    fn test_buffer_writer_large_write() {
+        let mut writer = BufferWriter::new();
+        let large_data = vec![0xAA; 10000];
+        
+        writer.write_all(&large_data).unwrap();
+        assert_eq!(writer.len(), 10000);
+        
+        let buf = writer.into_buffer();
+        assert_eq!(buf.len(), 10000);
+    }
+
+    #[test]
+    fn test_buffer_writer_sequential_bytes() {
+        let mut writer = BufferWriter::new();
+        
+        for i in 0..10u8 {
+            writer.write_byte(i);
+        }
+        
+        let buf = writer.into_buffer();
+        assert_eq!(buf.to_vec(), vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     }
 }

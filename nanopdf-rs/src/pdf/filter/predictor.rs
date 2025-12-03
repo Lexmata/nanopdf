@@ -163,3 +163,208 @@ pub fn paeth_predictor(a: u8, b: u8, c: u8) -> u8 {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_paeth_predictor() {
+        // Test cases for Paeth predictor
+        // a=10, b=20, c=15: p=15, pa=5, pb=5, pc=0 -> c=15
+        assert_eq!(paeth_predictor(10, 20, 15), 15);
+        // a=20, b=10, c=15: p=15, pa=5, pb=5, pc=0 -> c=15
+        assert_eq!(paeth_predictor(20, 10, 15), 15);
+        // All equal
+        assert_eq!(paeth_predictor(10, 10, 10), 10);
+        // Zeros
+        assert_eq!(paeth_predictor(0, 0, 0), 0);
+        // Max values
+        assert_eq!(paeth_predictor(255, 255, 255), 255);
+        // a is closest: a=10, b=5, c=0: p=15, pa=5, pb=10, pc=15 -> a=10
+        assert_eq!(paeth_predictor(10, 5, 0), 10);
+        // b is closest: a=5, b=10, c=0: p=15, pa=10, pb=5, pc=15 -> b=10
+        assert_eq!(paeth_predictor(5, 10, 0), 10);
+    }
+
+    #[test]
+    fn test_apply_predictor_decode_no_predictor() {
+        let data = vec![1, 2, 3, 4, 5];
+        let params = FlateDecodeParams {
+            predictor: 1,
+            colors: 1,
+            bits_per_component: 8,
+            columns: 5,
+        };
+        let result = apply_predictor_decode(&data, &params).unwrap();
+        assert_eq!(result, data);
+    }
+
+    #[test]
+    fn test_apply_predictor_decode_tiff() {
+        let data = vec![10, 5, 3, 2]; // TIFF predictor with differences
+        let params = FlateDecodeParams {
+            predictor: 2,
+            colors: 1,
+            bits_per_component: 8,
+            columns: 4,
+        };
+        let result = apply_predictor_decode(&data, &params).unwrap();
+        // TIFF horizontal differencing: each byte is added to previous
+        // 10, 10+5=15, 15+3=18, 18+2=20
+        assert_eq!(result, vec![10, 15, 18, 20]);
+    }
+
+    #[test]
+    fn test_apply_predictor_decode_unsupported() {
+        let data = vec![1, 2, 3];
+        let params = FlateDecodeParams {
+            predictor: 99, // Unsupported
+            colors: 1,
+            bits_per_component: 8,
+            columns: 3,
+        };
+        let result = apply_predictor_decode(&data, &params);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_apply_tiff_predictor_decode() {
+        // Simple TIFF predictor test with 1 byte per pixel
+        let data = vec![10, 5, 3];
+        let result = apply_tiff_predictor_decode(&data, 3, 1).unwrap();
+        assert_eq!(result, vec![10, 15, 18]);
+    }
+
+    #[test]
+    fn test_apply_tiff_predictor_decode_multi_pixel() {
+        // TIFF predictor with 2 bytes per pixel (e.g., RGB color)
+        let data = vec![10, 20, 5, 10, 3, 5];
+        let result = apply_tiff_predictor_decode(&data, 6, 2).unwrap();
+        // First pixel: [10, 20]
+        // Second pixel: [10+5=15, 20+10=30]
+        // Third pixel: [15+3=18, 30+5=35]
+        assert_eq!(result, vec![10, 20, 15, 30, 18, 35]);
+    }
+
+    #[test]
+    fn test_decode_png_filter_none() {
+        let row = vec![1, 2, 3, 4];
+        let prev_row = vec![0, 0, 0, 0];
+        let mut output = Vec::new();
+        decode_png_filter(0, &row, &prev_row, 1, &mut output).unwrap();
+        assert_eq!(output, vec![1, 2, 3, 4]);
+    }
+
+    #[test]
+    fn test_decode_png_filter_sub() {
+        let row = vec![10, 5, 3, 2];
+        let prev_row = vec![0, 0, 0, 0];
+        let mut output = Vec::new();
+        decode_png_filter(1, &row, &prev_row, 1, &mut output).unwrap();
+        // Sub filter: each byte is added to the byte to its left
+        // 10, 10+5=15, 15+3=18, 18+2=20
+        assert_eq!(output, vec![10, 15, 18, 20]);
+    }
+
+    #[test]
+    fn test_decode_png_filter_up() {
+        let row = vec![10, 5, 3, 2];
+        let prev_row = vec![5, 10, 15, 20];
+        let mut output = Vec::new();
+        decode_png_filter(2, &row, &prev_row, 1, &mut output).unwrap();
+        // Up filter: each byte is added to the byte above it
+        // 10+5=15, 5+10=15, 3+15=18, 2+20=22
+        assert_eq!(output, vec![15, 15, 18, 22]);
+    }
+
+    #[test]
+    fn test_decode_png_filter_average() {
+        let row = vec![10, 5, 3, 2];
+        let prev_row = vec![4, 8, 12, 16];
+        let mut output = Vec::new();
+        decode_png_filter(3, &row, &prev_row, 1, &mut output).unwrap();
+        // Average filter: each byte is added to the average of left and up
+        // 10+(0+4)/2=12, 5+(12+8)/2=15, 3+(15+12)/2=16, 2+(16+16)/2=18
+        assert_eq!(output, vec![12, 15, 16, 18]);
+    }
+
+    #[test]
+    fn test_decode_png_filter_paeth() {
+        let row = vec![10, 5, 3, 2];
+        let prev_row = vec![5, 10, 15, 20];
+        let mut output = Vec::new();
+        decode_png_filter(4, &row, &prev_row, 1, &mut output).unwrap();
+        // Paeth filter uses the Paeth predictor function
+        assert_eq!(output.len(), 4);
+    }
+
+    #[test]
+    fn test_decode_png_filter_unknown() {
+        let row = vec![1, 2, 3];
+        let prev_row = vec![0, 0, 0];
+        let mut output = Vec::new();
+        let result = decode_png_filter(99, &row, &prev_row, 1, &mut output);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_apply_png_predictor_decode() {
+        // PNG predictor with filter type byte at start of each row
+        // Filter type 0 (None) for a simple row
+        let data = vec![0, 10, 20, 30]; // Filter type 0, then 3 bytes
+        let result = apply_png_predictor_decode(&data, 3, 1).unwrap();
+        assert_eq!(result, vec![10, 20, 30]);
+    }
+
+    #[test]
+    fn test_apply_png_predictor_decode_sub_filter() {
+        // PNG predictor with Sub filter (type 1)
+        let data = vec![1, 10, 5, 3]; // Filter type 1, then differences
+        let result = apply_png_predictor_decode(&data, 3, 1).unwrap();
+        assert_eq!(result, vec![10, 15, 18]);
+    }
+
+    #[test]
+    fn test_apply_png_predictor_decode_multiple_rows() {
+        // Two rows with None filter
+        let data = vec![
+            0, 10, 20, 30,  // Row 1: filter type 0, data
+            0, 40, 50, 60,  // Row 2: filter type 0, data
+        ];
+        let result = apply_png_predictor_decode(&data, 3, 1).unwrap();
+        assert_eq!(result, vec![10, 20, 30, 40, 50, 60]);
+    }
+
+    #[test]
+    fn test_apply_png_predictor_decode_incomplete_row() {
+        // Incomplete last row (should be padded with zeros)
+        let data = vec![0, 10, 20]; // Filter type 0, but only 2 bytes (expecting 3)
+        let result = apply_png_predictor_decode(&data, 3, 1).unwrap();
+        assert_eq!(result, vec![10, 20, 0]); // Padded with zero
+    }
+
+    #[test]
+    fn test_apply_png_predictor_decode_empty_row() {
+        // Empty row should be skipped
+        let data = vec![];
+        let result = apply_png_predictor_decode(&data, 3, 1).unwrap();
+        assert_eq!(result, vec![]);
+    }
+
+    #[test]
+    fn test_apply_predictor_decode_png_range() {
+        // Test PNG predictor range (10-15 all map to PNG predictor)
+        for predictor in 10..=15 {
+            let data = vec![0, 1, 2, 3]; // Filter type 0 (None)
+            let params = FlateDecodeParams {
+                predictor,
+                colors: 1,
+                bits_per_component: 8,
+                columns: 3,
+            };
+            let result = apply_predictor_decode(&data, &params).unwrap();
+            assert_eq!(result, vec![1, 2, 3]);
+        }
+    }
+}
+

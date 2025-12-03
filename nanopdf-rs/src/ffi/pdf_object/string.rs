@@ -50,3 +50,98 @@ pub extern "C" fn pdf_to_str_len(_ctx: Handle, obj: PdfObjHandle) -> usize {
     })
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use super::super::create::pdf_new_string;
+
+    #[test]
+    fn test_pdf_to_string_valid() {
+        let ctx = 0;
+        let data = b"Hello, World!";
+        let obj = pdf_new_string(ctx, data.as_ptr() as *const c_char, data.len());
+        
+        let mut size = 0usize;
+        let result = pdf_to_string(ctx, obj, &mut size as *mut usize);
+        
+        assert!(!result.is_null());
+        assert_eq!(size, data.len());
+    }
+
+    #[test]
+    fn test_pdf_to_string_null_sizep() {
+        let ctx = 0;
+        let data = b"Test string";
+        let obj = pdf_new_string(ctx, data.as_ptr() as *const c_char, data.len());
+        
+        let result = pdf_to_string(ctx, obj, std::ptr::null_mut());
+        
+        assert!(!result.is_null());
+    }
+
+    #[test]
+    fn test_pdf_to_string_invalid_obj() {
+        let ctx = 0;
+        let invalid_obj = 9999; // Non-existent handle
+        let mut size = 0usize;
+        
+        let result = pdf_to_string(ctx, invalid_obj, &mut size as *mut usize);
+        
+        assert!(result.is_null());
+        assert_eq!(size, 0);
+    }
+
+    #[test]
+    fn test_pdf_to_str_buf() {
+        let ctx = 0;
+        let data = b"Buffer test";
+        let obj = pdf_new_string(ctx, data.as_ptr() as *const c_char, data.len());
+        
+        let result = pdf_to_str_buf(ctx, obj);
+        
+        assert!(!result.is_null());
+    }
+
+    #[test]
+    fn test_pdf_to_str_buf_invalid() {
+        let ctx = 0;
+        let invalid_obj = 9999;
+        
+        let result = pdf_to_str_buf(ctx, invalid_obj);
+        
+        assert!(result.is_null());
+    }
+
+    #[test]
+    fn test_pdf_to_str_len() {
+        let ctx = 0;
+        let data = b"Length test";
+        let obj = pdf_new_string(ctx, data.as_ptr() as *const c_char, data.len());
+        
+        let len = pdf_to_str_len(ctx, obj);
+        
+        assert_eq!(len, data.len());
+    }
+
+    #[test]
+    fn test_pdf_to_str_len_invalid() {
+        let ctx = 0;
+        let invalid_obj = 9999;
+        
+        let len = pdf_to_str_len(ctx, invalid_obj);
+        
+        assert_eq!(len, 0);
+    }
+
+    #[test]
+    fn test_pdf_to_str_len_empty_string() {
+        let ctx = 0;
+        let data = b"";
+        let obj = pdf_new_string(ctx, data.as_ptr() as *const c_char, data.len());
+        
+        let len = pdf_to_str_len(ctx, obj);
+        
+        assert_eq!(len, 0);
+    }
+}
+

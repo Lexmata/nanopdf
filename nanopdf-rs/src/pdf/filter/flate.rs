@@ -47,15 +47,19 @@ mod tests {
 
     #[test]
     fn test_flate_encode_decode() {
-        let original = b"Hello, FlateDecode! This is a test of zlib compression.";
+        // Use longer text with repetition for better compression
+        let original = b"Hello, FlateDecode! This is a test of zlib compression. \
+                         Hello, FlateDecode! This is a test of zlib compression. \
+                         Hello, FlateDecode! This is a test of zlib compression. \
+                         Hello, FlateDecode! This is a test of zlib compression.";
 
         // Encode
         let compressed = encode_flate(original, 6).unwrap();
-        assert!(compressed.len() < original.len()); // Should be smaller
+        assert!(compressed.len() < original.len()); // Should be smaller with repetition
 
         // Decode
         let decompressed = decode_flate(&compressed, None).unwrap();
-        assert_eq!(decompressed, original);
+        assert_eq!(decompressed, original.as_slice());
     }
 
     #[test]
