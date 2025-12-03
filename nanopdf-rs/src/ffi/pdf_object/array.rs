@@ -132,7 +132,7 @@ pub extern "C" fn pdf_array_insert(_ctx: Handle, array: PdfObjHandle, index: i32
 #[unsafe(no_mangle)]
 pub extern "C" fn pdf_array_push_name(_ctx: Handle, array: PdfObjHandle, name: *const std::ffi::c_char) {
     use std::ffi::CStr;
-    
+
     if name.is_null() {
         return;
     }

@@ -96,7 +96,7 @@ mod tests {
         chain.add(FilterType::FlateDecode);
 
         let original = b"Test data";
-        
+
         // Encode manually (reverse order)
         let compressed = encode_flate(original, 6).unwrap();
         let ascii85 = encode_ascii85(&compressed).unwrap();

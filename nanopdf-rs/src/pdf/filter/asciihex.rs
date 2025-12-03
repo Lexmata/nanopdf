@@ -66,10 +66,10 @@ mod tests {
     #[test]
     fn test_asciihex_encode_decode() {
         let original = b"Hello, Hex!";
-        
+
         // Encode
         let encoded = encode_ascii_hex(original).unwrap();
-        
+
         // Decode
         let decoded = decode_ascii_hex(&encoded).unwrap();
         assert_eq!(decoded, original);

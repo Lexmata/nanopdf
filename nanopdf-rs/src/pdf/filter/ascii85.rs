@@ -109,10 +109,10 @@ mod tests {
     #[test]
     fn test_ascii85_encode_decode() {
         let original = b"Hello, ASCII85!";
-        
+
         // Encode
         let encoded = encode_ascii85(original).unwrap();
-        
+
         // Decode
         let decoded = decode_ascii85(&encoded).unwrap();
         assert_eq!(decoded, original);
@@ -123,7 +123,7 @@ mod tests {
         let zeros = &[0u8; 4];
         let encoded = encode_ascii85(zeros).unwrap();
         assert!(encoded.contains(&b'z')); // Should contain 'z' for zeros
-        
+
         let decoded = decode_ascii85(&encoded).unwrap();
         assert_eq!(decoded, zeros);
     }

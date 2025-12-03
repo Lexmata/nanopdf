@@ -48,7 +48,7 @@ mod tests {
     #[test]
     fn test_flate_encode_decode() {
         let original = b"Hello, FlateDecode! This is a test of zlib compression.";
-        
+
         // Encode
         let compressed = encode_flate(original, 6).unwrap();
         assert!(compressed.len() < original.len()); // Should be smaller
@@ -69,7 +69,7 @@ mod tests {
     #[test]
     fn test_flate_compression_levels() {
         let data = b"Test data for compression level testing";
-        
+
         // Test different compression levels
         for level in [0, 3, 6, 9] {
             let compressed = encode_flate(data, level).unwrap();

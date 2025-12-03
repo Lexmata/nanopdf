@@ -47,7 +47,7 @@ mod tests {
     #[test]
     fn test_lzw_encode_decode() {
         let original = b"ABCABCABCABCABC"; // Repetitive data compresses well
-        
+
         // Encode
         let compressed = encode_lzw(original).unwrap();
 

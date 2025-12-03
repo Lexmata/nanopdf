@@ -260,7 +260,7 @@ mod tests {
     #[test]
     fn test_pdf_array_put_insert() {
         let arr = pdf_new_array(0, 0, 5);
-        
+
         // Initial push
         pdf_array_push_int(0, arr, 1);
         pdf_array_push_int(0, arr, 2);
@@ -313,7 +313,7 @@ mod tests {
     #[test]
     fn test_pdf_dict_put_typed() {
         let dict = pdf_new_dict(0, 0, 5);
-        
+
         let key1 = pdf_new_name(0, b"Int\0".as_ptr() as *const c_char);
         pdf_dict_put_int(0, dict, key1, 100);
 
@@ -336,7 +336,7 @@ mod tests {
     #[test]
     fn test_pdf_mark_obj() {
         let obj = pdf_new_int(0, 42);
-        
+
         // Initially not marked
         assert_eq!(pdf_obj_marked(0, obj), 0);
 
@@ -361,7 +361,7 @@ mod tests {
     #[test]
     fn test_pdf_dirty_obj() {
         let obj = pdf_new_int(0, 42);
-        
+
         // Initially not dirty
         assert_eq!(pdf_obj_is_dirty(0, obj), 0);
 
@@ -381,7 +381,7 @@ mod tests {
     #[test]
     fn test_pdf_obj_parent() {
         let obj = pdf_new_int(0, 42);
-        
+
         // Initially no parent
         assert_eq!(pdf_obj_parent_num(0, obj), 0);
 
@@ -456,7 +456,7 @@ mod tests {
     fn test_pdf_deep_copy_obj() {
         let arr = pdf_new_array(0, 0, 2);
         pdf_array_push_int(0, arr, 10);
-        
+
         let nested_arr = pdf_new_array(0, 0, 1);
         pdf_array_push_int(0, nested_arr, 20);
         pdf_array_push(0, arr, nested_arr);
@@ -509,10 +509,10 @@ mod tests {
     #[test]
     fn test_pdf_dict_get_key_val() {
         let dict = pdf_new_dict(0, 0, 2);
-        
+
         let key1 = pdf_new_name(0, b"First\0".as_ptr() as *const c_char);
         pdf_dict_put_int(0, dict, key1, 100);
-        
+
         let key2 = pdf_new_name(0, b"Second\0".as_ptr() as *const c_char);
         pdf_dict_put_int(0, dict, key2, 200);
 

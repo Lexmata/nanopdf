@@ -92,10 +92,10 @@ mod tests {
     #[test]
     fn test_runlength_encode_decode() {
         let original = b"AAAAAABBBCCCCCCCCCCDDDDDD";
-        
+
         // Encode
         let encoded = encode_run_length(original).unwrap();
-        
+
         // Decode
         let decoded = decode_run_length(&encoded).unwrap();
         assert_eq!(decoded, original);
@@ -104,7 +104,7 @@ mod tests {
     #[test]
     fn test_runlength_no_runs() {
         let original = b"ABCDEFGH";
-        
+
         let encoded = encode_run_length(original).unwrap();
         let decoded = decode_run_length(&encoded).unwrap();
         assert_eq!(decoded, original);
@@ -113,7 +113,7 @@ mod tests {
     #[test]
     fn test_runlength_all_same() {
         let original = &[b'X'; 50];
-        
+
         let encoded = encode_run_length(original).unwrap();
         let decoded = decode_run_length(&encoded).unwrap();
         assert_eq!(decoded, original);
