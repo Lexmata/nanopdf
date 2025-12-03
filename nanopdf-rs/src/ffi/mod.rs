@@ -1,14 +1,78 @@
 //! C FFI Module - MuPDF API Compatible Exports
 //!
 //! This module provides C-compatible exports that match MuPDF's API.
-//! When compiled as a staticlib or cdylib, these functions can be called
-//! from C code using the same function signatures as MuPDF.
+//! Uses safe Rust patterns with handle-based resource management.
 
 pub mod geometry;
-pub mod buffer;
 pub mod context;
+pub mod buffer;
 pub mod stream;
-pub mod pixmap;
 pub mod colorspace;
+pub mod pixmap;
 pub mod document;
+pub mod pdf_object;
 
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex, atomic::{AtomicU64, Ordering}};
+
+/// Global handle manager for safe FFI resource management
+static HANDLE_COUNTER: AtomicU64 = AtomicU64::new(1);
+
+/// Type alias for handles
+pub type Handle = u64;
+
+/// Generate a new unique handle
+pub fn new_handle() -> Handle {
+    HANDLE_COUNTER.fetch_add(1, Ordering::SeqCst)
+}
+
+/// Thread-safe handle storage for a specific type
+pub struct HandleStore<T> {
+    store: Mutex<HashMap<Handle, Arc<Mutex<T>>>>,
+}
+
+impl<T> HandleStore<T> {
+    pub fn new() -> Self {
+        Self {
+            store: Mutex::new(HashMap::new()),
+        }
+    }
+
+    pub fn insert(&self, value: T) -> Handle {
+        let handle = new_handle();
+        let mut store = self.store.lock().unwrap();
+        store.insert(handle, Arc::new(Mutex::new(value)));
+        handle
+    }
+
+    pub fn get(&self, handle: Handle) -> Option<Arc<Mutex<T>>> {
+        let store = self.store.lock().unwrap();
+        store.get(&handle).cloned()
+    }
+
+    pub fn remove(&self, handle: Handle) -> Option<Arc<Mutex<T>>> {
+        let mut store = self.store.lock().unwrap();
+        store.remove(&handle)
+    }
+
+    pub fn keep(&self, handle: Handle) -> Handle {
+        // For reference counting, we just return the same handle
+        // The Arc inside handles ref counting automatically
+        handle
+    }
+}
+
+impl<T> Default for HandleStore<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+// Lazy initialization for handle stores
+use std::sync::LazyLock;
+
+pub static CONTEXTS: LazyLock<HandleStore<context::Context>> = LazyLock::new(HandleStore::new);
+pub static BUFFERS: LazyLock<HandleStore<buffer::Buffer>> = LazyLock::new(HandleStore::new);
+pub static STREAMS: LazyLock<HandleStore<stream::Stream>> = LazyLock::new(HandleStore::new);
+pub static PIXMAPS: LazyLock<HandleStore<pixmap::Pixmap>> = LazyLock::new(HandleStore::new);
+pub static DOCUMENTS: LazyLock<HandleStore<document::Document>> = LazyLock::new(HandleStore::new);

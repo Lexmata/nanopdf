@@ -1,0 +1,217 @@
+# Git Flow Branching Model
+
+Follow the Git Flow branching model for repository management.
+
+## Branch Structure
+
+```
+main (or master)
+  │
+  ├── develop
+  │     │
+  │     ├── feature/xyz
+  │     ├── feature/abc
+  │     │
+  │     └── release/1.0.0
+  │           │
+  │           └── (merged to main & develop)
+  │
+  └── hotfix/critical-bug
+        │
+        └── (merged to main & develop)
+```
+
+## Branch Types
+
+### `main` (Production)
+- **Purpose**: Production-ready code only
+- **Protection**: Protected, no direct commits
+- **Merges from**: `release/*`, `hotfix/*`
+- **Tags**: All releases are tagged here
+
+### `develop` (Integration)
+- **Purpose**: Integration branch for features
+- **Base for**: All `feature/*` branches
+- **Merges from**: `feature/*`, `release/*`, `hotfix/*`
+
+### `feature/*` (New Features)
+- **Naming**: `feature/<issue-number>-<short-description>`
+- **Base**: `develop`
+- **Merge to**: `develop`
+- **Lifetime**: Short-lived, delete after merge
+
+### `release/*` (Release Preparation)
+- **Naming**: `release/<version>` (e.g., `release/1.2.0`)
+- **Base**: `develop`
+- **Merge to**: `main` AND `develop`
+- **Purpose**: Final testing, version bumps, changelog
+
+### `hotfix/*` (Emergency Fixes)
+- **Naming**: `hotfix/<issue-number>-<short-description>`
+- **Base**: `main`
+- **Merge to**: `main` AND `develop`
+- **Purpose**: Critical production bug fixes
+
+## Workflow Commands
+
+### Starting a New Feature
+
+```bash
+# Create feature branch from develop
+git checkout develop
+git pull origin develop
+git checkout -b feature/123-add-pdf-parsing
+
+# Work on feature...
+git add -A
+git commit -m "feat(parser): implement PDF parsing"
+
+# Push feature branch
+git push -u origin feature/123-add-pdf-parsing
+
+# When done, create PR to develop
+```
+
+### Creating a Release
+
+```bash
+# Create release branch from develop
+git checkout develop
+git pull origin develop
+git checkout -b release/1.2.0
+
+# Bump version, update changelog
+git commit -m "chore(release): prepare v1.2.0"
+
+# After testing, merge to main
+git checkout main
+git merge --no-ff release/1.2.0
+git tag -a v1.2.0 -m "Release v1.2.0"
+git push origin main --tags
+
+# Also merge back to develop
+git checkout develop
+git merge --no-ff release/1.2.0
+git push origin develop
+
+# Delete release branch
+git branch -d release/1.2.0
+git push origin --delete release/1.2.0
+```
+
+### Creating a Hotfix
+
+```bash
+# Create hotfix branch from main
+git checkout main
+git pull origin main
+git checkout -b hotfix/456-fix-crash
+
+# Fix the issue
+git commit -m "fix(core): prevent crash on malformed PDF"
+
+# Merge to main
+git checkout main
+git merge --no-ff hotfix/456-fix-crash
+git tag -a v1.2.1 -m "Hotfix v1.2.1"
+git push origin main --tags
+
+# Also merge to develop
+git checkout develop
+git merge --no-ff hotfix/456-fix-crash
+git push origin develop
+
+# Delete hotfix branch
+git branch -d hotfix/456-fix-crash
+git push origin --delete hotfix/456-fix-crash
+```
+
+## Branch Naming Conventions
+
+| Type | Pattern | Example |
+|------|---------|---------|
+| Feature | `feature/<issue>-<desc>` | `feature/123-add-compression` |
+| Release | `release/<semver>` | `release/1.2.0` |
+| Hotfix | `hotfix/<issue>-<desc>` | `hotfix/456-fix-crash` |
+| Bugfix | `bugfix/<issue>-<desc>` | `bugfix/789-handle-null` |
+
+## Merge Strategies
+
+| Source | Target | Strategy |
+|--------|--------|----------|
+| `feature/*` | `develop` | Squash merge (PR) |
+| `release/*` | `main` | No-ff merge |
+| `release/*` | `develop` | No-ff merge |
+| `hotfix/*` | `main` | No-ff merge |
+| `hotfix/*` | `develop` | No-ff merge |
+
+## Version Tagging
+
+Use semantic versioning (SemVer):
+
+```
+v<MAJOR>.<MINOR>.<PATCH>
+
+MAJOR: Breaking changes
+MINOR: New features (backward compatible)
+PATCH: Bug fixes (backward compatible)
+```
+
+### Pre-release Tags
+
+```
+v1.2.0-alpha.1
+v1.2.0-beta.1
+v1.2.0-rc.1
+```
+
+## GitHub Actions Integration
+
+Branches should trigger appropriate CI/CD:
+
+| Branch | Actions |
+|--------|---------|
+| `main` | Full CI + Deploy to production |
+| `develop` | Full CI + Deploy to staging |
+| `feature/*` | CI tests only |
+| `release/*` | Full CI + Deploy to staging |
+| `hotfix/*` | Full CI |
+
+## Pull Request Requirements
+
+### Feature → Develop
+- [ ] All tests pass
+- [ ] Code review approved
+- [ ] No merge conflicts
+- [ ] Linked to issue
+
+### Release/Hotfix → Main
+- [ ] All tests pass
+- [ ] Version bumped
+- [ ] Changelog updated
+- [ ] Release notes prepared
+
+## Quick Reference
+
+```bash
+# List all branches
+git branch -a
+
+# Check current branch
+git branch --show-current
+
+# Switch branches
+git checkout <branch-name>
+
+# Create and switch
+git checkout -b <new-branch>
+
+# Delete local branch
+git branch -d <branch-name>
+
+# Delete remote branch
+git push origin --delete <branch-name>
+
+# Sync with remote
+git fetch --all --prune
+```

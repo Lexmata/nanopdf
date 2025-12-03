@@ -1,0 +1,97 @@
+---
+alwaysApply: true
+---
+
+# Commit After Task Completion
+
+Always commit work to version control after completing a cursor agent task.
+
+## Rule
+
+When an agent task is completed:
+
+1. **Stage all changes**
+   ```bash
+   git add -A
+   ```
+
+2. **Create a meaningful commit message**
+   - Use conventional commit format
+   - Include scope if applicable
+   - Summarize what was accomplished
+
+3. **Commit the changes**
+   ```bash
+   git commit -m "<type>(<scope>): <description>"
+   ```
+
+## Commit Message Format
+
+```
+<type>(<scope>): <short description>
+
+[optional body with more details]
+
+[optional footer]
+```
+
+### Types
+
+| Type | Description |
+|------|-------------|
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `docs` | Documentation only |
+| `style` | Formatting, no code change |
+| `refactor` | Code restructuring |
+| `perf` | Performance improvement |
+| `test` | Adding/updating tests |
+| `chore` | Build, config, dependencies |
+
+### Examples
+
+```bash
+# Feature addition
+git commit -m "feat(filter): add full PDF compression filter support"
+
+# Bug fix
+git commit -m "fix(parser): handle malformed xref tables"
+
+# Multiple changes
+git commit -m "feat(ffi): implement PDF object functions
+
+- Add 57 PDF object FFI functions
+- Create comprehensive object type system
+- Add marking and dirty tracking
+- Include unit tests"
+```
+
+## When to Commit
+
+- ✅ After implementing a feature
+- ✅ After fixing a bug
+- ✅ After adding tests
+- ✅ After updating documentation
+- ✅ After refactoring code
+- ✅ After any logical unit of work
+
+## When NOT to Commit
+
+- ❌ Mid-task with broken code
+- ❌ With failing tests (unless fixing tests)
+- ❌ With linter errors
+
+## Verification
+
+Before committing, verify:
+
+1. Code compiles: `cargo build`
+2. Tests pass: `cargo test`
+3. No critical linter errors: `cargo clippy`
+
+## Post-Commit
+
+After committing:
+
+1. Confirm commit was created: `git log -1`
+2. Consider pushing if on a feature branch: `git push`
