@@ -1,0 +1,159 @@
+<div class="py-16">
+  <div class="max-w-7xl mx-auto px-6">
+    <h1 class="text-4xl font-bold mb-4">API Reference</h1>
+    <p class="text-text-muted mb-12">Complete API documentation for all NanoPDF modules</p>
+
+    <!-- Core Modules -->
+    <section class="mb-12">
+      <h2 class="text-xl font-semibold mb-6 pb-2 border-b border-bg-tertiary">Core Modules</h2>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="api-card">
+          <h3 class="text-lg font-semibold text-accent-primary mb-2">Document</h3>
+          <p class="text-text-muted text-sm mb-4">Main entry point for PDF operations</p>
+          <ul class="api-list">
+            <li><code>open(path)</code></li>
+            <li><code>from_bytes(data)</code></li>
+            <li><code>page_count()</code></li>
+            <li><code>load_page(index)</code></li>
+            <li><code>title()</code></li>
+            <li><code>close()</code></li>
+          </ul>
+        </div>
+
+        <div class="api-card">
+          <h3 class="text-lg font-semibold text-accent-primary mb-2">Page</h3>
+          <p class="text-text-muted text-sm mb-4">Individual PDF page operations</p>
+          <ul class="api-list">
+            <li><code>bounds()</code></li>
+            <li><code>render(scale)</code></li>
+            <li><code>render_with_matrix(matrix)</code></li>
+            <li><code>text()</code></li>
+            <li><code>links()</code></li>
+          </ul>
+        </div>
+
+        <div class="api-card">
+          <h3 class="text-lg font-semibold text-accent-primary mb-2">Pixmap</h3>
+          <p class="text-text-muted text-sm mb-4">Pixel buffer for rendered content</p>
+          <ul class="api-list">
+            <li><code>width()</code></li>
+            <li><code>height()</code></li>
+            <li><code>samples()</code></li>
+            <li><code>save_png(path)</code></li>
+            <li><code>save_jpeg(path, quality)</code></li>
+            <li><code>to_png()</code></li>
+          </ul>
+        </div>
+
+        <div class="api-card">
+          <h3 class="text-lg font-semibold text-accent-primary mb-2">Buffer</h3>
+          <p class="text-text-muted text-sm mb-4">Dynamic byte array</p>
+          <ul class="api-list">
+            <li><code>new()</code></li>
+            <li><code>from_bytes(data)</code></li>
+            <li><code>len()</code></li>
+            <li><code>append(data)</code></li>
+            <li><code>clear()</code></li>
+            <li><code>slice(start, end)</code></li>
+          </ul>
+        </div>
+
+        <div class="api-card">
+          <h3 class="text-lg font-semibold text-accent-primary mb-2">Stream</h3>
+          <p class="text-text-muted text-sm mb-4">Buffered I/O operations</p>
+          <ul class="api-list">
+            <li><code>open_file(path)</code></li>
+            <li><code>open_memory(data)</code></li>
+            <li><code>read(count)</code></li>
+            <li><code>seek(pos, whence)</code></li>
+            <li><code>tell()</code></li>
+            <li><code>is_eof()</code></li>
+          </ul>
+        </div>
+
+        <div class="api-card">
+          <h3 class="text-lg font-semibold text-accent-primary mb-2">Colorspace</h3>
+          <p class="text-text-muted text-sm mb-4">Color management</p>
+          <ul class="api-list">
+            <li><code>device_gray()</code></li>
+            <li><code>device_rgb()</code></li>
+            <li><code>device_cmyk()</code></li>
+            <li><code>components()</code></li>
+            <li><code>name()</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Geometry -->
+    <section class="mb-12">
+      <h2 class="text-xl font-semibold mb-6 pb-2 border-b border-bg-tertiary">Geometry</h2>
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="api-card">
+          <h3 class="text-lg font-semibold text-accent-primary mb-2">Point</h3>
+          <p class="text-text-muted text-sm mb-4">2D point (x, y)</p>
+          <ul class="api-list">
+            <li><code>new(x, y)</code></li>
+            <li><code>transform(matrix)</code></li>
+            <li><code>distance(other)</code></li>
+          </ul>
+        </div>
+
+        <div class="api-card">
+          <h3 class="text-lg font-semibold text-accent-primary mb-2">Rect</h3>
+          <p class="text-text-muted text-sm mb-4">Rectangle (x0, y0, x1, y1)</p>
+          <ul class="api-list">
+            <li><code>new(x0, y0, x1, y1)</code></li>
+            <li><code>width()</code></li>
+            <li><code>height()</code></li>
+            <li><code>contains(point)</code></li>
+            <li><code>intersect(other)</code></li>
+            <li><code>union(other)</code></li>
+          </ul>
+        </div>
+
+        <div class="api-card">
+          <h3 class="text-lg font-semibold text-accent-primary mb-2">Matrix</h3>
+          <p class="text-text-muted text-sm mb-4">2D transformation matrix</p>
+          <ul class="api-list">
+            <li><code>identity()</code></li>
+            <li><code>scale(sx, sy)</code></li>
+            <li><code>rotate(degrees)</code></li>
+            <li><code>translate(tx, ty)</code></li>
+            <li><code>concat(other)</code></li>
+          </ul>
+        </div>
+
+        <div class="api-card">
+          <h3 class="text-lg font-semibold text-accent-primary mb-2">Quad</h3>
+          <p class="text-text-muted text-sm mb-4">Quadrilateral (4 points)</p>
+          <ul class="api-list">
+            <li><code>from_rect(rect)</code></li>
+            <li><code>bounding_rect()</code></li>
+            <li><code>transform(matrix)</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Full Documentation Links -->
+    <section>
+      <h2 class="text-xl font-semibold mb-6">Full Documentation</h2>
+      <div class="grid sm:grid-cols-3 gap-4">
+        <a href="https://docs.rs/nanopdf" target="_blank" class="link-card">
+          <span class="px-2 py-1 bg-orange-400/15 text-orange-400 rounded-full text-xs font-medium">Rust</span>
+          <span class="text-text-secondary text-sm">docs.rs/nanopdf</span>
+        </a>
+        <a href="https://www.npmjs.com/package/nanopdf" target="_blank" class="link-card">
+          <span class="px-2 py-1 bg-yellow-400/15 text-yellow-400 rounded-full text-xs font-medium">JavaScript</span>
+          <span class="text-text-secondary text-sm">npm: nanopdf</span>
+        </a>
+        <a href="https://pkg.go.dev/github.com/lexmata/nanopdf/go-nanopdf" target="_blank" class="link-card">
+          <span class="px-2 py-1 bg-cyan-400/15 text-cyan-400 rounded-full text-xs font-medium">Go</span>
+          <span class="text-text-secondary text-sm">pkg.go.dev</span>
+        </a>
+      </div>
+    </section>
+  </div>
+</div>
+

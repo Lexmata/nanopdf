@@ -1,0 +1,230 @@
+<!-- Hero Section -->
+<section class="hero relative py-24 overflow-hidden">
+  <div class="hero-bg absolute inset-0 bg-gradient-to-br from-bg-primary via-[#1a1f35] to-bg-primary"></div>
+  <div class="grid-pattern absolute inset-0"></div>
+  <div class="glow-orb glow-orb-1"></div>
+  <div class="glow-orb glow-orb-2"></div>
+  
+  <div class="relative max-w-7xl mx-auto px-6">
+    <div class="max-w-3xl mx-auto text-center">
+      <div class="flex justify-center gap-4 mb-8 animate-fade-in">
+        <span class="px-4 py-1 bg-bg-tertiary border border-bg-hover rounded-full text-sm font-medium text-text-secondary">v0.1.0</span>
+        <span class="flex items-center gap-2 px-4 py-1 bg-accent-success/10 border border-accent-success/30 rounded-full text-sm font-medium text-accent-success">
+          <span class="w-2 h-2 bg-accent-success rounded-full animate-pulse"></span>
+          MuPDF Compatible
+        </span>
+      </div>
+      
+      <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 animate-fade-in" style="animation-delay: 0.1s">
+        High-Performance PDF
+        <span class="bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">Processing</span>
+      </h1>
+      
+      <p class="text-xl text-text-secondary mb-10 max-w-2xl mx-auto animate-fade-in" style="animation-delay: 0.2s">
+        A blazing-fast, pure Rust implementation of MuPDF with 100% API compatibility.
+        Available for Rust, JavaScript, and Go.
+      </p>
+      
+      <div class="flex flex-col sm:flex-row justify-center gap-4 mb-16 animate-fade-in" style="animation-delay: 0.3s">
+        <a routerLink="/docs/getting-started" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-accent-primary to-accent-secondary text-bg-primary font-medium rounded-lg hover:-translate-y-0.5 hover:shadow-lg hover:shadow-accent-primary/20 transition-all">
+          Get Started
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+        <a href="https://github.com/lexmata/nanopdf" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 bg-bg-tertiary text-text-primary border border-bg-hover rounded-lg hover:bg-bg-hover hover:border-accent-primary transition-all">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+          </svg>
+          View on GitHub
+        </a>
+      </div>
+      
+      <div class="code-preview bg-bg-secondary border border-bg-tertiary rounded-xl overflow-hidden text-left max-w-xl mx-auto animate-fade-in" style="animation-delay: 0.4s">
+        <div class="flex gap-0 bg-bg-tertiary p-1">
+          <button class="px-4 py-2 bg-bg-secondary text-accent-primary text-sm font-medium rounded-md">Rust</button>
+          <button class="px-4 py-2 text-text-muted text-sm font-medium rounded-md hover:text-text-secondary">JavaScript</button>
+          <button class="px-4 py-2 text-text-muted text-sm font-medium rounded-md hover:text-text-secondary">Go</button>
+        </div>
+        <pre class="p-4 text-sm leading-relaxed"><code><span class="keyword">use</span> nanopdf::&#123;Document, Pixmap&#125;;
+
+<span class="keyword">let</span> doc = Document::open(<span class="string">"document.pdf"</span>)?;
+<span class="keyword">let</span> page = doc.load_page(<span class="number">0</span>)?;
+<span class="keyword">let</span> pixmap = page.render(<span class="number">2.0</span>)?; <span class="comment">// 2x scale</span>
+pixmap.save_png(<span class="string">"page.png"</span>)?;</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-24 bg-bg-secondary">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">Why <span class="bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">NanoPDF</span>?</h2>
+      <p class="text-text-muted">Built for performance, designed for developers</p>
+    </div>
+    
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="feature-card">
+        <div class="w-12 h-12 flex items-center justify-center bg-accent-tertiary/15 text-accent-tertiary rounded-xl mb-4">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold mb-2">Blazing Fast</h3>
+        <p class="text-text-secondary text-sm">Pure Rust implementation with optional parallel processing via Rayon. Up to 3x faster than MuPDF for batch operations.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="w-12 h-12 flex items-center justify-center bg-accent-success/15 text-accent-success rounded-xl mb-4">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold mb-2">Memory Safe</h3>
+        <p class="text-text-secondary text-sm">Zero unsafe Rust in core logic. Handle-based FFI for cross-language bindings eliminates memory leaks and use-after-free bugs.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="w-12 h-12 flex items-center justify-center bg-accent-primary/15 text-accent-primary rounded-xl mb-4">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <path d="M22 6l-10 7L2 6"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold mb-2">MuPDF Compatible</h3>
+        <p class="text-text-secondary text-sm">Drop-in replacement for MuPDF. Same C headers, same API. Migrate existing projects without code changes.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="w-12 h-12 flex items-center justify-center bg-accent-secondary/15 text-accent-secondary rounded-xl mb-4">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold mb-2">Multi-Language</h3>
+        <p class="text-text-secondary text-sm">Native bindings for Rust, JavaScript (Node.js), and Go. Use the same powerful API in your favorite language.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="w-12 h-12 flex items-center justify-center bg-accent-danger/15 text-accent-danger rounded-xl mb-4">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold mb-2">Async Ready</h3>
+        <p class="text-text-secondary text-sm">Optional async I/O with Tokio for non-blocking operations. Perfect for web servers and high-throughput applications.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="w-12 h-12 flex items-center justify-center bg-accent-primary/15 text-accent-primary rounded-xl mb-4">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold mb-2">Full Compression</h3>
+        <p class="text-text-secondary text-sm">Support for all PDF compression filters: Flate, LZW, ASCII85, ASCIIHex, RunLength, JBIG2, JPEG2000, and more.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Performance Section -->
+<section class="py-24 bg-bg-primary">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">Performance <span class="bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">Benchmarks</span></h2>
+      <p class="text-text-muted">Measured on real-world PDF documents</p>
+    </div>
+    
+    <div class="grid md:grid-cols-3 gap-6 mb-12">
+      <div class="bg-gradient-to-br from-bg-card/80 to-bg-primary/90 border border-white/5 rounded-xl p-8 text-center">
+        <span class="block text-5xl font-bold bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">3.2x</span>
+        <span class="block text-text-secondary mt-2">Faster Rendering</span>
+        <p class="text-sm text-text-muted mt-4">With parallel processing enabled (Rayon)</p>
+      </div>
+      
+      <div class="bg-gradient-to-br from-bg-card/80 to-bg-primary/90 border border-white/5 rounded-xl p-8 text-center">
+        <span class="block text-5xl font-bold bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">40%</span>
+        <span class="block text-text-secondary mt-2">Less Memory</span>
+        <p class="text-sm text-text-muted mt-4">Efficient Rust memory management</p>
+      </div>
+      
+      <div class="bg-gradient-to-br from-bg-card/80 to-bg-primary/90 border border-white/5 rounded-xl p-8 text-center">
+        <span class="block text-5xl font-bold bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">0</span>
+        <span class="block text-text-secondary mt-2">Memory Leaks</span>
+        <p class="text-sm text-text-muted mt-4">Guaranteed by Rust's ownership model</p>
+      </div>
+    </div>
+    
+    <div class="text-center">
+      <a routerLink="/benchmarks" class="inline-flex items-center gap-2 px-6 py-3 bg-bg-tertiary text-text-primary border border-bg-hover rounded-lg hover:bg-bg-hover hover:border-accent-primary transition-all">
+        View Full Benchmarks
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Install Section -->
+<section class="py-24 bg-bg-secondary">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">Quick <span class="bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">Install</span></h2>
+      <p class="text-text-muted">Add NanoPDF to your project in seconds</p>
+    </div>
+    
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="install-card">
+        <div class="flex justify-between items-center mb-4">
+          <span class="px-2 py-1 bg-orange-400/15 text-orange-400 rounded-full text-xs font-medium">Rust</span>
+          <span class="text-xs text-text-muted font-mono">Cargo.toml</span>
+        </div>
+        <pre class="bg-bg-primary rounded-lg p-4 text-sm"><code>[dependencies]
+nanopdf = "0.1"</code></pre>
+      </div>
+      
+      <div class="install-card">
+        <div class="flex justify-between items-center mb-4">
+          <span class="px-2 py-1 bg-yellow-400/15 text-yellow-400 rounded-full text-xs font-medium">JavaScript</span>
+          <span class="text-xs text-text-muted font-mono">Terminal</span>
+        </div>
+        <pre class="bg-bg-primary rounded-lg p-4 text-sm"><code>pnpm add nanopdf</code></pre>
+      </div>
+      
+      <div class="install-card">
+        <div class="flex justify-between items-center mb-4">
+          <span class="px-2 py-1 bg-cyan-400/15 text-cyan-400 rounded-full text-xs font-medium">Go</span>
+          <span class="text-xs text-text-muted font-mono">Terminal</span>
+        </div>
+        <pre class="bg-bg-primary rounded-lg p-4 text-sm"><code>go get github.com/lexmata/nanopdf/go-nanopdf</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-24 bg-gradient-to-br from-bg-primary via-[#1a1f35] to-bg-primary relative overflow-hidden">
+  <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.15)_0%,transparent_70%)]"></div>
+  <div class="relative max-w-2xl mx-auto px-6 text-center">
+    <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to Get Started?</h2>
+    <p class="text-text-secondary mb-10">Join developers who are building faster PDF applications with NanoPDF</p>
+    <div class="flex flex-col sm:flex-row justify-center gap-4">
+      <a routerLink="/docs/getting-started" class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-accent-primary to-accent-secondary text-bg-primary font-medium rounded-lg hover:-translate-y-0.5 hover:shadow-lg hover:shadow-accent-primary/20 transition-all">
+        Read the Docs
+      </a>
+      <a href="https://github.com/lexmata/nanopdf" target="_blank" class="inline-flex items-center justify-center gap-2 px-6 py-3 text-text-secondary hover:text-accent-primary transition-colors">
+        Star on GitHub ⭐
+      </a>
+    </div>
+  </div>
+</section>
+

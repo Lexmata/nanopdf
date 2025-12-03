@@ -1,0 +1,72 @@
+.summary-card {
+  background: linear-gradient(145deg, rgba(22, 32, 50, 0.8), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.benchmark-chart {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.chart-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--color-bg-tertiary);
+  }
+}
+
+.chart-label {
+  flex-shrink: 0;
+  width: 160px;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.chart-bar-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.chart-bar {
+  height: 24px;
+  border-radius: 0.25rem;
+  transition: width 0.5s ease;
+}
+
+.chart-bar-primary {
+  background: linear-gradient(90deg, var(--color-accent-primary), var(--color-accent-secondary));
+}
+
+.chart-bar-secondary {
+  background-color: var(--color-accent-secondary);
+}
+
+.chart-bar-muted {
+  background-color: var(--color-bg-hover);
+}
+
+.chart-value {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  min-width: 60px;
+}
+
+@media (max-width: 640px) {
+  .chart-label {
+    width: 100px;
+    font-size: 0.75rem;
+  }
+}
+

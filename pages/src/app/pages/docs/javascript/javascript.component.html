@@ -1,0 +1,107 @@
+<div class="py-12">
+  <div class="max-w-4xl mx-auto px-6">
+    <nav class="flex items-center gap-2 text-sm text-text-muted mb-8">
+      <a routerLink="/docs" class="text-text-secondary hover:text-accent-primary">Docs</a>
+      <span>/</span>
+      <span>JavaScript</span>
+    </nav>
+
+    <article class="prose">
+      <span class="inline-block px-2 py-1 bg-yellow-400/15 text-yellow-400 rounded-full text-xs font-medium mb-4">JavaScript</span>
+      <h1 class="text-4xl font-bold mb-4">JavaScript Documentation</h1>
+      <p class="text-lg text-text-secondary mb-12">
+        Node.js bindings for NanoPDF with full TypeScript support and async/await API.
+      </p>
+
+      <section class="mb-12">
+        <h2 class="text-2xl font-semibold mb-6 pb-2 border-b border-bg-tertiary">Installation</h2>
+        <pre class="mb-4"><code><span class="comment"># pnpm (recommended)</span>
+pnpm add nanopdf
+
+<span class="comment"># npm</span>
+npm install nanopdf
+
+<span class="comment"># yarn</span>
+yarn add nanopdf</code></pre>
+        <p class="text-text-secondary mb-4">The package includes prebuilt binaries for:</p>
+        <ul class="list-disc pl-6 text-text-secondary">
+          <li class="py-1">Linux (x64, arm64)</li>
+          <li class="py-1">macOS (x64, arm64)</li>
+          <li class="py-1">Windows (x64)</li>
+        </ul>
+      </section>
+
+      <section class="mb-12">
+        <h2 class="text-2xl font-semibold mb-6 pb-2 border-b border-bg-tertiary">Basic Usage</h2>
+        <pre><code><span class="keyword">import</span> &#123; Document &#125; <span class="keyword">from</span> <span class="string">'nanopdf'</span>;
+
+<span class="comment">// Open a PDF document</span>
+<span class="keyword">const</span> doc = <span class="keyword">await</span> Document.open(<span class="string">'document.pdf'</span>);
+
+<span class="comment">// Document info</span>
+console.log(<span class="string">'Pages:'</span>, doc.pageCount);
+console.log(<span class="string">'Title:'</span>, doc.title);
+console.log(<span class="string">'Author:'</span>, doc.author);
+
+<span class="comment">// Load and render a page</span>
+<span class="keyword">const</span> page = <span class="keyword">await</span> doc.loadPage(<span class="number">0</span>);
+<span class="keyword">const</span> pixmap = <span class="keyword">await</span> page.render(<span class="number">2.0</span>);
+
+<span class="comment">// Save as PNG</span>
+<span class="keyword">await</span> pixmap.savePng(<span class="string">'page-0.png'</span>);
+
+<span class="comment">// Get PNG as Buffer</span>
+<span class="keyword">const</span> pngBuffer = <span class="keyword">await</span> pixmap.toPng();
+
+<span class="comment">// Clean up</span>
+doc.close();</code></pre>
+      </section>
+
+      <section class="mb-12">
+        <h2 class="text-2xl font-semibold mb-6 pb-2 border-b border-bg-tertiary">TypeScript Types</h2>
+        <p class="text-text-secondary mb-4">NanoPDF ships with complete TypeScript definitions:</p>
+        <pre><code><span class="keyword">import</span> &#123;
+  Document,
+  Page,
+  Pixmap,
+  Point,
+  Rect,
+  Matrix,
+  NanoPDFError,
+  ErrorCode
+&#125; <span class="keyword">from</span> <span class="string">'nanopdf'</span>;
+
+<span class="comment">// All types are fully typed</span>
+<span class="keyword">const</span> bounds: Rect = page.bounds;
+<span class="keyword">const</span> width: number = pixmap.width;
+<span class="keyword">const</span> samples: Uint8Array = pixmap.samples;</code></pre>
+      </section>
+
+      <section class="mb-12">
+        <h2 class="text-2xl font-semibold mb-6 pb-2 border-b border-bg-tertiary">Error Handling</h2>
+        <pre><code><span class="keyword">import</span> &#123; Document, NanoPDFError, ErrorCode &#125; <span class="keyword">from</span> <span class="string">'nanopdf'</span>;
+
+<span class="keyword">try</span> &#123;
+  <span class="keyword">const</span> doc = <span class="keyword">await</span> Document.open(<span class="string">'file.pdf'</span>);
+&#125; <span class="keyword">catch</span> (error) &#123;
+  <span class="keyword">if</span> (error <span class="keyword">instanceof</span> NanoPDFError) &#123;
+    <span class="keyword">switch</span> (error.code) &#123;
+      <span class="keyword">case</span> ErrorCode.FileNotFound:
+        console.error(<span class="string">'File not found'</span>);
+        <span class="keyword">break</span>;
+      <span class="keyword">case</span> ErrorCode.PasswordRequired:
+        console.error(<span class="string">'Password required'</span>);
+        <span class="keyword">break</span>;
+      <span class="keyword">case</span> ErrorCode.InvalidPdf:
+        console.error(<span class="string">'Invalid PDF'</span>);
+        <span class="keyword">break</span>;
+      <span class="keyword">default</span>:
+        console.error(<span class="string">'Error:'</span>, error.message);
+    &#125;
+  &#125;
+&#125;</code></pre>
+      </section>
+    </article>
+  </div>
+</div>
+

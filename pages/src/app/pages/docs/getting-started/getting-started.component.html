@@ -1,0 +1,170 @@
+<div class="py-12">
+  <div class="max-w-4xl mx-auto px-6">
+    <nav class="flex items-center gap-2 text-sm text-text-muted mb-8">
+      <a routerLink="/docs" class="text-text-secondary hover:text-accent-primary">Docs</a>
+      <span>/</span>
+      <span>Getting Started</span>
+    </nav>
+
+    <article class="prose">
+      <h1 class="text-4xl font-bold mb-4">Getting Started with NanoPDF</h1>
+      <p class="text-lg text-text-secondary mb-12">
+        NanoPDF is a high-performance PDF library available for Rust, JavaScript, and Go.
+        This guide will help you install and start using NanoPDF in your projects.
+      </p>
+
+      <section class="mb-12">
+        <h2 class="text-2xl font-semibold mb-6 pb-2 border-b border-bg-tertiary">Installation</h2>
+        
+        <h3 class="text-lg font-semibold mt-6 mb-4">Rust</h3>
+        <p class="text-text-secondary mb-4">Add NanoPDF to your <code>Cargo.toml</code>:</p>
+        <pre class="mb-6"><code>[dependencies]
+nanopdf = "0.1"
+
+# Optional features
+nanopdf = &#123; version = "0.1", features = ["parallel", "async"] &#125;</code></pre>
+
+        <h3 class="text-lg font-semibold mt-6 mb-4">JavaScript (Node.js)</h3>
+        <p class="text-text-secondary mb-4">Install via pnpm (recommended), npm, or yarn:</p>
+        <pre class="mb-6"><code># pnpm (recommended)
+pnpm add nanopdf
+
+# npm
+npm install nanopdf
+
+# yarn
+yarn add nanopdf</code></pre>
+
+        <h3 class="text-lg font-semibold mt-6 mb-4">Go</h3>
+        <p class="text-text-secondary mb-4">Install using Go modules:</p>
+        <pre class="mb-6"><code>go get github.com/lexmata/nanopdf/go-nanopdf</code></pre>
+      </section>
+
+      <section class="mb-12">
+        <h2 class="text-2xl font-semibold mb-6 pb-2 border-b border-bg-tertiary">Quick Start</h2>
+        <h3 class="text-lg font-semibold mt-6 mb-4">Opening a PDF Document</h3>
+        
+        <div class="code-example mb-6">
+          <div class="code-header">
+            <span class="px-2 py-1 bg-orange-400/15 text-orange-400 rounded-full text-xs font-medium">Rust</span>
+          </div>
+          <pre><code><span class="keyword">use</span> nanopdf::Document;
+
+<span class="keyword">fn</span> main() -> nanopdf::Result&lt;()&gt; &#123;
+    <span class="keyword">let</span> doc = Document::open(<span class="string">"document.pdf"</span>)?;
+    
+    println!(<span class="string">"Pages: &#123;&#125;"</span>, doc.page_count());
+    println!(<span class="string">"Title: &#123;:?&#125;"</span>, doc.title());
+    
+    Ok(())
+&#125;</code></pre>
+        </div>
+
+        <div class="code-example mb-6">
+          <div class="code-header">
+            <span class="px-2 py-1 bg-yellow-400/15 text-yellow-400 rounded-full text-xs font-medium">JavaScript</span>
+          </div>
+          <pre><code><span class="keyword">import</span> &#123; Document &#125; <span class="keyword">from</span> <span class="string">'nanopdf'</span>;
+
+<span class="keyword">const</span> doc = <span class="keyword">await</span> Document.open(<span class="string">'document.pdf'</span>);
+
+console.log(<span class="string">'Pages:'</span>, doc.pageCount);
+console.log(<span class="string">'Title:'</span>, doc.title);
+
+doc.close();</code></pre>
+        </div>
+
+        <div class="code-example mb-6">
+          <div class="code-header">
+            <span class="px-2 py-1 bg-cyan-400/15 text-cyan-400 rounded-full text-xs font-medium">Go</span>
+          </div>
+          <pre><code><span class="keyword">package</span> main
+
+<span class="keyword">import</span> (
+    <span class="string">"fmt"</span>
+    nanopdf <span class="string">"github.com/lexmata/nanopdf/go-nanopdf"</span>
+)
+
+<span class="keyword">func</span> main() &#123;
+    doc, err := nanopdf.OpenDocument(<span class="string">"document.pdf"</span>)
+    <span class="keyword">if</span> err != <span class="keyword">nil</span> &#123;
+        panic(err)
+    &#125;
+    <span class="keyword">defer</span> doc.Close()
+
+    fmt.Printf(<span class="string">"Pages: %d\n"</span>, doc.PageCount())
+    fmt.Printf(<span class="string">"Title: %s\n"</span>, doc.Title())
+&#125;</code></pre>
+        </div>
+      </section>
+
+      <section class="mb-12">
+        <h2 class="text-2xl font-semibold mb-6 pb-2 border-b border-bg-tertiary">Rendering Pages</h2>
+        <p class="text-text-secondary mb-4">Render PDF pages to images with customizable resolution:</p>
+
+        <div class="code-example mb-6">
+          <div class="code-header">
+            <span class="px-2 py-1 bg-orange-400/15 text-orange-400 rounded-full text-xs font-medium">Rust</span>
+          </div>
+          <pre><code><span class="keyword">use</span> nanopdf::&#123;Document, Pixmap&#125;;
+
+<span class="keyword">let</span> doc = Document::open(<span class="string">"document.pdf"</span>)?;
+<span class="keyword">let</span> page = doc.load_page(<span class="number">0</span>)?;
+
+<span class="comment">// Render at 2x scale (144 DPI)</span>
+<span class="keyword">let</span> pixmap = page.render(<span class="number">2.0</span>)?;
+
+<span class="comment">// Save as PNG</span>
+pixmap.save_png(<span class="string">"page-0.png"</span>)?;</code></pre>
+        </div>
+      </section>
+
+      <section class="mb-12">
+        <h2 class="text-2xl font-semibold mb-6 pb-2 border-b border-bg-tertiary">Optional Features</h2>
+        <p class="text-text-secondary mb-4">NanoPDF supports several optional features that can be enabled in Rust:</p>
+
+        <div class="bg-bg-secondary border border-bg-tertiary rounded-xl overflow-hidden">
+          <div class="flex items-start gap-6 p-4 border-b border-bg-tertiary">
+            <code class="shrink-0 min-w-[100px]">parallel</code>
+            <span class="text-text-secondary text-sm">Enable parallel processing with Rayon for batch operations</span>
+          </div>
+          <div class="flex items-start gap-6 p-4 border-b border-bg-tertiary">
+            <code class="shrink-0 min-w-[100px]">async</code>
+            <span class="text-text-secondary text-sm">Enable async I/O with Tokio for non-blocking operations</span>
+          </div>
+          <div class="flex items-start gap-6 p-4 border-b border-bg-tertiary">
+            <code class="shrink-0 min-w-[100px]">jpeg2000</code>
+            <span class="text-text-secondary text-sm">Enable JPEG2000 image support</span>
+          </div>
+          <div class="flex items-start gap-6 p-4">
+            <code class="shrink-0 min-w-[100px]">jbig2</code>
+            <span class="text-text-secondary text-sm">Enable JBIG2 image support</span>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold mb-6 pb-2 border-b border-bg-tertiary">Next Steps</h2>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <a routerLink="/docs/rust" class="next-link">
+            <span class="px-2 py-1 bg-orange-400/15 text-orange-400 rounded-full text-xs font-medium">Rust</span>
+            <span class="text-text-secondary text-sm">Full Rust documentation →</span>
+          </a>
+          <a routerLink="/docs/javascript" class="next-link">
+            <span class="px-2 py-1 bg-yellow-400/15 text-yellow-400 rounded-full text-xs font-medium">JavaScript</span>
+            <span class="text-text-secondary text-sm">Node.js documentation →</span>
+          </a>
+          <a routerLink="/docs/go" class="next-link">
+            <span class="px-2 py-1 bg-cyan-400/15 text-cyan-400 rounded-full text-xs font-medium">Go</span>
+            <span class="text-text-secondary text-sm">Go documentation →</span>
+          </a>
+          <a routerLink="/api" class="next-link">
+            <span class="px-2 py-1 bg-accent-primary/15 text-accent-primary rounded-full text-xs font-medium">API</span>
+            <span class="text-text-secondary text-sm">API Reference →</span>
+          </a>
+        </div>
+      </section>
+    </article>
+  </div>
+</div>
+

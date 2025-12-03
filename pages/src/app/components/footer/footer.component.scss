@@ -1,0 +1,30 @@
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: var(--color-bg-tertiary);
+  border-radius: 0.5rem;
+  color: var(--color-text-secondary);
+  transition: all 150ms ease;
+
+  &:hover {
+    background-color: var(--color-accent-primary);
+    color: var(--color-bg-primary);
+  }
+}
+
+.footer-link {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  padding: 0.25rem 0;
+  transition: color 150ms ease;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-accent-primary);
+  }
+}
+
