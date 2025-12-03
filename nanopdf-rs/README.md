@@ -2,6 +2,10 @@
 
 A pure Rust PDF library designed as a **drop-in replacement for [MuPDF](https://mupdf.com/)**.
 
+[![Crates.io](https://img.shields.io/crates/v/nanopdf.svg)](https://crates.io/crates/nanopdf)
+[![Documentation](https://docs.rs/nanopdf/badge.svg)](https://docs.rs/nanopdf)
+[![License](https://img.shields.io/crates/l/nanopdf.svg)](LICENSE-MIT)
+
 ## Overview
 
 NanoPDF is a complete reimplementation of the MuPDF library in safe Rust. It provides:
@@ -11,6 +15,31 @@ NanoPDF is a complete reimplementation of the MuPDF library in safe Rust. It pro
 - **Pure Rust** - no C dependencies or FFI bindings to MuPDF
 - **MIT/Apache 2.0 dual license** - more permissive than MuPDF's AGPL
 
+## ⚡ Performance
+
+NanoPDF is designed to be **faster than MuPDF** through modern concurrency features:
+
+| Feature | MuPDF | NanoPDF |
+|---------|-------|---------|
+| Multi-threaded page rendering | ❌ Single-threaded | ✅ Parallel with Rayon |
+| Async file I/O | ❌ Blocking | ✅ Non-blocking with Tokio |
+| Multi-page processing | ❌ Sequential | ✅ Parallel batch operations |
+| Image decoding | ❌ Single-threaded | ✅ Parallel decompression |
+
+Enable performance features:
+
+```toml
+[dependencies]
+nanopdf = { version = "0.1", features = ["parallel", "async"] }
+```
+
+- **`parallel`** - Uses [Rayon](https://github.com/rayon-rs/rayon) for data-parallel operations
+- **`async`** - Uses [Tokio](https://tokio.rs/) for non-blocking I/O
+
+### Benchmark Results
+
+See our [benchmark dashboard](https://lexmata.github.io/nanopdf/dev/bench/) for detailed performance comparisons.
+
 ### Why NanoPDF?
 
 MuPDF is an excellent PDF library, but its AGPL license can be problematic for commercial applications. NanoPDF provides the same API with a permissive license, allowing you to:
@@ -19,6 +48,7 @@ MuPDF is an excellent PDF library, but its AGPL license can be problematic for c
 - Avoid MuPDF's commercial licensing fees
 - Benefit from Rust's memory safety guarantees
 - Deploy to WebAssembly and other Rust-supported targets
+- **Run faster** with built-in parallelization and async I/O
 
 ### Drop-in Replacement
 
