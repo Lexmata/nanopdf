@@ -49,7 +49,7 @@ impl<T> HandleStore<T> {
     pub fn insert(&self, value: T) -> u64 {
         // Safe handle creation
     }
-    
+
     pub fn get(&self, handle: u64) -> Option<Arc<Mutex<T>>> {
         // Safe handle lookup
     }
@@ -100,16 +100,16 @@ use thiserror::Error;
 pub enum Error {
     #[error("generic error: {0}")]
     Generic(String),
-    
+
     #[error("I/O error")]
     System(#[from] std::io::Error),
-    
+
     #[error("format error: {0}")]
     Format(String),
-    
+
     #[error("unexpected end of file")]
     Eof,
-    
+
     #[error("invalid argument: {0}")]
     Argument(String),
 }
