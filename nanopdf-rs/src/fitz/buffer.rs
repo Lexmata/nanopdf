@@ -108,7 +108,7 @@ impl Buffer {
         if self.mutable.is_none() {
             return &self.data;
         }
-        
+
         if let Some(ref mutable) = self.mutable {
             if let Ok(guard) = mutable.lock() {
                 if guard.is_empty() {
@@ -116,7 +116,7 @@ impl Buffer {
                 }
             }
         }
-        
+
         // For simplicity, return the base data
         // Full consolidation would require interior mutability
         &self.data
@@ -588,7 +588,7 @@ pub mod parallel {
             .par_chunks(chunk_size)
             .map(f)
             .collect();
-        
+
         let total_len: usize = chunks.iter().map(|c| c.len()).sum();
         let mut result = BytesMut::with_capacity(total_len);
         for chunk in chunks {
@@ -613,7 +613,7 @@ pub mod async_ops {
     ) -> Result<Buffer> {
         let mut data = Vec::with_capacity(max_size.min(8192));
         let mut chunk = [0u8; 8192];
-        
+
         loop {
             let n = reader.read(&mut chunk).await.map_err(Error::System)?;
             if n == 0 {
@@ -624,7 +624,7 @@ pub mod async_ops {
             }
             data.extend_from_slice(&chunk[..n]);
         }
-        
+
         Ok(Buffer::from_data(data))
     }
 

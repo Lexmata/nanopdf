@@ -51,7 +51,7 @@ where
         .par_chunks(chunk_size)
         .map(f)
         .collect();
-    
+
     let total_len: usize = chunks.iter().map(|c| c.len()).sum();
     let mut result = Vec::with_capacity(total_len);
     for chunk in chunks {
@@ -181,7 +181,7 @@ mod tests {
             Buffer::from_slice(&[4, 5]),
             Buffer::from_slice(&[6, 7, 8, 9]),
         ];
-        
+
         let lengths: Vec<usize> = process_buffers(&buffers, |b| b.len());
         assert_eq!(lengths, vec![3, 2, 4]);
     }
@@ -189,11 +189,11 @@ mod tests {
     #[test]
     fn test_parallel_transform() {
         let buffer = Buffer::from_slice(&[1, 2, 3, 4, 5, 6, 7, 8]);
-        
+
         let result = parallel_transform(&buffer, 2, |chunk| {
             chunk.iter().map(|b| b * 2).collect()
         });
-        
+
         assert_eq!(result.to_vec(), vec![2, 4, 6, 8, 10, 12, 14, 16]);
     }
 

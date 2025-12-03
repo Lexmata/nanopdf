@@ -75,9 +75,9 @@ describe('Rect', () => {
 
   it('should check contains', () => {
     const r = new Rect(0, 0, 100, 100);
-    expect(r.contains(50, 50)).toBe(true);
-    expect(r.contains(150, 50)).toBe(false);
-    expect(r.contains(new Point(50, 50))).toBe(true);
+    expect(r.containsPoint(50, 50)).toBe(true);
+    expect(r.containsPoint(150, 50)).toBe(false);
+    expect(r.containsPoint(new Point(50, 50))).toBe(true);
   });
 
   it('should union rects', () => {

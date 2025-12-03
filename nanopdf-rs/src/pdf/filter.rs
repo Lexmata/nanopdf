@@ -157,14 +157,14 @@ pub fn decode_flate(data: &[u8], params: Option<&FlateDecodeParams>) -> Result<V
     let mut decompressed = Vec::new();
     decoder.read_to_end(&mut decompressed)
         .map_err(|e| Error::Generic(format!("FlateDecode failed: {}", e)))?;
-    
+
     // Apply predictor if specified
     if let Some(params) = params {
         if params.predictor > 1 {
             decompressed = apply_predictor_decode(&decompressed, params)?;
         }
     }
-    
+
     Ok(decompressed)
 }
 
@@ -176,12 +176,12 @@ pub fn encode_flate(data: &[u8], level: u32) -> Result<Vec<u8>> {
         4..=6 => Compression::default(),
         _ => Compression::best(),
     };
-    
+
     let mut encoder = ZlibEncoder::new(data, compression);
     let mut compressed = Vec::new();
     encoder.read_to_end(&mut compressed)
         .map_err(|e| Error::Generic(format!("FlateDecode encode failed: {}", e)))?;
-    
+
     Ok(compressed)
 }
 
@@ -192,15 +192,15 @@ pub fn encode_flate(data: &[u8], level: u32) -> Result<Vec<u8>> {
 /// Decode LZW compressed data
 pub fn decode_lzw(data: &[u8], params: Option<&LZWDecodeParams>) -> Result<Vec<u8>> {
     let early_change = params.map(|p| p.early_change != 0).unwrap_or(true);
-    
+
     let mut decoder = weezl::decode::Decoder::with_tiff_size_switch(
         weezl::BitOrder::Msb,
         if early_change { 8 } else { 9 },
     );
-    
+
     let decompressed = decoder.decode(data)
         .map_err(|e| Error::Generic(format!("LZWDecode failed: {:?}", e)))?;
-    
+
     // Apply predictor if specified
     let mut result = decompressed;
     if let Some(params) = params {
@@ -214,7 +214,7 @@ pub fn decode_lzw(data: &[u8], params: Option<&LZWDecodeParams>) -> Result<Vec<u
             result = apply_predictor_decode(&result, &flate_params)?;
         }
     }
-    
+
     Ok(result)
 }
 
@@ -234,18 +234,18 @@ pub fn decode_ascii85(data: &[u8]) -> Result<Vec<u8>> {
     let mut result = Vec::with_capacity(data.len() * 4 / 5);
     let mut group: u32 = 0;
     let mut count = 0;
-    
+
     for &byte in data {
         // Skip whitespace
         if byte.is_ascii_whitespace() {
             continue;
         }
-        
+
         // End of data marker
         if byte == b'~' {
             break;
         }
-        
+
         // Special 'z' character represents 4 zero bytes
         if byte == b'z' {
             if count != 0 {
@@ -254,15 +254,15 @@ pub fn decode_ascii85(data: &[u8]) -> Result<Vec<u8>> {
             result.extend_from_slice(&[0, 0, 0, 0]);
             continue;
         }
-        
+
         // Regular ASCII85 character
         if !(b'!'..=b'u').contains(&byte) {
             return Err(Error::Generic(format!("Invalid ASCII85 character: {}", byte)));
         }
-        
+
         group = group * 85 + (byte - b'!') as u32;
         count += 1;
-        
+
         if count == 5 {
             result.push((group >> 24) as u8);
             result.push((group >> 16) as u8);
@@ -272,60 +272,60 @@ pub fn decode_ascii85(data: &[u8]) -> Result<Vec<u8>> {
             count = 0;
         }
     }
-    
+
     // Handle remaining bytes
     if count > 0 {
         // Pad with 'u' characters
         for _ in count..5 {
             group = group * 85 + 84;
         }
-        
+
         for i in 0..(count - 1) {
             result.push((group >> (24 - i * 8)) as u8);
         }
     }
-    
+
     Ok(result)
 }
 
 /// Encode data with ASCII85
 pub fn encode_ascii85(data: &[u8]) -> Result<Vec<u8>> {
     let mut result = Vec::with_capacity(data.len() * 5 / 4 + 10);
-    
+
     let mut i = 0;
     while i < data.len() {
         let chunk_len = (data.len() - i).min(4);
         let chunk = &data[i..i + chunk_len];
-        
+
         let mut group: u32 = 0;
         for (j, &byte) in chunk.iter().enumerate() {
             group |= (byte as u32) << (24 - j * 8);
         }
-        
+
         // Special case: all zeros (only for complete 4-byte chunks)
         if group == 0 && chunk_len == 4 {
             result.push(b'z');
             i += 4;
             continue;
         }
-        
+
         let mut encoded = [0u8; 5];
         let mut temp = group;
         for j in (0..5).rev() {
             encoded[j] = (temp % 85) as u8 + b'!';
             temp /= 85;
         }
-        
+
         // Output all 5 bytes for complete groups, or chunk_len + 1 for partial
         let output_len = if chunk_len == 4 { 5 } else { chunk_len + 1 };
         result.extend_from_slice(&encoded[..output_len]);
-        
+
         i += chunk_len;
     }
-    
+
     // Add end marker
     result.extend_from_slice(b"~>");
-    
+
     Ok(result)
 }
 
@@ -337,25 +337,25 @@ pub fn encode_ascii85(data: &[u8]) -> Result<Vec<u8>> {
 pub fn decode_ascii_hex(data: &[u8]) -> Result<Vec<u8>> {
     let mut result = Vec::with_capacity(data.len() / 2);
     let mut high_nibble: Option<u8> = None;
-    
+
     for &byte in data {
         // Skip whitespace
         if byte.is_ascii_whitespace() {
             continue;
         }
-        
+
         // End of data marker
         if byte == b'>' {
             break;
         }
-        
+
         let nibble = match byte {
             b'0'..=b'9' => byte - b'0',
             b'A'..=b'F' => byte - b'A' + 10,
             b'a'..=b'f' => byte - b'a' + 10,
             _ => return Err(Error::Generic(format!("Invalid hex character: {}", byte))),
         };
-        
+
         match high_nibble {
             None => high_nibble = Some(nibble),
             Some(high) => {
@@ -364,29 +364,29 @@ pub fn decode_ascii_hex(data: &[u8]) -> Result<Vec<u8>> {
             }
         }
     }
-    
+
     // Handle odd number of hex digits
     if let Some(high) = high_nibble {
         result.push(high << 4);
     }
-    
+
     Ok(result)
 }
 
 /// Encode data with ASCIIHex
 pub fn encode_ascii_hex(data: &[u8]) -> Result<Vec<u8>> {
     let mut result = Vec::with_capacity(data.len() * 2 + 1);
-    
+
     for &byte in data {
         let high = (byte >> 4) & 0x0F;
         let low = byte & 0x0F;
-        
+
         result.push(if high < 10 { b'0' + high } else { b'A' + high - 10 });
         result.push(if low < 10 { b'0' + low } else { b'A' + low - 10 });
     }
-    
+
     result.push(b'>');
-    
+
     Ok(result)
 }
 
@@ -398,11 +398,11 @@ pub fn encode_ascii_hex(data: &[u8]) -> Result<Vec<u8>> {
 pub fn decode_run_length(data: &[u8]) -> Result<Vec<u8>> {
     let mut result = Vec::new();
     let mut i = 0;
-    
+
     while i < data.len() {
         let length_byte = data[i];
         i += 1;
-        
+
         if length_byte == 128 {
             // End of data
             break;
@@ -425,7 +425,7 @@ pub fn decode_run_length(data: &[u8]) -> Result<Vec<u8>> {
             result.resize(result.len() + count, byte);
         }
     }
-    
+
     Ok(result)
 }
 
@@ -433,7 +433,7 @@ pub fn decode_run_length(data: &[u8]) -> Result<Vec<u8>> {
 pub fn encode_run_length(data: &[u8]) -> Result<Vec<u8>> {
     let mut result = Vec::new();
     let mut i = 0;
-    
+
     while i < data.len() {
         // Look for a run of identical bytes
         let start = i;
@@ -442,7 +442,7 @@ pub fn encode_run_length(data: &[u8]) -> Result<Vec<u8>> {
             i += 1;
         }
         let run_length = i - start;
-        
+
         if run_length >= 2 {
             // Encode as a run
             result.push((257 - run_length) as u8);
@@ -451,7 +451,7 @@ pub fn encode_run_length(data: &[u8]) -> Result<Vec<u8>> {
             // Look for literal bytes
             i = start;
             let literal_start = i;
-            
+
             while i < data.len() {
                 // Check for a run of 3+ identical bytes
                 if i + 2 < data.len() && data[i] == data[i + 1] && data[i] == data[i + 2] {
@@ -462,7 +462,7 @@ pub fn encode_run_length(data: &[u8]) -> Result<Vec<u8>> {
                     break;
                 }
             }
-            
+
             let literal_length = i - literal_start;
             if literal_length > 0 {
                 result.push((literal_length - 1) as u8);
@@ -470,10 +470,10 @@ pub fn encode_run_length(data: &[u8]) -> Result<Vec<u8>> {
             }
         }
     }
-    
+
     // End of data marker
     result.push(128);
-    
+
     Ok(result)
 }
 
@@ -485,20 +485,20 @@ pub fn encode_run_length(data: &[u8]) -> Result<Vec<u8>> {
 pub fn decode_ccitt_fax(data: &[u8], params: &CCITTFaxDecodeParams) -> Result<Vec<u8>> {
     // CCITT fax decoding is complex - for now provide a stub
     // Full implementation would require a dedicated CCITT decoder
-    
+
     let width = params.columns as usize;
     let height = if params.rows > 0 { params.rows as usize } else { 0 };
-    
+
     // For Group 4 (k > 0), we need to implement the 2D coding scheme
     // For Group 3 1D (k = 0), we need to implement the 1D coding scheme
     // For Group 3 2D (k < 0), we need to implement mixed 1D/2D
-    
+
     // Basic implementation using run-length decoding pattern
     let bytes_per_row = (width + 7) / 8;
     let estimated_rows = if height > 0 { height } else { data.len() * 8 / width.max(1) };
-    
+
     let mut result = Vec::with_capacity(bytes_per_row * estimated_rows);
-    
+
     // Simplified: treat as raw bitmap if no compression recognized
     // This is a fallback - real implementation needs full CCITT codec
     if data.len() == bytes_per_row * estimated_rows {
@@ -507,14 +507,14 @@ pub fn decode_ccitt_fax(data: &[u8], params: &CCITTFaxDecodeParams) -> Result<Ve
         // Attempt basic decompression
         result = decode_ccitt_g4(data, width, height, params)?;
     }
-    
+
     // Apply black_is_1 transformation if needed
     if !params.black_is_1 {
         for byte in &mut result {
             *byte = !*byte;
         }
     }
-    
+
     Ok(result)
 }
 
@@ -522,17 +522,17 @@ pub fn decode_ccitt_fax(data: &[u8], params: &CCITTFaxDecodeParams) -> Result<Ve
 fn decode_ccitt_g4(data: &[u8], width: usize, height: usize, _params: &CCITTFaxDecodeParams) -> Result<Vec<u8>> {
     // Group 4 uses 2D coding exclusively
     // This is a simplified implementation
-    
+
     let bytes_per_row = (width + 7) / 8;
     let total_rows = if height > 0 { height } else { 1000 }; // Max rows as fallback
-    
+
     let mut result = Vec::with_capacity(bytes_per_row * total_rows);
     let mut reference_line = vec![0u8; bytes_per_row];
     let mut current_line = vec![0u8; bytes_per_row];
-    
+
     let mut bit_reader = BitReader::new(data);
     let mut row_count = 0;
-    
+
     while row_count < total_rows {
         // Try to decode a row
         match decode_g4_row(&mut bit_reader, &reference_line, &mut current_line, width) {
@@ -545,7 +545,7 @@ fn decode_ccitt_g4(data: &[u8], width: usize, height: usize, _params: &CCITTFaxD
             Err(_) => break, // End of data or error
         }
     }
-    
+
     Ok(result)
 }
 
@@ -564,22 +564,22 @@ impl<'a> BitReader<'a> {
             bit_pos: 0,
         }
     }
-    
+
     fn read_bit(&mut self) -> Option<bool> {
         if self.byte_pos >= self.data.len() {
             return None;
         }
-        
+
         let bit = (self.data[self.byte_pos] >> (7 - self.bit_pos)) & 1;
         self.bit_pos += 1;
         if self.bit_pos >= 8 {
             self.bit_pos = 0;
             self.byte_pos += 1;
         }
-        
+
         Some(bit != 0)
     }
-    
+
     fn read_bits(&mut self, count: usize) -> Option<u32> {
         let mut value = 0u32;
         for _ in 0..count {
@@ -610,15 +610,15 @@ fn decode_g4_row(
 pub fn decode_dct(data: &[u8], _params: Option<&DCTDecodeParams>) -> Result<Vec<u8>> {
     use image::io::Reader as ImageReader;
     use std::io::Cursor;
-    
+
     let reader = ImageReader::with_format(
         Cursor::new(data),
         image::ImageFormat::Jpeg,
     );
-    
+
     let img = reader.decode()
         .map_err(|e| Error::Generic(format!("DCTDecode failed: {}", e)))?;
-    
+
     Ok(img.into_bytes())
 }
 
@@ -626,17 +626,17 @@ pub fn decode_dct(data: &[u8], _params: Option<&DCTDecodeParams>) -> Result<Vec<
 pub fn encode_dct(data: &[u8], width: u32, height: u32, quality: u8) -> Result<Vec<u8>> {
     use image::{ImageBuffer, Rgb};
     use std::io::Cursor;
-    
+
     // Assume RGB data
     let img: ImageBuffer<Rgb<u8>, _> = ImageBuffer::from_raw(width, height, data.to_vec())
         .ok_or_else(|| Error::Generic("Invalid image dimensions".into()))?;
-    
+
     let mut output = Cursor::new(Vec::new());
     img.write_to(&mut output, image::ImageFormat::Jpeg)
         .map_err(|e| Error::Generic(format!("DCTEncode failed: {}", e)))?;
-    
+
     let _ = quality; // TODO: Use quality parameter
-    
+
     Ok(output.into_inner())
 }
 
@@ -648,22 +648,22 @@ pub fn encode_dct(data: &[u8], width: u32, height: u32, quality: u8) -> Result<V
 #[cfg(feature = "jpeg2000")]
 pub fn decode_jpx(data: &[u8]) -> Result<Vec<u8>> {
     use jpeg2k::Image;
-    
+
     let image = Image::from_bytes(data)
         .map_err(|e| Error::Generic(format!("JPXDecode failed: {:?}", e)))?;
-    
+
     // Get the decoded image data
     // The jpeg2k crate provides access to image data through its API
     let mut result = Vec::new();
-    
+
     // Get dimensions
     let width = image.width() as usize;
     let height = image.height() as usize;
     let num_components = image.components().len();
-    
+
     // Reserve space for the output
     result.reserve(width * height * num_components);
-    
+
     // Extract data component by component
     // JPEG2000 stores components separately, we need to interleave them
     for y in 0..height {
@@ -678,7 +678,7 @@ pub fn decode_jpx(data: &[u8]) -> Result<Vec<u8>> {
             }
         }
     }
-    
+
     Ok(result)
 }
 
@@ -696,13 +696,13 @@ pub fn decode_jbig2(data: &[u8], _params: Option<&JBIG2DecodeParams>) -> Result<
     // JBIG2 is a complex format for bi-level (black & white) images
     // Full implementation would require a dedicated JBIG2 decoder
     // For now, return the data as-is or error
-    
+
     #[cfg(feature = "jbig2")]
     {
         // Would use jbig2dec or similar library
         Err(Error::Generic("JBIG2 decoder not yet implemented".into()))
     }
-    
+
     #[cfg(not(feature = "jbig2"))]
     {
         let _ = data;
@@ -720,11 +720,11 @@ fn apply_predictor_decode(data: &[u8], params: &FlateDecodeParams) -> Result<Vec
     let colors = params.colors.max(1) as usize;
     let bits = params.bits_per_component.max(8) as usize;
     let columns = params.columns.max(1) as usize;
-    
+
     // Calculate bytes per pixel and bytes per row
     let bytes_per_pixel = (colors * bits + 7) / 8;
     let bytes_per_row = (colors * bits * columns + 7) / 8;
-    
+
     match predictor {
         1 => Ok(data.to_vec()), // No predictor
         2 => apply_tiff_predictor_decode(data, bytes_per_row, bytes_per_pixel),
@@ -736,10 +736,10 @@ fn apply_predictor_decode(data: &[u8], params: &FlateDecodeParams) -> Result<Vec
 /// Apply TIFF predictor (horizontal differencing)
 fn apply_tiff_predictor_decode(data: &[u8], bytes_per_row: usize, bytes_per_pixel: usize) -> Result<Vec<u8>> {
     let mut result = Vec::with_capacity(data.len());
-    
+
     for row in data.chunks(bytes_per_row) {
         let mut prev = vec![0u8; bytes_per_pixel];
-        
+
         for pixel in row.chunks(bytes_per_pixel) {
             for (i, &byte) in pixel.iter().enumerate() {
                 let decoded = byte.wrapping_add(prev[i]);
@@ -748,7 +748,7 @@ fn apply_tiff_predictor_decode(data: &[u8], bytes_per_row: usize, bytes_per_pixe
             }
         }
     }
-    
+
     Ok(result)
 }
 
@@ -758,15 +758,15 @@ fn apply_png_predictor_decode(data: &[u8], bytes_per_row: usize, bytes_per_pixel
     let row_size = bytes_per_row + 1;
     let mut result = Vec::with_capacity(data.len());
     let mut prev_row = vec![0u8; bytes_per_row];
-    
+
     for row_data in data.chunks(row_size) {
         if row_data.is_empty() {
             continue;
         }
-        
+
         let filter_type = row_data[0];
         let row = &row_data[1..];
-        
+
         if row.len() < bytes_per_row {
             // Incomplete row, pad with zeros
             let mut padded = row.to_vec();
@@ -775,12 +775,12 @@ fn apply_png_predictor_decode(data: &[u8], bytes_per_row: usize, bytes_per_pixel
         } else {
             decode_png_filter(filter_type, &row[..bytes_per_row], &prev_row, bytes_per_pixel, &mut result)?;
         }
-        
+
         // Update previous row
         let start = result.len().saturating_sub(bytes_per_row);
         prev_row.copy_from_slice(&result[start..]);
     }
-    
+
     Ok(result)
 }
 
@@ -850,7 +850,7 @@ fn decode_png_filter(
             return Err(Error::Generic(format!("Unknown PNG filter type: {}", filter_type)));
         }
     }
-    
+
     Ok(())
 }
 
@@ -859,12 +859,12 @@ fn paeth_predictor(a: u8, b: u8, c: u8) -> u8 {
     let a = a as i32;
     let b = b as i32;
     let c = c as i32;
-    
+
     let p = a + b - c;
     let pa = (p - a).abs();
     let pb = (p - b).abs();
     let pc = (p - c).abs();
-    
+
     if pa <= pb && pa <= pc {
         a as u8
     } else if pb <= pc {
@@ -888,11 +888,11 @@ impl FilterChain {
     pub fn new() -> Self {
         Self { filters: Vec::new() }
     }
-    
+
     pub fn add(&mut self, filter: FilterType) {
         self.filters.push(filter);
     }
-    
+
     /// Decode data through the filter chain (in order)
     pub fn decode(&self, mut data: Vec<u8>) -> Result<Vec<u8>> {
         for filter in &self.filters {
@@ -911,7 +911,7 @@ impl FilterChain {
         }
         Ok(data)
     }
-    
+
     /// Encode data through the filter chain (in reverse order)
     pub fn encode(&self, mut data: Vec<u8>) -> Result<Vec<u8>> {
         for filter in self.filters.iter().rev() {
@@ -997,14 +997,14 @@ mod tests {
     #[test]
     fn test_filter_chain() {
         let original = b"Test data for filter chain";
-        
+
         let mut chain = FilterChain::new();
         chain.add(FilterType::FlateDecode);
         chain.add(FilterType::ASCII85Decode);
-        
+
         let encoded = chain.encode(original.to_vec()).unwrap();
         let decoded = chain.decode(encoded).unwrap();
-        
+
         assert_eq!(&decoded, original);
     }
 

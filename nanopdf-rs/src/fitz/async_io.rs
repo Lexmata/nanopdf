@@ -36,7 +36,7 @@ pub async fn read_file_limited<P: AsRef<Path>>(path: P, max_size: usize) -> Resu
     let mut reader = BufReader::new(file);
     let mut data = Vec::with_capacity(max_size.min(8192));
     let mut chunk = [0u8; 8192];
-    
+
     loop {
         let n = reader.read(&mut chunk).await.map_err(Error::System)?;
         if n == 0 {
@@ -47,7 +47,7 @@ pub async fn read_file_limited<P: AsRef<Path>>(path: P, max_size: usize) -> Resu
         }
         data.extend_from_slice(&chunk[..n]);
     }
-    
+
     Ok(Buffer::from_data(data))
 }
 
@@ -107,7 +107,7 @@ pub async fn read_files_concurrent<P: AsRef<Path> + Send + Sync>(paths: &[P]) ->
             async move { read_file(&path).await }
         })
         .collect();
-    
+
     futures::future::join_all(futures).await
 }
 
@@ -119,7 +119,7 @@ pub async fn write_files_concurrent<P: AsRef<Path> + Send + Sync>(
     if paths.len() != buffers.len() {
         return vec![Err(Error::generic("Mismatched paths and buffers count"))];
     }
-    
+
     let futures: Vec<_> = paths
         .iter()
         .zip(buffers.iter())
@@ -134,7 +134,7 @@ pub async fn write_files_concurrent<P: AsRef<Path> + Send + Sync>(
             }
         })
         .collect();
-    
+
     futures::future::join_all(futures).await
 }
 
@@ -236,7 +236,7 @@ where
     T: Send,
 {
     use futures::stream::{self, StreamExt};
-    
+
     stream::iter(futures)
         .buffer_unordered(limit)
         .collect()
@@ -252,13 +252,13 @@ mod tests {
     async fn test_async_buffer() {
         let mut buf = AsyncBuffer::new();
         assert!(buf.is_empty());
-        
+
         buf.append(b"Hello");
         assert_eq!(buf.len(), 5);
-        
+
         buf.append(b" World");
         assert_eq!(buf.len(), 11);
-        
+
         let buffer = buf.into_buffer();
         assert_eq!(buffer.as_slice(), b"Hello World");
     }
@@ -267,10 +267,10 @@ mod tests {
     async fn test_read_write_file() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("test.txt");
-        
+
         let buffer = Buffer::from_slice(b"Hello, World!");
         write_file(&path, &buffer).await.unwrap();
-        
+
         let read_buffer = read_file(&path).await.unwrap();
         assert_eq!(read_buffer.as_slice(), b"Hello, World!");
     }
@@ -279,11 +279,11 @@ mod tests {
     async fn test_file_exists() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("test.txt");
-        
+
         assert!(!file_exists(&path).await);
-        
+
         write_file(&path, &Buffer::from_slice(b"test")).await.unwrap();
-        
+
         assert!(file_exists(&path).await);
     }
 
@@ -291,10 +291,10 @@ mod tests {
     async fn test_file_size() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("test.txt");
-        
+
         let data = b"Hello, World!";
         write_file(&path, &Buffer::from_slice(data)).await.unwrap();
-        
+
         let size = file_size(&path).await.unwrap();
         assert_eq!(size, data.len() as u64);
     }
@@ -304,13 +304,13 @@ mod tests {
         let dir = tempdir().unwrap();
         let src = dir.path().join("src.txt");
         let dst = dir.path().join("dst.txt");
-        
+
         let data = b"Copy me!";
         write_file(&src, &Buffer::from_slice(data)).await.unwrap();
-        
+
         let copied = copy_file(&src, &dst).await.unwrap();
         assert_eq!(copied, data.len() as u64);
-        
+
         let read_buffer = read_file(&dst).await.unwrap();
         assert_eq!(read_buffer.as_slice(), data);
     }
@@ -320,13 +320,13 @@ mod tests {
         async fn task_1() -> i32 { 1 }
         async fn task_2() -> i32 { 2 }
         async fn task_3() -> i32 { 3 }
-        
+
         let futures: Vec<std::pin::Pin<Box<dyn std::future::Future<Output = i32> + Send>>> = vec![
             Box::pin(task_1()),
             Box::pin(task_2()),
             Box::pin(task_3()),
         ];
-        
+
         let results = concurrent(futures).await;
         assert_eq!(results, vec![1, 2, 3]);
     }
@@ -337,7 +337,7 @@ mod tests {
             std::time::Duration::from_secs(1),
             async { Ok::<_, Error>(42) },
         ).await;
-        
+
         assert_eq!(result.unwrap(), 42);
     }
 }

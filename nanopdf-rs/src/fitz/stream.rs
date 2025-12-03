@@ -342,7 +342,7 @@ impl Stream {
             2 => SeekFrom::End(pos),
             _ => return Err(Error::generic("Invalid seek whence")),
         };
-        
+
         // Clear buffer and seek
         self.rp = 0;
         self.wp = 0;
