@@ -115,11 +115,11 @@ else
     # Commit
     COMMIT_MSG="deploy: update GitHub Pages $(date '+%Y-%m-%d %H:%M:%S')"
     git commit -m "$COMMIT_MSG"
-    
+
     # Step 6: Push to remote
     echo -e "\n${GREEN}[6/6] Pushing to remote...${NC}"
     git push origin $GH_PAGES_BRANCH --force
-    
+
     echo -e "\n${GREEN}✓ Deployment successful!${NC}"
 fi
 
