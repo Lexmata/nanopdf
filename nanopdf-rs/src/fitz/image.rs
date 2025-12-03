@@ -2,6 +2,7 @@
 use crate::fitz::colorspace::Colorspace;
 use crate::fitz::pixmap::Pixmap;
 
+#[derive(Clone)]
 pub struct Image { width: i32, height: i32, pixmap: Option<Pixmap> }
 
 impl Image {

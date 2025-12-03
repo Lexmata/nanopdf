@@ -232,6 +232,7 @@ impl std::fmt::Debug for TextSpan {
 }
 
 /// Text object - collection of text spans
+#[derive(Clone)]
 pub struct Text {
     /// Text spans
     spans: Vec<TextSpan>,
@@ -387,10 +388,10 @@ impl Text {
         wmode: bool,
     ) -> Matrix {
         let mut result_trm = trm;
-        
+
         for _ch in s.chars() {
             let advance = 10.0; // Simplified: should use font metrics
-            
+
             if wmode {
                 result_trm.f += advance;
             } else {

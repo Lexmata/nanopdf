@@ -17,6 +17,7 @@ pub mod path;
 pub mod text;
 pub mod image;
 pub mod device;
+pub mod display_list;
 pub mod document;
 pub mod page;
 
