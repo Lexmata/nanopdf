@@ -461,4 +461,263 @@ mod tests {
         buf.clear();
         assert_eq!(buf.len(), 0);
     }
+
+    // ============================================================================
+    // Additional tests for better coverage
+    // ============================================================================
+
+    #[test]
+    fn test_buffer_from_copied_data() {
+        let data = [1u8, 2, 3, 4, 5];
+        let handle = fz_new_buffer_from_copied_data(0, data.as_ptr(), data.len());
+        assert_ne!(handle, 0);
+        assert_eq!(fz_buffer_len(0, handle), 5);
+        fz_drop_buffer(0, handle);
+    }
+
+    #[test]
+    fn test_buffer_from_copied_data_null() {
+        let handle = fz_new_buffer_from_copied_data(0, std::ptr::null(), 0);
+        assert_ne!(handle, 0);
+        assert_eq!(fz_buffer_len(0, handle), 0);
+        fz_drop_buffer(0, handle);
+    }
+
+    #[test]
+    fn test_buffer_from_copied_data_null_with_size() {
+        // Even with non-zero size, null ptr should return empty buffer
+        let handle = fz_new_buffer_from_copied_data(0, std::ptr::null(), 100);
+        assert_ne!(handle, 0);
+        assert_eq!(fz_buffer_len(0, handle), 0);
+        fz_drop_buffer(0, handle);
+    }
+
+    #[test]
+    fn test_buffer_storage_null_datap() {
+        let handle = fz_new_buffer(0, 0);
+        fz_append_byte(0, handle, b'A' as i32);
+
+        // Pass null pointer for datap
+        let size = fz_buffer_storage(0, handle, std::ptr::null_mut());
+        assert_eq!(size, 1);
+
+        fz_drop_buffer(0, handle);
+    }
+
+    #[test]
+    fn test_buffer_storage_invalid_handle() {
+        let mut datap: *mut u8 = std::ptr::null_mut();
+        let size = fz_buffer_storage(0, 99999, &mut datap);
+        assert_eq!(size, 0);
+        assert!(datap.is_null());
+    }
+
+    #[test]
+    fn test_fz_string_from_buffer() {
+        let handle = fz_new_buffer(0, 0);
+        fz_append_byte(0, handle, b'H' as i32);
+
+        let ptr = fz_string_from_buffer(0, handle);
+        assert!(!ptr.is_null());
+
+        fz_drop_buffer(0, handle);
+    }
+
+    #[test]
+    fn test_buffer_resize_invalid_handle() {
+        // Should not panic
+        fz_resize_buffer(0, 99999, 100);
+    }
+
+    #[test]
+    fn test_buffer_grow_invalid_handle() {
+        // Should not panic
+        fz_grow_buffer(0, 99999);
+    }
+
+    #[test]
+    fn test_buffer_trim_invalid_handle() {
+        // Should not panic
+        fz_trim_buffer(0, 99999);
+    }
+
+    #[test]
+    fn test_buffer_clear_invalid_handle() {
+        // Should not panic
+        fz_clear_buffer(0, 99999);
+    }
+
+    #[test]
+    fn test_fz_append_data() {
+        let handle = fz_new_buffer(0, 0);
+        let data = [1u8, 2, 3, 4, 5];
+        fz_append_data(0, handle, data.as_ptr() as *const c_void, data.len());
+        assert_eq!(fz_buffer_len(0, handle), 5);
+        fz_drop_buffer(0, handle);
+    }
+
+    #[test]
+    fn test_fz_append_data_null() {
+        let handle = fz_new_buffer(0, 0);
+        fz_append_data(0, handle, std::ptr::null(), 0);
+        assert_eq!(fz_buffer_len(0, handle), 0);
+        fz_drop_buffer(0, handle);
+    }
+
+    #[test]
+    fn test_fz_append_data_invalid_handle() {
+        let data = [1u8, 2, 3];
+        // Should not panic
+        fz_append_data(0, 99999, data.as_ptr() as *const c_void, data.len());
+    }
+
+    #[test]
+    fn test_fz_append_string() {
+        let handle = fz_new_buffer(0, 0);
+        let s = std::ffi::CString::new("Hello").unwrap();
+        fz_append_string(0, handle, s.as_ptr());
+        assert_eq!(fz_buffer_len(0, handle), 5);
+        fz_drop_buffer(0, handle);
+    }
+
+    #[test]
+    fn test_fz_append_string_null() {
+        let handle = fz_new_buffer(0, 0);
+        fz_append_string(0, handle, std::ptr::null());
+        assert_eq!(fz_buffer_len(0, handle), 0);
+        fz_drop_buffer(0, handle);
+    }
+
+    #[test]
+    fn test_fz_append_string_invalid_handle() {
+        let s = std::ffi::CString::new("Hello").unwrap();
+        // Should not panic
+        fz_append_string(0, 99999, s.as_ptr());
+    }
+
+    #[test]
+    fn test_fz_append_byte_invalid_handle() {
+        // Should not panic
+        fz_append_byte(0, 99999, b'X' as i32);
+    }
+
+    #[test]
+    fn test_fz_terminate_buffer() {
+        let handle = fz_new_buffer(0, 0);
+        fz_append_byte(0, handle, b'H' as i32);
+        fz_terminate_buffer(0, handle);
+        // After termination, buffer should have a null byte
+        assert_eq!(fz_buffer_len(0, handle), 2);
+        fz_drop_buffer(0, handle);
+    }
+
+    #[test]
+    fn test_fz_terminate_buffer_invalid_handle() {
+        // Should not panic
+        fz_terminate_buffer(0, 99999);
+    }
+
+    #[test]
+    fn test_fz_terminate_buffer_already_terminated() {
+        let handle = fz_new_buffer(0, 0);
+        fz_append_byte(0, handle, b'H' as i32);
+        fz_append_byte(0, handle, 0); // Already has null
+        fz_terminate_buffer(0, handle);
+        // Should not add another null
+        assert_eq!(fz_buffer_len(0, handle), 2);
+        fz_drop_buffer(0, handle);
+    }
+
+    #[test]
+    fn test_fz_md5_buffer() {
+        let handle = fz_new_buffer(0, 0);
+        fz_append_byte(0, handle, b'A' as i32);
+        fz_append_byte(0, handle, b'B' as i32);
+        fz_append_byte(0, handle, b'C' as i32);
+
+        let mut digest = [0u8; 16];
+        fz_md5_buffer(0, handle, &mut digest);
+
+        // MD5("ABC") is known
+        assert_ne!(digest, [0u8; 16]);
+        fz_drop_buffer(0, handle);
+    }
+
+    #[test]
+    fn test_fz_md5_buffer_null_digest() {
+        let handle = fz_new_buffer(0, 0);
+        fz_append_byte(0, handle, b'A' as i32);
+        // Should not panic
+        fz_md5_buffer(0, handle, std::ptr::null_mut());
+        fz_drop_buffer(0, handle);
+    }
+
+    #[test]
+    fn test_fz_md5_buffer_invalid_handle() {
+        let mut digest = [0u8; 16];
+        // Should not panic
+        fz_md5_buffer(0, 99999, &mut digest);
+    }
+
+    #[test]
+    fn test_fz_clone_buffer_invalid_handle() {
+        let handle = fz_clone_buffer(0, 99999);
+        assert_eq!(handle, 0);
+    }
+
+    #[test]
+    fn test_buffer_is_empty() {
+        let buf = Buffer::new(10);
+        assert!(buf.is_empty());
+
+        let buf2 = Buffer::from_data(&[1, 2, 3]);
+        assert!(!buf2.is_empty());
+    }
+
+    #[test]
+    fn test_buffer_data_mut() {
+        let mut buf = Buffer::new(0);
+        buf.data_mut().push(1);
+        buf.data_mut().push(2);
+        assert_eq!(buf.len(), 2);
+    }
+
+    #[test]
+    fn test_buffer_append() {
+        let mut buf = Buffer::new(0);
+        buf.append(&[1, 2, 3]);
+        assert_eq!(buf.len(), 3);
+        buf.append(&[4, 5]);
+        assert_eq!(buf.len(), 5);
+        assert_eq!(buf.data(), &[1, 2, 3, 4, 5]);
+    }
+
+    #[test]
+    fn test_buffer_resize_internal() {
+        let mut buf = Buffer::from_data(&[1, 2, 3]);
+        buf.resize(5);
+        assert_eq!(buf.len(), 5);
+        assert_eq!(&buf.data()[..3], &[1, 2, 3]);
+        assert_eq!(&buf.data()[3..], &[0, 0]);
+    }
+
+    #[test]
+    fn test_buffer_ensure_null_terminated() {
+        let mut buf = Buffer::from_data(&[1, 2, 3]);
+        buf.ensure_null_terminated();
+        assert_eq!(buf.len(), 4);
+        assert_eq!(buf.data().last(), Some(&0));
+
+        // Should not add another null
+        buf.ensure_null_terminated();
+        assert_eq!(buf.len(), 4);
+    }
+
+    #[test]
+    fn test_buffer_ensure_null_terminated_empty() {
+        let mut buf = Buffer::new(0);
+        buf.ensure_null_terminated();
+        assert_eq!(buf.len(), 1);
+        assert_eq!(buf.data(), &[0]);
+    }
 }

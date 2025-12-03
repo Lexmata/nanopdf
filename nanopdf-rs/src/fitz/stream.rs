@@ -882,4 +882,156 @@ mod tests {
         let result = source.seek(SeekFrom::Current(-10));
         assert!(result.is_err());
     }
+
+    // ============================================================================
+    // Additional coverage tests
+    // ============================================================================
+
+    #[test]
+    fn test_memory_source_len() {
+        let data = b"Hello";
+        let source = MemorySource {
+            data: Bytes::copy_from_slice(data),
+            position: 0,
+        };
+        assert_eq!(source.len(), Some(5));
+    }
+
+    #[test]
+    fn test_memory_source_tell() {
+        let data = b"Hello";
+        let mut source = MemorySource {
+            data: Bytes::copy_from_slice(data),
+            position: 3,
+        };
+        assert_eq!(source.tell().unwrap(), 3);
+    }
+
+    #[test]
+    fn test_memory_source_read() {
+        let data = b"Hello";
+        let mut source = MemorySource {
+            data: Bytes::copy_from_slice(data),
+            position: 0,
+        };
+        let mut buf = [0u8; 3];
+        let n = source.read(&mut buf).unwrap();
+        assert_eq!(n, 3);
+        assert_eq!(&buf, b"Hel");
+    }
+
+    #[test]
+    fn test_stream_filename() {
+        let stream = Stream::open_memory(b"Test");
+        assert!(stream.filename().is_none());
+    }
+
+    #[test]
+    fn test_stream_read_at_eof() {
+        let mut stream = Stream::open_memory(b"AB");
+        stream.read_byte().unwrap();
+        stream.read_byte().unwrap();
+        let r = stream.read_byte().unwrap(); // Returns None at EOF
+        assert!(r.is_none());
+
+        let mut buf = [0u8; 10];
+        let result = stream.read(&mut buf);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 0);
+    }
+
+    #[test]
+    fn test_stream_len() {
+        let stream = Stream::open_memory(b"Hello World");
+        assert_eq!(stream.len(), Some(11));
+    }
+
+    #[test]
+    fn test_stream_is_empty() {
+        let stream = Stream::open_memory(b"");
+        assert!(stream.is_empty());
+
+        let stream2 = Stream::open_memory(b"Test");
+        assert!(!stream2.is_empty());
+    }
+
+    #[test]
+    fn test_stream_seek_start() {
+        let mut stream = Stream::open_memory(b"Hello World");
+        stream.read_byte().unwrap();
+        stream.read_byte().unwrap();
+        stream.seek(0, 0).unwrap(); // SEEK_SET
+        assert_eq!(stream.tell(), 0);
+    }
+
+    #[test]
+    fn test_stream_seek_end() {
+        let mut stream = Stream::open_memory(b"Hello World");
+        stream.seek(-5, 2).unwrap(); // SEEK_END
+        let mut buf = [0u8; 5];
+        stream.read_exact(&mut buf).unwrap();
+        assert_eq!(&buf, b"World");
+    }
+
+    #[test]
+    fn test_stream_read_all_with_hint() {
+        let mut stream = Stream::open_memory(b"Hello World");
+        let buffer = stream.read_all(20).unwrap();
+        assert_eq!(buffer.as_slice(), b"Hello World");
+    }
+
+    #[test]
+    fn test_stream_read_all_no_hint() {
+        let mut stream = Stream::open_memory(b"Test");
+        let buffer = stream.read_all(0).unwrap();
+        assert_eq!(buffer.as_slice(), b"Test");
+    }
+
+    #[test]
+    fn test_stream_read_line_crlf() {
+        let data = b"Line1\r\nLine2\r\n";
+        let mut stream = Stream::open_memory(data);
+
+        let line1 = stream.read_line().unwrap().unwrap();
+        assert_eq!(&line1[..5], b"Line1");
+
+        let line2 = stream.read_line().unwrap().unwrap();
+        assert_eq!(&line2[..5], b"Line2");
+    }
+
+    #[test]
+    fn test_stream_read_line_no_newline() {
+        let data = b"NoNewline";
+        let mut stream = Stream::open_memory(data);
+
+        // Should read all remaining data even without newline
+        let line = stream.read_line().unwrap();
+        assert!(line.is_none() || !line.unwrap().is_empty());
+    }
+
+    #[test]
+    fn test_stream_read_bits_cross_byte() {
+        let data = [0xFF, 0xFF];
+        let mut stream = Stream::open_memory(&data);
+
+        // Read 12 bits spanning two bytes
+        let val = stream.read_bits(12).unwrap();
+        assert_eq!(val, 0xFFF);
+    }
+
+    #[test]
+    fn test_stream_peek_after_read() {
+        let data = b"ABC";
+        let mut stream = Stream::open_memory(data);
+        stream.read_byte().unwrap();
+        assert_eq!(stream.peek_byte().unwrap(), Some(b'B'));
+    }
+
+    #[test]
+    fn test_stream_skip_past_eof() {
+        let data = b"Hi";
+        let mut stream = Stream::open_memory(data);
+        let skipped = stream.skip(100).unwrap();
+        assert_eq!(skipped, 2);
+    }
 }

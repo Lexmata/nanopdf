@@ -776,23 +776,191 @@ pub extern "C" fn pdf_name_eq(_ctx: Handle, a: PdfObjHandle, b: PdfObjHandle) ->
 mod tests {
     use super::*;
 
+    // ============================================================================
+    // Object Creation Tests
+    // ============================================================================
+
     #[test]
-    fn test_pdf_object_creation() {
+    fn test_pdf_new_null() {
         let null = pdf_new_null(0);
         assert_eq!(pdf_is_null(0, null), 1);
+        assert_eq!(pdf_is_bool(0, null), 0);
+        assert_eq!(pdf_is_int(0, null), 0);
+    }
 
+    #[test]
+    fn test_pdf_new_bool() {
         let bool_true = pdf_new_bool(0, 1);
         assert_eq!(pdf_is_bool(0, bool_true), 1);
         assert_eq!(pdf_to_bool(0, bool_true), 1);
 
+        let bool_false = pdf_new_bool(0, 0);
+        assert_eq!(pdf_is_bool(0, bool_false), 1);
+        assert_eq!(pdf_to_bool(0, bool_false), 0);
+
+        // Non-zero should also be true
+        let bool_nonzero = pdf_new_bool(0, 42);
+        assert_eq!(pdf_to_bool(0, bool_nonzero), 1);
+    }
+
+    #[test]
+    fn test_pdf_new_int() {
         let int_val = pdf_new_int(0, 42);
         assert_eq!(pdf_is_int(0, int_val), 1);
         assert_eq!(pdf_to_int(0, int_val), 42);
+        assert_eq!(pdf_to_int64(0, int_val), 42);
 
+        // Negative value
+        let neg_val = pdf_new_int(0, -100);
+        assert_eq!(pdf_to_int(0, neg_val), -100);
+        assert_eq!(pdf_to_int64(0, neg_val), -100);
+
+        // Large value
+        let large_val = pdf_new_int(0, i64::MAX);
+        assert_eq!(pdf_to_int64(0, large_val), i64::MAX);
+    }
+
+    #[test]
+    fn test_pdf_new_real() {
         let real_val = pdf_new_real(0, 3.14);
         assert_eq!(pdf_is_real(0, real_val), 1);
         assert!((pdf_to_real(0, real_val) - 3.14).abs() < 0.01);
+
+        // Negative value
+        let neg_real = pdf_new_real(0, -2.5);
+        assert!((pdf_to_real(0, neg_real) + 2.5).abs() < 0.01);
     }
+
+    #[test]
+    fn test_pdf_is_number() {
+        let int_val = pdf_new_int(0, 42);
+        let real_val = pdf_new_real(0, 3.14);
+        let null_val = pdf_new_null(0);
+
+        assert_eq!(pdf_is_number(0, int_val), 1);
+        assert_eq!(pdf_is_number(0, real_val), 1);
+        assert_eq!(pdf_is_number(0, null_val), 0);
+    }
+
+    #[test]
+    fn test_pdf_new_name() {
+        let name = pdf_new_name(0, b"Type\0".as_ptr() as *const c_char);
+        assert_eq!(pdf_is_name(0, name), 1);
+
+        // Empty name
+        let empty_name = pdf_new_name(0, std::ptr::null());
+        assert_eq!(pdf_is_name(0, empty_name), 1);
+    }
+
+    #[test]
+    fn test_pdf_new_string() {
+        let data = b"Hello, PDF!";
+        let str_obj = pdf_new_string(0, data.as_ptr() as *const c_char, data.len());
+        assert_eq!(pdf_is_string(0, str_obj), 1);
+
+        // Empty string
+        let empty_str = pdf_new_string(0, std::ptr::null(), 0);
+        assert_eq!(pdf_is_string(0, empty_str), 1);
+
+        // Null pointer with non-zero length
+        let null_str = pdf_new_string(0, std::ptr::null(), 10);
+        assert_eq!(pdf_is_string(0, null_str), 1);
+    }
+
+    #[test]
+    fn test_pdf_new_text_string() {
+        let text_obj = pdf_new_text_string(0, b"Hello World\0".as_ptr() as *const c_char);
+        assert_eq!(pdf_is_string(0, text_obj), 1);
+
+        // Null text
+        let null_text = pdf_new_text_string(0, std::ptr::null());
+        assert_eq!(pdf_is_string(0, null_text), 1);
+    }
+
+    #[test]
+    fn test_pdf_new_indirect() {
+        let indirect = pdf_new_indirect(0, 0, 10, 2);
+        assert_eq!(pdf_is_indirect(0, indirect), 1);
+        assert_eq!(pdf_to_num(0, indirect), 10);
+        assert_eq!(pdf_to_gen(0, indirect), 2);
+    }
+
+    // ============================================================================
+    // Reference Counting Tests
+    // ============================================================================
+
+    #[test]
+    fn test_pdf_keep_drop_obj() {
+        let obj = pdf_new_int(0, 42);
+        assert_eq!(pdf_obj_refs(0, obj), 1);
+
+        pdf_keep_obj(0, obj);
+        assert_eq!(pdf_obj_refs(0, obj), 2);
+
+        pdf_drop_obj(0, obj);
+        assert_eq!(pdf_obj_refs(0, obj), 1);
+
+        pdf_drop_obj(0, obj);
+        // Object should be removed, so refs should be 0 (default)
+        assert_eq!(pdf_obj_refs(0, obj), 0);
+    }
+
+    #[test]
+    fn test_pdf_keep_invalid_handle() {
+        let invalid = pdf_keep_obj(0, 99999);
+        assert_eq!(invalid, 99999); // Should return same handle
+    }
+
+    // ============================================================================
+    // Value Extraction with Defaults Tests
+    // ============================================================================
+
+    #[test]
+    fn test_pdf_to_bool_default() {
+        let bool_obj = pdf_new_bool(0, 1);
+        let null_obj = pdf_new_null(0);
+
+        assert_eq!(pdf_to_bool_default(0, bool_obj, 0), 1);
+        assert_eq!(pdf_to_bool_default(0, null_obj, 99), 99);
+    }
+
+    #[test]
+    fn test_pdf_to_int_default() {
+        let int_obj = pdf_new_int(0, 42);
+        let null_obj = pdf_new_null(0);
+        let real_obj = pdf_new_real(0, 3.7);
+
+        assert_eq!(pdf_to_int_default(0, int_obj, 0), 42);
+        assert_eq!(pdf_to_int_default(0, null_obj, 99), 99);
+        assert_eq!(pdf_to_int_default(0, real_obj, 0), 3); // Truncated
+    }
+
+    #[test]
+    fn test_pdf_to_real_default() {
+        let real_obj = pdf_new_real(0, 3.14);
+        let null_obj = pdf_new_null(0);
+        let int_obj = pdf_new_int(0, 5);
+
+        assert!((pdf_to_real_default(0, real_obj, 0.0) - 3.14).abs() < 0.01);
+        assert!((pdf_to_real_default(0, null_obj, 99.0) - 99.0).abs() < 0.01);
+        assert!((pdf_to_real_default(0, int_obj, 0.0) - 5.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_pdf_to_name() {
+        let name = pdf_new_name(0, b"TestName\0".as_ptr() as *const c_char);
+        let ptr = pdf_to_name(0, name);
+        assert!(!ptr.is_null());
+
+        // Test non-name object returns empty
+        let int_obj = pdf_new_int(0, 42);
+        let ptr2 = pdf_to_name(0, int_obj);
+        assert!(!ptr2.is_null());
+    }
+
+    // ============================================================================
+    // Array Operations Tests
+    // ============================================================================
 
     #[test]
     fn test_pdf_array_operations() {
@@ -800,12 +968,51 @@ mod tests {
         assert_eq!(pdf_is_array(0, arr), 1);
         assert_eq!(pdf_array_len(0, arr), 0);
 
+        // Push int
         pdf_array_push_int(0, arr, 100);
         assert_eq!(pdf_array_len(0, arr), 1);
 
+        // Push real
         pdf_array_push_real(0, arr, 2.5);
         assert_eq!(pdf_array_len(0, arr), 2);
+
+        // Push bool
+        pdf_array_push_bool(0, arr, 1);
+        assert_eq!(pdf_array_len(0, arr), 3);
+
+        // Push object
+        let obj = pdf_new_int(0, 42);
+        pdf_array_push(0, arr, obj);
+        assert_eq!(pdf_array_len(0, arr), 4);
+
+        // Delete
+        pdf_array_delete(0, arr, 0);
+        assert_eq!(pdf_array_len(0, arr), 3);
+
+        // Delete out of bounds (should not crash)
+        pdf_array_delete(0, arr, 100);
+        assert_eq!(pdf_array_len(0, arr), 3);
     }
+
+    #[test]
+    fn test_pdf_array_len_non_array() {
+        let dict = pdf_new_dict(0, 0, 10);
+        assert_eq!(pdf_array_len(0, dict), 0);
+
+        let null = pdf_new_null(0);
+        assert_eq!(pdf_array_len(0, null), 0);
+    }
+
+    #[test]
+    fn test_pdf_array_push_to_non_array() {
+        let dict = pdf_new_dict(0, 0, 10);
+        pdf_array_push_int(0, dict, 42); // Should not crash
+        assert_eq!(pdf_dict_len(0, dict), 0); // Dict unchanged
+    }
+
+    // ============================================================================
+    // Dictionary Operations Tests
+    // ============================================================================
 
     #[test]
     fn test_pdf_dict_operations() {
@@ -813,37 +1020,274 @@ mod tests {
         assert_eq!(pdf_is_dict(0, dict), 1);
         assert_eq!(pdf_dict_len(0, dict), 0);
 
-        let key = pdf_new_name(0, b"Type\0".as_ptr() as *const c_char);
-        pdf_dict_put_int(0, dict, key, 42);
+        // Put int with name key
+        let key1 = pdf_new_name(0, b"Type\0".as_ptr() as *const c_char);
+        pdf_dict_put_int(0, dict, key1, 42);
         assert_eq!(pdf_dict_len(0, dict), 1);
+
+        // Put real
+        let key2 = pdf_new_name(0, b"Width\0".as_ptr() as *const c_char);
+        pdf_dict_put_real(0, dict, key2, 100.5);
+        assert_eq!(pdf_dict_len(0, dict), 2);
+
+        // Put bool
+        let key3 = pdf_new_name(0, b"Enabled\0".as_ptr() as *const c_char);
+        pdf_dict_put_bool(0, dict, key3, 1);
+        assert_eq!(pdf_dict_len(0, dict), 3);
+
+        // Update existing key
+        pdf_dict_put_int(0, dict, key1, 99);
+        assert_eq!(pdf_dict_len(0, dict), 3); // Length unchanged
+
+        // Delete by string key
+        pdf_dict_dels(0, dict, b"Width\0".as_ptr() as *const c_char);
+        assert_eq!(pdf_dict_len(0, dict), 2);
     }
+
+    #[test]
+    fn test_pdf_dict_puts() {
+        let dict = pdf_new_dict(0, 0, 10);
+        let val = pdf_new_int(0, 42);
+
+        pdf_dict_puts(0, dict, b"Key\0".as_ptr() as *const c_char, val);
+        assert_eq!(pdf_dict_len(0, dict), 1);
+
+        // Null key
+        pdf_dict_puts(0, dict, std::ptr::null(), val);
+        assert_eq!(pdf_dict_len(0, dict), 1); // Unchanged
+    }
+
+    #[test]
+    fn test_pdf_dict_dels_null_key() {
+        let dict = pdf_new_dict(0, 0, 10);
+        pdf_dict_dels(0, dict, std::ptr::null()); // Should not crash
+    }
+
+    #[test]
+    fn test_pdf_dict_put_with_non_name_key() {
+        let dict = pdf_new_dict(0, 0, 10);
+        let int_key = pdf_new_int(0, 42); // Not a name
+
+        pdf_dict_put_int(0, dict, int_key, 100);
+        assert_eq!(pdf_dict_len(0, dict), 0); // Should be unchanged
+    }
+
+    #[test]
+    fn test_pdf_dict_len_non_dict() {
+        let arr = pdf_new_array(0, 0, 10);
+        assert_eq!(pdf_dict_len(0, arr), 0);
+    }
+
+    // ============================================================================
+    // Object Marking Tests
+    // ============================================================================
 
     #[test]
     fn test_pdf_object_marking() {
         let obj = pdf_new_int(0, 1);
         assert_eq!(pdf_obj_marked(0, obj), 0);
 
-        pdf_mark_obj(0, obj);
+        let was_marked = pdf_mark_obj(0, obj);
+        assert_eq!(was_marked, 0); // Was not marked before
         assert_eq!(pdf_obj_marked(0, obj), 1);
+
+        let was_marked2 = pdf_mark_obj(0, obj);
+        assert_eq!(was_marked2, 1); // Was marked before
 
         pdf_unmark_obj(0, obj);
         assert_eq!(pdf_obj_marked(0, obj), 0);
     }
 
+    // ============================================================================
+    // Object Dirty Tracking Tests
+    // ============================================================================
+
     #[test]
-    fn test_pdf_object_comparison() {
+    fn test_pdf_object_dirty() {
+        let obj = pdf_new_int(0, 1);
+        assert_eq!(pdf_obj_is_dirty(0, obj), 0);
+
+        pdf_dirty_obj(0, obj);
+        assert_eq!(pdf_obj_is_dirty(0, obj), 1);
+
+        pdf_clean_obj(0, obj);
+        assert_eq!(pdf_obj_is_dirty(0, obj), 0);
+    }
+
+    // ============================================================================
+    // Parent Number Tests
+    // ============================================================================
+
+    #[test]
+    fn test_pdf_obj_parent_num() {
+        let obj = pdf_new_int(0, 42);
+        assert_eq!(pdf_obj_parent_num(0, obj), 0);
+
+        pdf_set_obj_parent(0, obj, 100);
+        assert_eq!(pdf_obj_parent_num(0, obj), 100);
+    }
+
+    // ============================================================================
+    // Object Comparison Tests
+    // ============================================================================
+
+    #[test]
+    fn test_pdf_objcmp() {
+        // Same type, same value
         let int1 = pdf_new_int(0, 42);
         let int2 = pdf_new_int(0, 42);
+        assert_eq!(pdf_objcmp(0, int1, int2), 0);
+
+        // Same type, different value
         let int3 = pdf_new_int(0, 100);
+        assert_eq!(pdf_objcmp(0, int1, int3), 1);
 
-        assert_eq!(pdf_objcmp(0, int1, int2), 0); // Equal
-        assert_eq!(pdf_objcmp(0, int1, int3), 1); // Not equal
+        // Different types
+        let real = pdf_new_real(0, 42.0);
+        assert_eq!(pdf_objcmp(0, int1, real), 1);
 
+        // Null objects
+        let null1 = pdf_new_null(0);
+        let null2 = pdf_new_null(0);
+        assert_eq!(pdf_objcmp(0, null1, null2), 0);
+
+        // Bool comparison
+        let bool1 = pdf_new_bool(0, 1);
+        let bool2 = pdf_new_bool(0, 1);
+        let bool3 = pdf_new_bool(0, 0);
+        assert_eq!(pdf_objcmp(0, bool1, bool2), 0);
+        assert_eq!(pdf_objcmp(0, bool1, bool3), 1);
+
+        // Invalid handles
+        assert_eq!(pdf_objcmp(0, 99999, 99998), 1);
+    }
+
+    #[test]
+    fn test_pdf_name_eq() {
         let name1 = pdf_new_name(0, b"Test\0".as_ptr() as *const c_char);
         let name2 = pdf_new_name(0, b"Test\0".as_ptr() as *const c_char);
         let name3 = pdf_new_name(0, b"Other\0".as_ptr() as *const c_char);
 
-        assert_eq!(pdf_name_eq(0, name1, name2), 1); // Equal
-        assert_eq!(pdf_name_eq(0, name1, name3), 0); // Not equal
+        assert_eq!(pdf_name_eq(0, name1, name2), 1);
+        assert_eq!(pdf_name_eq(0, name1, name3), 0);
+
+        // Non-name objects
+        let int_obj = pdf_new_int(0, 42);
+        assert_eq!(pdf_name_eq(0, name1, int_obj), 0);
+        assert_eq!(pdf_name_eq(0, int_obj, int_obj), 0);
+    }
+
+    // ============================================================================
+    // Type Checking Edge Cases
+    // ============================================================================
+
+    #[test]
+    fn test_pdf_is_stream() {
+        let dict = pdf_new_dict(0, 0, 10);
+        assert_eq!(pdf_is_stream(0, dict), 0);
+
+        // Note: We don't have pdf_new_stream, so we can't test positive case easily
+    }
+
+    #[test]
+    fn test_type_checks_invalid_handle() {
+        let invalid: PdfObjHandle = 99999;
+        assert_eq!(pdf_is_null(0, invalid), 1); // Default is 1 for null check
+        assert_eq!(pdf_is_bool(0, invalid), 0);
+        assert_eq!(pdf_is_int(0, invalid), 0);
+        assert_eq!(pdf_is_real(0, invalid), 0);
+        assert_eq!(pdf_is_number(0, invalid), 0);
+        assert_eq!(pdf_is_name(0, invalid), 0);
+        assert_eq!(pdf_is_string(0, invalid), 0);
+        assert_eq!(pdf_is_array(0, invalid), 0);
+        assert_eq!(pdf_is_dict(0, invalid), 0);
+        assert_eq!(pdf_is_indirect(0, invalid), 0);
+        assert_eq!(pdf_is_stream(0, invalid), 0);
+    }
+
+    #[test]
+    fn test_value_extraction_wrong_type() {
+        let str_obj = pdf_new_string(0, b"test".as_ptr() as *const c_char, 4);
+
+        assert_eq!(pdf_to_bool(0, str_obj), 0);
+        assert_eq!(pdf_to_int(0, str_obj), 0);
+        assert_eq!(pdf_to_int64(0, str_obj), 0);
+        assert!((pdf_to_real(0, str_obj) - 0.0).abs() < 0.01);
+        assert_eq!(pdf_to_num(0, str_obj), 0);
+        assert_eq!(pdf_to_gen(0, str_obj), 0);
+    }
+
+    // ============================================================================
+    // PdfObjType Tests
+    // ============================================================================
+
+    #[test]
+    fn test_pdf_obj_type_shallow_eq() {
+        // Same string values
+        let s1 = PdfObjType::String(b"hello".to_vec());
+        let s2 = PdfObjType::String(b"hello".to_vec());
+        assert!(s1.shallow_eq(&s2));
+
+        // Different string values
+        let s3 = PdfObjType::String(b"world".to_vec());
+        assert!(!s1.shallow_eq(&s3));
+
+        // Arrays with same length
+        let a1 = PdfObjType::Array(vec![PdfObj::new_int(1)]);
+        let a2 = PdfObjType::Array(vec![PdfObj::new_int(2)]);
+        assert!(a1.shallow_eq(&a2)); // Only checks length
+
+        // Dicts with same length
+        let d1 = PdfObjType::Dict(vec![("key".to_string(), PdfObj::new_int(1))]);
+        let d2 = PdfObjType::Dict(vec![("other".to_string(), PdfObj::new_int(2))]);
+        assert!(d1.shallow_eq(&d2)); // Only checks length
+
+        // Indirect refs
+        let i1 = PdfObjType::Indirect { num: 1, generation: 0 };
+        let i2 = PdfObjType::Indirect { num: 1, generation: 0 };
+        let i3 = PdfObjType::Indirect { num: 2, generation: 0 };
+        assert!(i1.shallow_eq(&i2));
+        assert!(!i1.shallow_eq(&i3));
+
+        // Streams never match
+        let st1 = PdfObjType::Stream { dict: Box::new(PdfObj::new_dict(0)), data: vec![] };
+        let st2 = PdfObjType::Stream { dict: Box::new(PdfObj::new_dict(0)), data: vec![] };
+        assert!(!st1.shallow_eq(&st2));
+
+        // Different types
+        let null = PdfObjType::Null;
+        let int = PdfObjType::Int(42);
+        assert!(!null.shallow_eq(&int));
+    }
+
+    #[test]
+    fn test_pdf_obj_new_functions() {
+        let null = PdfObj::new_null();
+        assert!(matches!(null.obj_type, PdfObjType::Null));
+        assert!(!null.marked);
+        assert!(!null.dirty);
+        assert_eq!(null.refs, 1);
+
+        let arr = PdfObj::new_array(5);
+        if let PdfObjType::Array(a) = &arr.obj_type {
+            assert!(a.capacity() >= 5);
+        } else {
+            panic!("Expected array");
+        }
+
+        let dict = PdfObj::new_dict(3);
+        if let PdfObjType::Dict(d) = &dict.obj_type {
+            assert!(d.capacity() >= 3);
+        } else {
+            panic!("Expected dict");
+        }
+
+        let indirect = PdfObj::new_indirect(10, 2);
+        if let PdfObjType::Indirect { num, generation } = &indirect.obj_type {
+            assert_eq!(*num, 10);
+            assert_eq!(*generation, 2);
+        } else {
+            panic!("Expected indirect");
+        }
     }
 }

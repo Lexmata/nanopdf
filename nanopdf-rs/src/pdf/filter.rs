@@ -954,6 +954,56 @@ impl Default for FilterChain {
 mod tests {
     use super::*;
 
+    // ============================================================================
+    // FilterType Tests
+    // ============================================================================
+
+    #[test]
+    fn test_filter_type_from_name() {
+        // Full names
+        assert_eq!(FilterType::from_name("FlateDecode"), Some(FilterType::FlateDecode));
+        assert_eq!(FilterType::from_name("LZWDecode"), Some(FilterType::LZWDecode));
+        assert_eq!(FilterType::from_name("ASCII85Decode"), Some(FilterType::ASCII85Decode));
+        assert_eq!(FilterType::from_name("ASCIIHexDecode"), Some(FilterType::ASCIIHexDecode));
+        assert_eq!(FilterType::from_name("RunLengthDecode"), Some(FilterType::RunLengthDecode));
+        assert_eq!(FilterType::from_name("CCITTFaxDecode"), Some(FilterType::CCITTFaxDecode));
+        assert_eq!(FilterType::from_name("DCTDecode"), Some(FilterType::DCTDecode));
+        assert_eq!(FilterType::from_name("JPXDecode"), Some(FilterType::JPXDecode));
+        assert_eq!(FilterType::from_name("JBIG2Decode"), Some(FilterType::JBIG2Decode));
+        assert_eq!(FilterType::from_name("Crypt"), Some(FilterType::Crypt));
+
+        // Abbreviated names
+        assert_eq!(FilterType::from_name("Fl"), Some(FilterType::FlateDecode));
+        assert_eq!(FilterType::from_name("LZW"), Some(FilterType::LZWDecode));
+        assert_eq!(FilterType::from_name("A85"), Some(FilterType::ASCII85Decode));
+        assert_eq!(FilterType::from_name("AHx"), Some(FilterType::ASCIIHexDecode));
+        assert_eq!(FilterType::from_name("RL"), Some(FilterType::RunLengthDecode));
+        assert_eq!(FilterType::from_name("CCF"), Some(FilterType::CCITTFaxDecode));
+        assert_eq!(FilterType::from_name("DCT"), Some(FilterType::DCTDecode));
+
+        // Invalid
+        assert_eq!(FilterType::from_name("Invalid"), None);
+        assert_eq!(FilterType::from_name(""), None);
+    }
+
+    #[test]
+    fn test_filter_type_to_name() {
+        assert_eq!(FilterType::FlateDecode.to_name(), "FlateDecode");
+        assert_eq!(FilterType::LZWDecode.to_name(), "LZWDecode");
+        assert_eq!(FilterType::ASCII85Decode.to_name(), "ASCII85Decode");
+        assert_eq!(FilterType::ASCIIHexDecode.to_name(), "ASCIIHexDecode");
+        assert_eq!(FilterType::RunLengthDecode.to_name(), "RunLengthDecode");
+        assert_eq!(FilterType::CCITTFaxDecode.to_name(), "CCITTFaxDecode");
+        assert_eq!(FilterType::DCTDecode.to_name(), "DCTDecode");
+        assert_eq!(FilterType::JPXDecode.to_name(), "JPXDecode");
+        assert_eq!(FilterType::JBIG2Decode.to_name(), "JBIG2Decode");
+        assert_eq!(FilterType::Crypt.to_name(), "Crypt");
+    }
+
+    // ============================================================================
+    // FlateDecode Tests
+    // ============================================================================
+
     #[test]
     fn test_flate_roundtrip() {
         let original = b"Hello, World! This is a test of FlateDecode compression.";
@@ -961,6 +1011,46 @@ mod tests {
         let decompressed = decode_flate(&compressed, None).unwrap();
         assert_eq!(&decompressed, original);
     }
+
+    #[test]
+    fn test_flate_empty() {
+        let original = b"";
+        let compressed = encode_flate(original, 6).unwrap();
+        let decompressed = decode_flate(&compressed, None).unwrap();
+        assert_eq!(&decompressed, original);
+    }
+
+    #[test]
+    fn test_flate_compression_levels() {
+        let data = b"Test data for different compression levels";
+
+        // Level 0 (no compression)
+        let comp0 = encode_flate(data, 0).unwrap();
+        let dec0 = decode_flate(&comp0, None).unwrap();
+        assert_eq!(&dec0, data);
+
+        // Level 1 (fast)
+        let comp1 = encode_flate(data, 1).unwrap();
+        let dec1 = decode_flate(&comp1, None).unwrap();
+        assert_eq!(&dec1, data);
+
+        // Level 9 (best)
+        let comp9 = encode_flate(data, 9).unwrap();
+        let dec9 = decode_flate(&comp9, None).unwrap();
+        assert_eq!(&dec9, data);
+    }
+
+    #[test]
+    fn test_flate_large_data() {
+        let original: Vec<u8> = (0..10000).map(|i| (i % 256) as u8).collect();
+        let compressed = encode_flate(&original, 6).unwrap();
+        let decompressed = decode_flate(&compressed, None).unwrap();
+        assert_eq!(decompressed, original);
+    }
+
+    // ============================================================================
+    // LZWDecode Tests
+    // ============================================================================
 
     #[test]
     fn test_lzw_roundtrip() {
@@ -971,12 +1061,80 @@ mod tests {
     }
 
     #[test]
+    fn test_lzw_longer_data() {
+        let original = b"The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
+        let compressed = encode_lzw(original).unwrap();
+        let decompressed = decode_lzw(&compressed, None).unwrap();
+        assert_eq!(&decompressed, original);
+    }
+
+    // ============================================================================
+    // ASCII85Decode Tests
+    // ============================================================================
+
+    #[test]
     fn test_ascii85_roundtrip() {
         let original = b"Hello, World!";
         let encoded = encode_ascii85(original).unwrap();
         let decoded = decode_ascii85(&encoded).unwrap();
         assert_eq!(&decoded, original);
     }
+
+    #[test]
+    fn test_ascii85_empty() {
+        let original = b"";
+        let encoded = encode_ascii85(original).unwrap();
+        assert_eq!(&encoded, b"~>");
+        let decoded = decode_ascii85(&encoded).unwrap();
+        assert_eq!(&decoded, original);
+    }
+
+    #[test]
+    fn test_ascii85_zeros() {
+        // Four zeros should encode to 'z'
+        let original = b"\x00\x00\x00\x00";
+        let encoded = encode_ascii85(original).unwrap();
+        assert!(encoded.starts_with(b"z"));
+        let decoded = decode_ascii85(&encoded).unwrap();
+        assert_eq!(&decoded, original);
+    }
+
+    #[test]
+    fn test_ascii85_with_whitespace() {
+        // Whitespace should be ignored during decoding
+        let encoded = b"87cURD]j  \n\t  7BEbo~>";
+        let decoded = decode_ascii85(encoded).unwrap();
+        // The encoded value decodes to "Hello worl" (what the input encodes to)
+        assert_eq!(&decoded, b"Hello worl");
+    }
+
+    #[test]
+    fn test_ascii85_partial_group() {
+        // Test non-multiple of 4 bytes
+        let original = b"ABC"; // 3 bytes
+        let encoded = encode_ascii85(original).unwrap();
+        let decoded = decode_ascii85(&encoded).unwrap();
+        assert_eq!(&decoded, original);
+    }
+
+    #[test]
+    fn test_ascii85_invalid_char() {
+        let encoded = b"Hello{World~>";
+        let result = decode_ascii85(encoded);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_ascii85_invalid_z_position() {
+        // 'z' should only appear at the start of a group
+        let encoded = b"abcz~>";
+        let result = decode_ascii85(encoded);
+        assert!(result.is_err());
+    }
+
+    // ============================================================================
+    // ASCIIHexDecode Tests
+    // ============================================================================
 
     #[test]
     fn test_ascii_hex_roundtrip() {
@@ -987,6 +1145,55 @@ mod tests {
     }
 
     #[test]
+    fn test_ascii_hex_empty() {
+        let original = b"";
+        let encoded = encode_ascii_hex(original).unwrap();
+        assert_eq!(&encoded, b">");
+        let decoded = decode_ascii_hex(&encoded).unwrap();
+        assert_eq!(&decoded, original);
+    }
+
+    #[test]
+    fn test_ascii_hex_lowercase() {
+        let encoded = b"48656c6c6f>";
+        let decoded = decode_ascii_hex(encoded).unwrap();
+        assert_eq!(&decoded, b"Hello");
+    }
+
+    #[test]
+    fn test_ascii_hex_uppercase() {
+        let encoded = b"48656C6C6F>";
+        let decoded = decode_ascii_hex(encoded).unwrap();
+        assert_eq!(&decoded, b"Hello");
+    }
+
+    #[test]
+    fn test_ascii_hex_with_whitespace() {
+        let encoded = b"48 65 6C  \n  6C 6F>";
+        let decoded = decode_ascii_hex(encoded).unwrap();
+        assert_eq!(&decoded, b"Hello");
+    }
+
+    #[test]
+    fn test_ascii_hex_odd_digits() {
+        // Odd number of digits - last nibble padded with 0
+        let encoded = b"123>";
+        let decoded = decode_ascii_hex(encoded).unwrap();
+        assert_eq!(decoded, vec![0x12, 0x30]);
+    }
+
+    #[test]
+    fn test_ascii_hex_invalid_char() {
+        let encoded = b"48GG>";
+        let result = decode_ascii_hex(encoded);
+        assert!(result.is_err());
+    }
+
+    // ============================================================================
+    // RunLengthDecode Tests
+    // ============================================================================
+
+    #[test]
     fn test_run_length_roundtrip() {
         let original = b"AAAAAABBBCCCCCCCC";
         let encoded = encode_run_length(original).unwrap();
@@ -995,8 +1202,120 @@ mod tests {
     }
 
     #[test]
-    fn test_filter_chain() {
-        let original = b"Test data for filter chain";
+    fn test_run_length_literal() {
+        // Data with no repeated bytes
+        let original = b"ABCDEFGH";
+        let encoded = encode_run_length(original).unwrap();
+        let decoded = decode_run_length(&encoded).unwrap();
+        assert_eq!(&decoded, original);
+    }
+
+    #[test]
+    fn test_run_length_empty() {
+        let original = b"";
+        let encoded = encode_run_length(original).unwrap();
+        // Should just be EOD marker (128)
+        assert_eq!(encoded, vec![128]);
+        let decoded = decode_run_length(&encoded).unwrap();
+        assert_eq!(&decoded, original);
+    }
+
+    #[test]
+    fn test_run_length_long_run() {
+        // Long run of identical bytes
+        let original = vec![0x42u8; 200];
+        let encoded = encode_run_length(&original).unwrap();
+        let decoded = decode_run_length(&encoded).unwrap();
+        assert_eq!(decoded, original);
+    }
+
+    #[test]
+    fn test_run_length_mixed() {
+        // Mix of runs and literals
+        let original = b"AAABBBBCCCCCDDDDDDEEEEEEE";
+        let encoded = encode_run_length(original).unwrap();
+        let decoded = decode_run_length(&encoded).unwrap();
+        assert_eq!(&decoded, original);
+    }
+
+    #[test]
+    fn test_run_length_eod() {
+        // Just the EOD marker
+        let encoded = vec![128u8];
+        let decoded = decode_run_length(&encoded).unwrap();
+        assert!(decoded.is_empty());
+    }
+
+    // ============================================================================
+    // DCTDecode Tests (JPEG)
+    // ============================================================================
+
+    // Note: DCT encoding requires image dimensions, so we test decoding with valid JPEG
+
+    // ============================================================================
+    // CCITTFaxDecode Tests
+    // ============================================================================
+
+    #[test]
+    fn test_ccitt_default_params() {
+        let params = CCITTFaxDecodeParams::default();
+        assert_eq!(params.k, 0);
+        assert!(!params.end_of_line);
+        assert!(!params.encoded_byte_align);
+        assert_eq!(params.columns, 1728);
+        assert_eq!(params.rows, 0);
+        assert!(params.end_of_block);
+        assert!(!params.black_is_1);
+        assert_eq!(params.damaged_rows_before_error, 0);
+    }
+
+    // ============================================================================
+    // FlateDecodeParams Tests
+    // ============================================================================
+
+    #[test]
+    fn test_flate_decode_params_default() {
+        let params = FlateDecodeParams::default();
+        assert_eq!(params.predictor, 0);
+        assert_eq!(params.colors, 0);
+        assert_eq!(params.bits_per_component, 0);
+        assert_eq!(params.columns, 0);
+    }
+
+    // ============================================================================
+    // LZWDecodeParams Tests
+    // ============================================================================
+
+    #[test]
+    fn test_lzw_decode_params_default() {
+        let params = LZWDecodeParams::default();
+        assert_eq!(params.predictor, 0);
+        assert_eq!(params.colors, 0);
+        assert_eq!(params.bits_per_component, 0);
+        assert_eq!(params.columns, 0);
+        assert_eq!(params.early_change, 0);
+    }
+
+    // ============================================================================
+    // FilterChain Tests
+    // ============================================================================
+
+    #[test]
+    fn test_filter_chain_single() {
+        let original = b"Test data for single filter";
+
+        let mut chain = FilterChain::new();
+        chain.add(FilterType::FlateDecode);
+
+        let encoded = chain.encode(original.to_vec()).unwrap();
+        let decoded = chain.decode(encoded).unwrap();
+
+        assert_eq!(&decoded, original);
+    }
+
+    #[test]
+    fn test_filter_chain_multiple() {
+        let original = b"Test data for multiple filters";
 
         let mut chain = FilterChain::new();
         chain.add(FilterType::FlateDecode);
@@ -1009,10 +1328,163 @@ mod tests {
     }
 
     #[test]
-    fn test_filter_type_parsing() {
-        assert_eq!(FilterType::from_name("FlateDecode"), Some(FilterType::FlateDecode));
-        assert_eq!(FilterType::from_name("Fl"), Some(FilterType::FlateDecode));
-        assert_eq!(FilterType::from_name("DCTDecode"), Some(FilterType::DCTDecode));
-        assert_eq!(FilterType::from_name("Invalid"), None);
+    fn test_filter_chain_all_text() {
+        let original = b"Test data for text filter chain";
+
+        let mut chain = FilterChain::new();
+        chain.add(FilterType::ASCIIHexDecode);
+        chain.add(FilterType::ASCII85Decode);
+
+        let encoded = chain.encode(original.to_vec()).unwrap();
+        let decoded = chain.decode(encoded).unwrap();
+
+        assert_eq!(&decoded, original);
+    }
+
+    #[test]
+    fn test_filter_chain_empty() {
+        let original = b"No filters applied";
+
+        let chain = FilterChain::new();
+        let encoded = chain.encode(original.to_vec()).unwrap();
+        let decoded = chain.decode(encoded).unwrap();
+
+        assert_eq!(&decoded, original);
+    }
+
+    #[test]
+    fn test_filter_chain_default() {
+        let chain: FilterChain = Default::default();
+        let data = b"Test";
+        let result = chain.decode(data.to_vec()).unwrap();
+        assert_eq!(&result, data);
+    }
+
+    #[test]
+    fn test_filter_chain_with_lzw() {
+        let original = b"LZW compressed data test with repeated patterns AAAAAABBBBBB";
+
+        let mut chain = FilterChain::new();
+        chain.add(FilterType::LZWDecode);
+
+        let encoded = chain.encode(original.to_vec()).unwrap();
+        let decoded = chain.decode(encoded).unwrap();
+
+        assert_eq!(&decoded, original);
+    }
+
+    #[test]
+    fn test_filter_chain_with_run_length() {
+        let original = b"AAAAAABBBBBBCCCCCC run length test";
+
+        let mut chain = FilterChain::new();
+        chain.add(FilterType::RunLengthDecode);
+
+        let encoded = chain.encode(original.to_vec()).unwrap();
+        let decoded = chain.decode(encoded).unwrap();
+
+        assert_eq!(&decoded, original);
+    }
+
+    // ============================================================================
+    // Predictor Tests
+    // ============================================================================
+
+    #[test]
+    fn test_flate_with_predictor_none() {
+        let params = FlateDecodeParams {
+            predictor: 1,
+            colors: 3,
+            bits_per_component: 8,
+            columns: 10,
+        };
+
+        let original = vec![0u8; 30];
+        let compressed = encode_flate(&original, 6).unwrap();
+        let decompressed = decode_flate(&compressed, Some(&params)).unwrap();
+        assert_eq!(decompressed, original);
+    }
+
+    // ============================================================================
+    // Unsupported Filter Tests
+    // ============================================================================
+
+    #[test]
+    fn test_jpx_decode_without_feature() {
+        #[cfg(not(feature = "jpeg2000"))]
+        {
+            let result = decode_jpx(&[]);
+            assert!(result.is_err());
+        }
+    }
+
+    #[test]
+    fn test_jbig2_decode_without_feature() {
+        #[cfg(not(feature = "jbig2"))]
+        {
+            let result = decode_jbig2(&[], None);
+            assert!(result.is_err());
+        }
+    }
+
+    #[test]
+    fn test_filter_chain_unsupported_encode() {
+        let original = b"Test";
+
+        let mut chain = FilterChain::new();
+        chain.add(FilterType::CCITTFaxDecode);
+
+        let result = chain.encode(original.to_vec());
+        assert!(result.is_err());
+    }
+
+    // ============================================================================
+    // BitReader Tests
+    // ============================================================================
+
+    #[test]
+    fn test_bit_reader() {
+        let data = [0b10110100, 0b11001010];
+        let mut reader = BitReader::new(&data);
+
+        // Read individual bits
+        assert_eq!(reader.read_bit(), Some(true));
+        assert_eq!(reader.read_bit(), Some(false));
+        assert_eq!(reader.read_bit(), Some(true));
+        assert_eq!(reader.read_bit(), Some(true));
+
+        // Read multiple bits at once
+        assert_eq!(reader.read_bits(4), Some(0b0100));
+        assert_eq!(reader.read_bits(8), Some(0b11001010));
+
+        // Read past end
+        assert_eq!(reader.read_bit(), None);
+    }
+
+    #[test]
+    fn test_bit_reader_empty() {
+        let data: &[u8] = &[];
+        let mut reader = BitReader::new(data);
+        assert_eq!(reader.read_bit(), None);
+        assert_eq!(reader.read_bits(8), None);
+    }
+
+    // ============================================================================
+    // Crypt Filter Tests
+    // ============================================================================
+
+    #[test]
+    fn test_filter_chain_crypt_passthrough() {
+        let original = b"Encrypted data passthrough";
+
+        let mut chain = FilterChain::new();
+        chain.add(FilterType::Crypt);
+
+        // Crypt is a passthrough in the filter chain
+        let encoded = chain.encode(original.to_vec()).unwrap();
+        assert_eq!(&encoded, original);
+
+        let decoded = chain.decode(original.to_vec()).unwrap();
+        assert_eq!(&decoded, original);
     }
 }

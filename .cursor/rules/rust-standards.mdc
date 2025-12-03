@@ -1,3 +1,7 @@
+---
+alwaysApply: false
+---
+
 # Rust 2024 Code Generation Standards
 
 This project uses Rust Edition 2024 with modern, safe coding practices.
@@ -207,18 +211,34 @@ lazy_static! {
 
 ## Crate Dependencies
 
+**ALWAYS prefer mature ecosystem crates over custom implementations.**
+
 ### Preferred Crates
 
-| Purpose | Crate | Version |
-|---------|-------|---------|
-| Error handling | `thiserror` | `2` |
-| Byte manipulation | `bytes`, `byteorder` | `1` |
-| Compression | `flate2`, `weezl` | `1`, `0.1` |
-| Encryption | `aes`, `cbc`, `md-5`, `sha2` | Latest |
-| Image processing | `image` | `0.25` |
-| Fonts | `fontdb`, `ttf-parser` | Latest |
-| Parallelism | `rayon` (optional) | `1.10` |
-| Async I/O | `tokio` (optional) | `1` |
+| Purpose | Crate | Version | Notes |
+|---------|-------|---------|-------|
+| Error handling | `thiserror` | `2` | Standard for error types |
+| Byte manipulation | `bytes`, `byteorder` | `1` | Tokio ecosystem |
+| Compression | `flate2` | `1` | Deflate/zlib/gzip |
+| LZW compression | `weezl` | `0.1` | Better than custom LZW |
+| Encryption | `aes`, `cbc` | `0.8`, `0.1` | RustCrypto standard |
+| Hashing | `md-5`, `sha2` | `0.10` | RustCrypto standard |
+| Base64 | `base64` | `0.22` | Well-maintained |
+| Image processing | `image` | `0.25` | THE Rust image crate |
+| Fonts | `fontdb`, `ttf-parser` | Latest | Zero-allocation |
+| Parallelism | `rayon` (optional) | `1.10` | Data parallelism |
+| Async I/O | `tokio` (optional) | `1` | THE async runtime |
+| Futures | `futures` (optional) | `0.3` | Standard utilities |
+
+### Avoid Custom Implementations Of
+
+1. **Compression algorithms** - Use `flate2`, `weezl` instead
+2. **Hash functions** - Use RustCrypto crates (`md-5`, `sha2`)
+3. **Encryption** - Use RustCrypto crates (`aes`, `cbc`)
+4. **Base64/Hex encoding** - Use `base64`, `hex` crates
+5. **Byte manipulation** - Use `bytes`, `byteorder` crates
+6. **Image formats** - Use `image` crate
+7. **Font parsing** - Use `ttf-parser`, `fontdb`
 
 ## Testing
 

@@ -494,4 +494,117 @@ mod tests {
         stream.seek(-2, 2); // 2 from end
         assert_eq!(stream.tell(), 3);
     }
+
+    #[test]
+    fn test_stream_internal_seek_invalid_whence() {
+        let mut stream = Stream::from_memory(vec![0, 1, 2, 3, 4]);
+        stream.seek(2, 0); // Start at 2
+        stream.seek(99, 99); // Invalid whence
+        assert_eq!(stream.tell(), 2); // Should remain unchanged
+    }
+
+    #[test]
+    fn test_stream_internal_read() {
+        let mut stream = Stream::from_memory(vec![1, 2, 3, 4, 5]);
+        let mut buf = [0u8; 3];
+        let n = stream.read(&mut buf);
+        assert_eq!(n, 3);
+        assert_eq!(&buf, &[1, 2, 3]);
+    }
+
+    #[test]
+    fn test_stream_internal_read_empty() {
+        let mut stream = Stream::from_memory(vec![1]);
+        stream.read_byte();
+        let mut buf = [0u8; 10];
+        let n = stream.read(&mut buf);
+        assert_eq!(n, 0);
+    }
+
+    #[test]
+    fn test_stream_default() {
+        let stream: Stream = Default::default();
+        assert!(stream.data.is_empty());
+        assert!(stream.is_eof());
+    }
+
+    #[test]
+    fn test_fz_open_memory_empty() {
+        let handle = fz_open_memory(0, std::ptr::null(), 0);
+        assert_ne!(handle, 0);
+        assert_eq!(fz_is_eof(0, handle), 1);
+        fz_drop_stream(0, handle);
+    }
+
+    #[test]
+    fn test_fz_open_file_null() {
+        let handle = fz_open_file(0, std::ptr::null());
+        assert_eq!(handle, 0);
+    }
+
+    #[test]
+    fn test_fz_open_buffer_invalid() {
+        let handle = fz_open_buffer(0, 99999);
+        assert_eq!(handle, 0);
+    }
+
+    #[test]
+    fn test_fz_read_null_data() {
+        let data = vec![1, 2, 3];
+        let handle = STREAMS.insert(Stream::from_memory(data));
+        let n = fz_read(0, handle, std::ptr::null_mut(), 10);
+        assert_eq!(n, 0);
+        fz_drop_stream(0, handle);
+    }
+
+    #[test]
+    fn test_fz_read_zero_len() {
+        let data = vec![1, 2, 3];
+        let handle = STREAMS.insert(Stream::from_memory(data));
+        let mut buf = [0u8; 10];
+        let n = fz_read(0, handle, buf.as_mut_ptr(), 0);
+        assert_eq!(n, 0);
+        fz_drop_stream(0, handle);
+    }
+
+    #[test]
+    fn test_fz_seek_invalid_handle() {
+        fz_seek(0, 99999, 10, 0); // Should not panic
+    }
+
+    #[test]
+    fn test_fz_read_uint_incomplete() {
+        let data = vec![0x12]; // Only 1 byte
+        let handle = STREAMS.insert(Stream::from_memory(data));
+        let val = fz_read_uint16(0, handle);
+        assert_eq!(val, 0); // Incomplete read returns 0
+        fz_drop_stream(0, handle);
+    }
+
+    #[test]
+    fn test_fz_read_uint32_incomplete() {
+        let data = vec![0x12, 0x34]; // Only 2 bytes
+        let handle = STREAMS.insert(Stream::from_memory(data));
+        let val = fz_read_uint32(0, handle);
+        assert_eq!(val, 0); // Incomplete read returns 0
+        fz_drop_stream(0, handle);
+    }
+
+    #[test]
+    fn test_fz_read_uint_le_incomplete() {
+        let data = vec![0x12]; // Only 1 byte
+        let handle = STREAMS.insert(Stream::from_memory(data));
+        let val = fz_read_uint16_le(0, handle);
+        assert_eq!(val, 0);
+        fz_drop_stream(0, handle);
+    }
+
+    #[test]
+    fn test_fz_read_uint32_le_incomplete() {
+        let data = vec![0x12, 0x34]; // Only 2 bytes
+        let handle = STREAMS.insert(Stream::from_memory(data));
+        let val = fz_read_uint32_le(0, handle);
+        assert_eq!(val, 0);
+        fz_drop_stream(0, handle);
+    }
 }

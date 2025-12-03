@@ -1,0 +1,13 @@
+prefix=@PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: nanopdf
+Description: A pure Rust PDF library - drop-in replacement for MuPDF with 100% API compatibility
+Version: @VERSION@
+URL: https://github.com/lexmata/nanopdf
+
+Libs: -L${libdir} -lnanopdf
+Cflags: -I${includedir}/mupdf
+

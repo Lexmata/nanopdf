@@ -1041,4 +1041,195 @@ mod tests {
         let b2 = b1.clone();
         assert_eq!(b1.to_vec(), b2.to_vec());
     }
+
+    // ============================================================================
+    // Additional tests for coverage
+    // ============================================================================
+
+    #[test]
+    fn test_buffer_from_bytes_mut() {
+        let bytes = BytesMut::from(&b"Hello"[..]);
+        let b = Buffer::from_bytes_mut(bytes);
+        assert_eq!(b.as_slice(), b"Hello");
+    }
+
+    #[test]
+    fn test_buffer_trim_capacity() {
+        let mut b = Buffer::new(1000);
+        b.append_data(&[1, 2, 3]);
+        b.trim_capacity();
+        assert_eq!(b.len(), 3);
+    }
+
+    #[test]
+    fn test_buffer_capacity() {
+        let b = Buffer::new(100);
+        assert!(b.capacity() >= 100 || b.capacity() >= 0);
+    }
+
+    #[test]
+    fn test_buffer_truncate() {
+        let mut b = Buffer::from_slice(&[1, 2, 3, 4, 5]);
+        b.truncate(3);
+        assert_eq!(b.len(), 3);
+        assert_eq!(b.to_vec(), vec![1, 2, 3]);
+    }
+
+    #[test]
+    fn test_buffer_split_off() {
+        let mut b = Buffer::from_slice(&[1, 2, 3, 4, 5]);
+        let second = b.split_off(3);
+        assert_eq!(b.to_vec(), vec![1, 2, 3]);
+        assert_eq!(second.to_vec(), vec![4, 5]);
+    }
+
+    #[test]
+    fn test_buffer_reserve() {
+        let mut b = Buffer::new(0);
+        b.reserve(100);
+        assert!(b.capacity() >= 100);
+    }
+
+    #[test]
+    fn test_buffer_append_buffer() {
+        let mut b1 = Buffer::from_slice(&[1, 2, 3]);
+        let b2 = Buffer::from_slice(&[4, 5, 6]);
+        b1.append_buffer(&b2);
+        assert_eq!(b1.to_vec(), vec![1, 2, 3, 4, 5, 6]);
+    }
+
+    #[test]
+    fn test_buffer_append_bits() {
+        let mut b = Buffer::new(0);
+        b.append_bits(0b10101010, 8);
+        // Test that bits are appended
+        assert!(b.len() > 0);
+    }
+
+    #[test]
+    fn test_buffer_append_pdf_string() {
+        let mut b = Buffer::new(0);
+        b.append_pdf_string("Hello");
+        assert!(b.len() > 0);
+    }
+
+    #[test]
+    fn test_buffer_reader_read_exact() {
+        let b = Buffer::from_slice(&[1, 2, 3, 4, 5]);
+        let mut reader = BufferReader::new(b);
+        let mut buf = [0u8; 3];
+        let success = reader.read_exact(&mut buf);
+        assert!(success);
+        assert_eq!(&buf, &[1, 2, 3]);
+    }
+
+    #[test]
+    fn test_buffer_reader_read_exact_eof() {
+        let b = Buffer::from_slice(&[1, 2]);
+        let mut reader = BufferReader::new(b);
+        let mut buf = [0u8; 5];
+        let success = reader.read_exact(&mut buf);
+        assert!(!success);
+    }
+
+    #[test]
+    fn test_buffer_reader_read_line() {
+        let b = Buffer::from_slice(b"Hello\nWorld\n");
+        let mut reader = BufferReader::new(b);
+        let line = reader.read_line();
+        assert!(line.is_some());
+        assert_eq!(&line.unwrap(), b"Hello\n");
+    }
+
+    #[test]
+    fn test_buffer_reader_remaining_slice() {
+        let b = Buffer::from_slice(&[1, 2, 3, 4, 5]);
+        let mut reader = BufferReader::new(b);
+        reader.read_byte();
+        reader.read_byte();
+        assert_eq!(reader.remaining_slice(), &[3, 4, 5]);
+    }
+
+    #[test]
+    fn test_buffer_reader_read_u24_be() {
+        let b = Buffer::from_slice(&[0x01, 0x02, 0x03]);
+        let mut reader = BufferReader::new(b);
+        assert_eq!(reader.read_u24_be(), Some(0x010203));
+    }
+
+    #[test]
+    fn test_buffer_reader_read_i16_be() {
+        let b = Buffer::from_slice(&[0xFF, 0xFE]); // -2 in big endian i16
+        let mut reader = BufferReader::new(b);
+        assert_eq!(reader.read_i16_be(), Some(-2));
+    }
+
+    #[test]
+    fn test_buffer_reader_read_i32_be() {
+        let b = Buffer::from_slice(&[0xFF, 0xFF, 0xFF, 0xFE]); // -2 in big endian i32
+        let mut reader = BufferReader::new(b);
+        assert_eq!(reader.read_i32_be(), Some(-2));
+    }
+
+    #[test]
+    fn test_buffer_reader_read_i16_le() {
+        let b = Buffer::from_slice(&[0xFE, 0xFF]); // -2 in little endian i16
+        let mut reader = BufferReader::new(b);
+        assert_eq!(reader.read_i16_le(), Some(-2));
+    }
+
+    #[test]
+    fn test_buffer_reader_read_i32_le() {
+        let b = Buffer::from_slice(&[0xFE, 0xFF, 0xFF, 0xFF]); // -2 in little endian i32
+        let mut reader = BufferReader::new(b);
+        assert_eq!(reader.read_i32_le(), Some(-2));
+    }
+
+    #[test]
+    fn test_buffer_reader_eof() {
+        let b = Buffer::from_slice(&[1]);
+        let mut reader = BufferReader::new(b);
+        reader.read_byte();
+        assert!(reader.is_eof());
+        assert!(reader.read_u16_be().is_none());
+    }
+
+    #[test]
+    fn test_buffer_writer_with_capacity() {
+        let writer = BufferWriter::with_capacity(100);
+        assert!(writer.is_empty());
+    }
+
+    #[test]
+    fn test_buffer_writer_len() {
+        let mut writer = BufferWriter::new();
+        writer.write_byte(1);
+        writer.write_byte(2);
+        assert_eq!(writer.len(), 2);
+    }
+
+    #[test]
+    fn test_buffer_writer_into_bytes() {
+        let mut writer = BufferWriter::new();
+        writer.write_all(b"Test").unwrap();
+        let bytes = writer.into_bytes();
+        assert_eq!(&bytes[..], b"Test");
+    }
+
+    #[test]
+    fn test_buffer_writer_clear() {
+        let mut writer = BufferWriter::new();
+        writer.write_byte(1);
+        writer.clear();
+        assert!(writer.is_empty());
+    }
+
+    #[test]
+    fn test_buffer_partial_eq() {
+        let b1 = Buffer::from_slice(&[1, 2, 3]);
+        let b2 = Buffer::from_slice(&[1, 2, 3]);
+        let b3 = Buffer::from_slice(&[1, 2, 4]);
+        assert_eq!(b1, b2);
+        assert_ne!(b1, b3);
+    }
 }

@@ -264,6 +264,42 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_async_buffer_with_capacity() {
+        let buf = AsyncBuffer::with_capacity(1024);
+        assert!(buf.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_async_buffer_clear() {
+        let mut buf = AsyncBuffer::new();
+        buf.append(b"Hello");
+        assert_eq!(buf.len(), 5);
+        buf.clear();
+        assert!(buf.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_async_buffer_as_slice() {
+        let mut buf = AsyncBuffer::new();
+        buf.append(b"Test");
+        assert_eq!(buf.as_slice(), b"Test");
+    }
+
+    #[tokio::test]
+    async fn test_async_buffer_freeze() {
+        let mut buf = AsyncBuffer::new();
+        buf.append(b"Freeze");
+        let bytes = buf.freeze();
+        assert_eq!(&bytes[..], b"Freeze");
+    }
+
+    #[tokio::test]
+    async fn test_async_buffer_default() {
+        let buf: AsyncBuffer = Default::default();
+        assert!(buf.is_empty());
+    }
+
+    #[tokio::test]
     async fn test_read_write_file() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("test.txt");
@@ -339,6 +375,110 @@ mod tests {
         ).await;
 
         assert_eq!(result.unwrap(), 42);
+    }
+
+    #[tokio::test]
+    async fn test_with_timeout_failure() {
+        let result = with_timeout(
+            std::time::Duration::from_millis(1),
+            async {
+                tokio::time::sleep(std::time::Duration::from_secs(10)).await;
+                Ok::<_, Error>(42)
+            },
+        ).await;
+
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_read_files_concurrent() {
+        let dir = tempdir().unwrap();
+        let path1 = dir.path().join("file1.txt");
+        let path2 = dir.path().join("file2.txt");
+
+        write_file(&path1, &Buffer::from_slice(b"File 1")).await.unwrap();
+        write_file(&path2, &Buffer::from_slice(b"File 2")).await.unwrap();
+
+        let paths = vec![path1, path2];
+        let results = read_files_concurrent(&paths).await;
+
+        assert_eq!(results.len(), 2);
+        assert!(results[0].is_ok());
+        assert!(results[1].is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_write_files_concurrent() {
+        let dir = tempdir().unwrap();
+        let path1 = dir.path().join("write1.txt");
+        let path2 = dir.path().join("write2.txt");
+
+        let buf1 = Buffer::from_slice(b"Content 1");
+        let buf2 = Buffer::from_slice(b"Content 2");
+
+        let paths = vec![path1.clone(), path2.clone()];
+        let buffers = vec![buf1, buf2];
+        let results = write_files_concurrent(&paths, &buffers).await;
+
+        assert_eq!(results.len(), 2);
+        assert!(results[0].is_ok());
+        assert!(results[1].is_ok());
+
+        let read1 = read_file(&path1).await.unwrap();
+        let read2 = read_file(&path2).await.unwrap();
+        assert_eq!(read1.as_slice(), b"Content 1");
+        assert_eq!(read2.as_slice(), b"Content 2");
+    }
+
+    #[tokio::test]
+    async fn test_write_files_concurrent_mismatch() {
+        let dir = tempdir().unwrap();
+        let path1 = dir.path().join("write1.txt");
+
+        let buf1 = Buffer::from_slice(b"Content 1");
+        let buf2 = Buffer::from_slice(b"Content 2");
+
+        let paths = vec![path1];
+        let buffers = vec![buf1, buf2];
+        let results = write_files_concurrent(&paths, &buffers).await;
+
+        // Should return error because of mismatch
+        assert_eq!(results.len(), 1);
+        assert!(results[0].is_err());
+    }
+
+    #[tokio::test]
+    async fn test_read_file_limited() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("large.txt");
+
+        let data = vec![b'X'; 1000];
+        write_file(&path, &Buffer::from_slice(&data)).await.unwrap();
+
+        // Read with limit
+        let result = read_file_limited(&path, 100).await;
+        assert!(result.is_err()); // Should exceed limit
+    }
+
+    #[tokio::test]
+    async fn test_concurrent_limited() {
+        let futures: Vec<std::pin::Pin<Box<dyn std::future::Future<Output = i32> + Send>>> = vec![
+            Box::pin(async { 1 }),
+            Box::pin(async { 2 }),
+            Box::pin(async { 3 }),
+            Box::pin(async { 4 }),
+        ];
+
+        let results = concurrent_limited(futures, 2).await;
+        assert_eq!(results.len(), 4);
+        // Note: order may not be preserved due to unordered buffering
+    }
+
+    #[tokio::test]
+    async fn test_spawn() {
+        let handle = spawn(async { 42 });
+        let result = handle.await.unwrap();
+        assert_eq!(result, 42);
     }
 }
 
