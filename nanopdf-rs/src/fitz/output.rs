@@ -24,7 +24,9 @@ pub trait OutputWriter: Write + Send {
 
     /// Reset to initial state (if supported)
     fn reset(&mut self) -> Result<()> {
-        Err(Error::Generic("Reset not supported for this output type".into()))
+        Err(Error::Generic(
+            "Reset not supported for this output type".into(),
+        ))
     }
 }
 
@@ -110,7 +112,8 @@ impl Output {
     pub fn write_printf(&mut self, _fmt: &str, args: std::fmt::Arguments) -> Result<()> {
         use std::fmt::Write as FmtWrite;
         let mut s = String::new();
-        s.write_fmt(args).map_err(|e| Error::Generic(e.to_string()))?;
+        s.write_fmt(args)
+            .map_err(|e| Error::Generic(e.to_string()))?;
         self.write_string(&s)
     }
 
@@ -264,16 +267,12 @@ impl Write for FileOutput {
 impl OutputWriter for FileOutput {
     fn seek(&mut self, _offset: i64, whence: SeekFrom) -> Result<u64> {
         use std::io::Seek;
-        self.file
-            .seek(whence.into())
-            .map_err(Error::System)
+        self.file.seek(whence.into()).map_err(Error::System)
     }
 
     fn tell(&mut self) -> Result<u64> {
         use std::io::Seek;
-        self.file
-            .stream_position()
-            .map_err(Error::System)
+        self.file.stream_position().map_err(Error::System)
     }
 
     fn flush_output(&mut self) -> Result<()> {
@@ -563,4 +562,3 @@ mod tests {
         assert_eq!(out.tell().unwrap(), 12); // 4 + 8 bytes
     }
 }
-

@@ -3,31 +3,31 @@
 //! This module provides C-compatible exports for PDF object manipulation.
 
 // Module declarations
-pub mod types;
-pub mod create;
-pub mod refcount;
-pub mod check;
-pub mod extract;
 pub mod array;
-pub mod dict;
-pub mod string;
-pub mod marking;
+pub mod check;
 pub mod compare;
 pub mod copy;
+pub mod create;
+pub mod dict;
+pub mod extract;
+pub mod marking;
+pub mod refcount;
+pub mod string;
+pub mod types;
 pub mod utils;
 
 // Re-export public types and functions
-pub use types::{PdfObj, PdfObjType, PdfObjHandle, PDF_OBJECTS};
-pub use create::*;
-pub use refcount::*;
-pub use check::*;
-pub use extract::*;
 pub use array::*;
-pub use dict::*;
-pub use string::*;
-pub use marking::*;
+pub use check::*;
 pub use compare::*;
 pub use copy::*;
+pub use create::*;
+pub use dict::*;
+pub use extract::*;
+pub use marking::*;
+pub use refcount::*;
+pub use string::*;
+pub use types::{PDF_OBJECTS, PdfObj, PdfObjHandle, PdfObjType};
 pub use utils::*;
 
 // ============================================================================
@@ -525,4 +525,3 @@ mod tests {
         assert_eq!(pdf_to_int(0, val_obj), 100);
     }
 }
-

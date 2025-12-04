@@ -110,4 +110,3 @@ mod tests {
         assert!(params.jbig2_globals.is_none());
     }
 }
-
