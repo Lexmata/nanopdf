@@ -1,6 +1,7 @@
 use std::env;
 use std::fs;
 use std::path::Path;
+use std::process::Command;
 
 fn main() {
     // Get version from Cargo.toml
@@ -21,6 +22,9 @@ fn main() {
     // Generate C header files for FFI
     generate_ffi_headers();
 
+    // Generate comprehensive MuPDF-compatible headers from Rust FFI
+    generate_mupdf_headers();
+
     // Generate nanopdf.pc
     generate_pkg_config(
         "nanopdf.pc.in",
@@ -40,14 +44,15 @@ fn main() {
     println!("cargo:rerun-if-changed=nanopdf.pc.in");
     println!("cargo:rerun-if-changed=mupdf.pc.in");
     println!("cargo:rerun-if-changed=build.rs");
-    println!("cargo:rerun-if-changed=src/");
+    println!("cargo:rerun-if-changed=src/ffi/");
+    println!("cargo:rerun-if-changed=scripts/generate_headers.py");
 }
 
 fn generate_ffi_headers() {
     // Generate nanopdf.h - the main FFI header
     let nanopdf_header = r#"/**
  * NanoPDF - Fast, lightweight PDF library
- * 
+ *
  * This is a MuPDF-compatible C FFI header for the NanoPDF Rust library.
  * All functions are prefixed with fz_ or pdf_ for compatibility with MuPDF.
  */
@@ -101,7 +106,7 @@ typedef int32_t pdf_form_field;
     // Generate mupdf-ffi.h - MuPDF compatibility header
     let mupdf_ffi_header = r#"/**
  * MuPDF FFI Compatibility Header
- * 
+ *
  * This header provides MuPDF-compatible FFI bindings.
  * Include this for drop-in compatibility with MuPDF-based applications.
  */
@@ -118,6 +123,37 @@ typedef int32_t pdf_form_field;
 
     fs::write("include/mupdf-ffi.h", mupdf_ffi_header).expect("Failed to write mupdf-ffi.h");
     println!("Generated: include/mupdf-ffi.h");
+}
+
+fn generate_mupdf_headers() {
+    // Run the Python header generation script
+    let script_path = Path::new("scripts/generate_headers.py");
+
+    if !script_path.exists() {
+        eprintln!("Warning: Header generation script not found at {:?}", script_path);
+        return;
+    }
+
+    let output = Command::new("python3")
+        .arg(script_path)
+        .output();
+
+    match output {
+        Ok(result) => {
+            if result.status.success() {
+                println!("✅ Generated MuPDF-compatible headers");
+                if !result.stdout.is_empty() {
+                    println!("{}", String::from_utf8_lossy(&result.stdout));
+                }
+            } else {
+                eprintln!("Warning: Header generation failed");
+                eprintln!("{}", String::from_utf8_lossy(&result.stderr));
+            }
+        }
+        Err(e) => {
+            eprintln!("Warning: Could not run header generation script: {}", e);
+        }
+    }
 }
 
 fn generate_pkg_config(template: &str, output: &Path, version: &str, prefix: &str) {

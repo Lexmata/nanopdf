@@ -1,6 +1,6 @@
 /**
  * NanoPDF - Fast, lightweight PDF library
- * 
+ *
  * This is a MuPDF-compatible C FFI header for the NanoPDF Rust library.
  * All functions are prefixed with fz_ or pdf_ for compatibility with MuPDF.
  */

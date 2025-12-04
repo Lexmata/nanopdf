@@ -1,6 +1,6 @@
 /**
  * MuPDF FFI Compatibility Header
- * 
+ *
  * This header provides MuPDF-compatible FFI bindings.
  * Include this for drop-in compatibility with MuPDF-based applications.
  */
