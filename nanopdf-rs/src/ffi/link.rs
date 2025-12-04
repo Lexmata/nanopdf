@@ -329,13 +329,13 @@ mod tests {
         };
         let uri = c"https://example.com";
         let link = fz_create_link(0, rect, uri.as_ptr());
-        
+
         let retrieved_rect = fz_link_rect(0, link);
         assert_eq!(retrieved_rect.x0, 10.0);
         assert_eq!(retrieved_rect.y0, 20.0);
         assert_eq!(retrieved_rect.x1, 110.0);
         assert_eq!(retrieved_rect.y1, 70.0);
-        
+
         fz_drop_link(0, link);
     }
 
@@ -349,15 +349,15 @@ mod tests {
         };
         let uri = c"https://example.com";
         let link = fz_create_link(0, rect, uri.as_ptr());
-        
+
         let mut buf = [0i8; 256];
         let len = fz_link_uri(0, link, buf.as_mut_ptr(), 256);
         assert!(len > 0);
-        
+
         // Verify the URI was copied
         let uri_str = unsafe { CStr::from_ptr(buf.as_ptr()) }.to_str().unwrap();
         assert_eq!(uri_str, "https://example.com");
-        
+
         fz_drop_link(0, link);
     }
 
@@ -369,11 +369,11 @@ mod tests {
             x1: 100.0,
             y1: 50.0,
         };
-        
+
         let external = fz_create_link(0, rect, c"https://example.com".as_ptr());
         assert_eq!(fz_is_external_link(0, external), 1);
         fz_drop_link(0, external);
-        
+
         let internal = fz_create_link(0, rect, c"#page=5".as_ptr());
         assert_eq!(fz_is_external_link(0, internal), 0);
         fz_drop_link(0, internal);
@@ -387,11 +387,11 @@ mod tests {
             x1: 100.0,
             y1: 50.0,
         };
-        
+
         let page_link = fz_create_link(0, rect, c"#page=5".as_ptr());
         assert_eq!(fz_is_page_link(0, page_link), 1);
         fz_drop_link(0, page_link);
-        
+
         let external = fz_create_link(0, rect, c"https://example.com".as_ptr());
         assert_eq!(fz_is_page_link(0, external), 0);
         fz_drop_link(0, external);
@@ -405,15 +405,15 @@ mod tests {
             x1: 100.0,
             y1: 50.0,
         };
-        
+
         let link1 = fz_create_link(0, rect, c"#page=5".as_ptr());
         assert_eq!(fz_link_page_number(0, link1), 5);
         fz_drop_link(0, link1);
-        
+
         let link2 = fz_create_link(0, rect, c"#10".as_ptr());
         assert_eq!(fz_link_page_number(0, link2), 10);
         fz_drop_link(0, link2);
-        
+
         let external = fz_create_link(0, rect, c"https://example.com".as_ptr());
         assert_eq!(fz_link_page_number(0, external), -1);
         fz_drop_link(0, external);
@@ -429,11 +429,11 @@ mod tests {
     #[test]
     fn test_link_list_operations() {
         let list = fz_new_link_list(0);
-        
+
         // Check initially empty
         assert_eq!(fz_link_list_is_empty(0, list), 1);
         assert_eq!(fz_link_list_count(0, list), 0);
-        
+
         // Add a link
         let rect = super::super::geometry::fz_rect {
             x0: 0.0,
@@ -443,11 +443,11 @@ mod tests {
         };
         let link = fz_create_link(0, rect, c"#page=1".as_ptr());
         fz_link_list_add(0, list, link);
-        
+
         // Check not empty
         assert_eq!(fz_link_list_is_empty(0, list), 0);
         assert_eq!(fz_link_list_count(0, list), 1);
-        
+
         // Clean up
         fz_drop_link(0, link);
         fz_drop_link_list(0, list);
@@ -456,7 +456,7 @@ mod tests {
     #[test]
     fn test_link_list_find_at_point() {
         let list = fz_new_link_list(0);
-        
+
         // Add links at different positions
         let rect1 = super::super::geometry::fz_rect {
             x0: 0.0,
@@ -466,7 +466,7 @@ mod tests {
         };
         let link1 = fz_create_link(0, rect1, c"#page=1".as_ptr());
         fz_link_list_add(0, list, link1);
-        
+
         let rect2 = super::super::geometry::fz_rect {
             x0: 200.0,
             y0: 200.0,
@@ -475,21 +475,21 @@ mod tests {
         };
         let link2 = fz_create_link(0, rect2, c"#page=2".as_ptr());
         fz_link_list_add(0, list, link2);
-        
+
         // Find link at point inside first rect
         let found1 = fz_link_list_find_at_point(0, list, 50.0, 50.0);
         assert_ne!(found1, 0);
         fz_drop_link(0, found1);
-        
+
         // Find link at point inside second rect
         let found2 = fz_link_list_find_at_point(0, list, 250.0, 250.0);
         assert_ne!(found2, 0);
         fz_drop_link(0, found2);
-        
+
         // No link at this point
         let not_found = fz_link_list_find_at_point(0, list, 500.0, 500.0);
         assert_eq!(not_found, 0);
-        
+
         // Clean up
         fz_drop_link(0, link1);
         fz_drop_link(0, link2);

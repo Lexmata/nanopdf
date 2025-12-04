@@ -239,7 +239,7 @@ mod tests {
     fn test_run_display_list() {
         // Create an empty display list
         let list = fz_new_display_list(0, 0.0, 0.0, 100.0, 100.0);
-        
+
         // Create a bbox device to run the list on
         let mut bbox = super::super::geometry::fz_rect {
             x0: 0.0,
@@ -248,7 +248,7 @@ mod tests {
             y1: 0.0,
         };
         let bbox_dev = fz_new_bbox_device(0, &mut bbox as *mut _);
-        
+
         // Run the list
         let identity = super::super::geometry::fz_matrix::identity();
         let infinite = super::super::geometry::fz_rect {
@@ -258,7 +258,7 @@ mod tests {
             y1: f32::INFINITY,
         };
         fz_run_display_list(0, list, bbox_dev, identity, infinite);
-        
+
         // Clean up
         crate::ffi::device::fz_drop_device(0, bbox_dev);
         fz_drop_display_list(0, list);
