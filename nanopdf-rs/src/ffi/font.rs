@@ -261,6 +261,60 @@ pub extern "C" fn fz_outline_glyph(
     0
 }
 
+/// Check if a font is valid
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_font_is_valid(_ctx: Handle, font: Handle) -> i32 {
+    if FONTS.get(font).is_some() { 1 } else { 0 }
+}
+
+/// Clone a font (increase ref count)
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_clone_font(_ctx: Handle, font: Handle) -> Handle {
+    fz_keep_font(_ctx, font)
+}
+
+/// Get font ascender height
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_font_ascender(_ctx: Handle, font: Handle) -> f32 {
+    if FONTS.get(font).is_some() {
+        return 0.8; // Default ascender (80% of em-square)
+    }
+    0.0
+}
+
+/// Get font descender height
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_font_descender(_ctx: Handle, font: Handle) -> f32 {
+    if FONTS.get(font).is_some() {
+        return -0.2; // Default descender (-20% of em-square)
+    }
+    0.0
+}
+
+/// Get glyph name
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_glyph_name(_ctx: Handle, _font: Handle, glyph: i32, buf: *mut std::ffi::c_char, size: i32) {
+    if buf.is_null() || size <= 0 {
+        return;
+    }
+
+    // Generate default glyph name
+    let name = format!("glyph{}", glyph);
+    let bytes = name.as_bytes();
+    let copy_len = bytes.len().min((size - 1) as usize);
+
+    unsafe {
+        std::ptr::copy_nonoverlapping(bytes.as_ptr(), buf as *mut u8, copy_len);
+        *buf.add(copy_len) = 0;
+    }
+}
+
+/// Check if font is embedded
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_font_is_embedded(_ctx: Handle, _font: Handle) -> i32 {
+    1 // Assume all fonts are embedded
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
