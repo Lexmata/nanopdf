@@ -102,3 +102,86 @@ pub extern "C" fn pdf_dict_get_val(_ctx: Handle, dict: PdfObjHandle, index: i32)
     }
 }
 
+// ============================================================================
+// PDF Object Resolution and Loading
+// ============================================================================
+
+/// Resolve an indirect reference to get the actual object
+///
+/// If the object is an indirect reference, returns the referenced object.
+/// If the object is not indirect, returns the object itself.
+///
+/// # Arguments
+/// * `_ctx` - Context handle (unused)
+/// * `_doc` - Document handle (unused in this implementation)
+/// * `obj` - Object to resolve
+///
+/// # Returns
+/// Handle to the resolved object, or same handle if not indirect
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_resolve_indirect(_ctx: Handle, _doc: Handle, obj: PdfObjHandle) -> PdfObjHandle {
+    // In our simplified implementation, we don't have true indirect references
+    // that point to other objects in the storage. Instead, we return the object itself.
+    // A full implementation would look up the object number in the document's xref table.
+    
+    if obj == 0 {
+        return 0;
+    }
+
+    // Check if object exists
+    if PDF_OBJECTS.get(obj).is_some() {
+        // For indirect objects, we would normally resolve them here
+        // For now, just return the same handle since we don't maintain
+        // a true xref table in this FFI layer
+        obj
+    } else {
+        0
+    }
+}
+
+/// Load an object from the PDF document by object number
+///
+/// Loads an object from the PDF file given its object number and generation.
+/// This is used to access objects that are not currently in memory.
+///
+/// # Arguments
+/// * `_ctx` - Context handle (unused)
+/// * `_doc` - Document handle (would contain xref table in full implementation)
+/// * `num` - Object number to load
+/// * `generation` - Generation number
+///
+/// # Returns
+/// Handle to the loaded object, or 0 if not found
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_load_object(_ctx: Handle, _doc: Handle, num: i32, generation: i32) -> PdfObjHandle {
+    // In a full implementation, this would:
+    // 1. Look up the object in the document's xref table using num/generation
+    // 2. Seek to the object's position in the PDF file
+    // 3. Parse the object data
+    // 4. Store it in PDF_OBJECTS
+    // 5. Return the handle
+    
+    // For now, we create a placeholder indirect reference object
+    // since we don't have access to the actual PDF file data in this FFI layer
+    PDF_OBJECTS.insert(PdfObj::new_indirect(num, generation))
+}
+
+/// Check if an indirect reference has been resolved/loaded
+///
+/// # Arguments
+/// * `_ctx` - Context handle (unused)
+/// * `_doc` - Document handle (unused)
+/// * `obj` - Object to check
+///
+/// # Returns
+/// 1 if the object is loaded and not just an indirect reference, 0 otherwise
+#[unsafe(no_mangle)]
+pub extern "C" fn pdf_obj_is_resolved(_ctx: Handle, _doc: Handle, obj: PdfObjHandle) -> i32 {
+    with_obj(obj, 0, |o| {
+        match o.obj_type {
+            PdfObjType::Indirect { .. } => 0, // Not resolved, still just a reference
+            _ => 1, // Resolved to actual object
+        }
+    })
+}
+

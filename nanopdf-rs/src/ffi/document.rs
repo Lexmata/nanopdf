@@ -175,7 +175,7 @@ pub extern "C" fn fz_authenticate_password(
                 d.authenticated = true;
                 return 1;
             }
-            
+
             // Verify password matches
             if let Some(ref stored_password) = d.password {
                 if stored_password == password_str {
