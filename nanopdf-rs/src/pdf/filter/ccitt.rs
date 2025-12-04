@@ -79,6 +79,7 @@ struct BitReader<'a> {
     bit_pos: u8,
 }
 
+#[allow(dead_code)]
 impl<'a> BitReader<'a> {
     fn new(data: &'a [u8]) -> Self {
         Self {
