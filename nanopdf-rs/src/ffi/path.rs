@@ -340,6 +340,109 @@ pub extern "C" fn fz_stroke_state_set_dash(
     }
 }
 
+/// Check if a path is valid
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_path_is_valid(_ctx: Handle, path: Handle) -> i32 {
+    if PATHS.get(path).is_some() { 1 } else { 0 }
+}
+
+/// Clone a path (create deep copy)
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_clone_path(_ctx: Handle, path: Handle) -> Handle {
+    if let Some(p) = PATHS.get(path) {
+        if let Ok(guard) = p.lock() {
+            let cloned = guard.clone();
+            return PATHS.insert(cloned);
+        }
+    }
+    0
+}
+
+/// Check if a stroke state is valid
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_stroke_state_is_valid(_ctx: Handle, stroke: Handle) -> i32 {
+    if STROKE_STATES.get(stroke).is_some() { 1 } else { 0 }
+}
+
+/// Get stroke state dash phase
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_stroke_state_dash_phase(_ctx: Handle, stroke: Handle) -> f32 {
+    if let Some(s) = STROKE_STATES.get(stroke) {
+        if let Ok(guard) = s.lock() {
+            return guard.dash_phase;
+        }
+    }
+    0.0
+}
+
+/// Get stroke state dash pattern length
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_stroke_state_dash_len(_ctx: Handle, stroke: Handle) -> i32 {
+    if let Some(s) = STROKE_STATES.get(stroke) {
+        if let Ok(guard) = s.lock() {
+            return guard.dash_pattern.len() as i32;
+        }
+    }
+    0
+}
+
+/// Get stroke state dash pattern
+///
+/// # Safety
+/// Caller must ensure `dashes` points to writable memory of at least `len` floats
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_stroke_state_dash_pattern(
+    _ctx: Handle,
+    stroke: Handle,
+    dashes: *mut f32,
+    len: i32,
+) -> i32 {
+    if dashes.is_null() || len <= 0 {
+        return 0;
+    }
+
+    if let Some(s) = STROKE_STATES.get(stroke) {
+        if let Ok(guard) = s.lock() {
+            let pattern = &guard.dash_pattern;
+            let copy_len = pattern.len().min(len as usize);
+
+            unsafe {
+                for (i, &dash) in pattern.iter().enumerate().take(copy_len) {
+                    *dashes.add(i) = dash;
+                }
+            }
+
+            return copy_len as i32;
+        }
+    }
+    0
+}
+
+/// Get stroke end cap style
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_stroke_state_end_cap(_ctx: Handle, stroke: Handle) -> i32 {
+    if let Some(s) = STROKE_STATES.get(stroke) {
+        if let Ok(guard) = s.lock() {
+            return guard.end_cap as i32;
+        }
+    }
+    0
+}
+
+/// Set stroke end cap style
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_stroke_state_set_end_cap(_ctx: Handle, stroke: Handle, cap: i32) {
+    if let Some(s) = STROKE_STATES.get(stroke) {
+        if let Ok(mut guard) = s.lock() {
+            guard.end_cap = match cap {
+                1 => crate::fitz::path::LineCap::Round,
+                2 => crate::fitz::path::LineCap::Square,
+                _ => crate::fitz::path::LineCap::Butt,
+            };
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
