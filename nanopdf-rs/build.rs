@@ -212,13 +212,14 @@ fn generate_mupdf_headers() {
     let script_path = Path::new("scripts/generate_headers.py");
 
     if !script_path.exists() {
-        eprintln!("Warning: Header generation script not found at {:?}", script_path);
+        eprintln!(
+            "Warning: Header generation script not found at {:?}",
+            script_path
+        );
         return;
     }
 
-    let output = Command::new("python3")
-        .arg(script_path)
-        .output();
+    let output = Command::new("python3").arg(script_path).output();
 
     match output {
         Ok(result) => {
