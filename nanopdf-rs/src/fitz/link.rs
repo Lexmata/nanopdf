@@ -148,6 +148,7 @@ impl Link {
 }
 
 /// A linked list of links (as in MuPDF)
+#[derive(Clone)]
 pub struct LinkList {
     links: Vec<Link>,
 }
@@ -176,6 +177,21 @@ impl LinkList {
     /// Check if list is empty
     pub fn is_empty(&self) -> bool {
         self.links.is_empty()
+    }
+
+    /// Get the first link
+    pub fn first(&self) -> Option<&Link> {
+        self.links.first()
+    }
+
+    /// Get a link by index
+    pub fn get(&self, index: usize) -> Option<&Link> {
+        self.links.get(index)
+    }
+
+    /// Clear all links
+    pub fn clear(&mut self) {
+        self.links.clear();
     }
 
     /// Find link at a given point

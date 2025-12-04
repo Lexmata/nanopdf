@@ -286,6 +286,112 @@ pub extern "C" fn fz_link_list_is_empty(_ctx: Handle, list: Handle) -> i32 {
     1
 }
 
+/// Get the first link in a link list
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_link_list_first(_ctx: Handle, list: Handle) -> Handle {
+    if let Some(l) = LINK_LISTS.get(list) {
+        if let Ok(guard) = l.lock() {
+            if let Some(link) = guard.first() {
+                return LINKS.insert(link.clone());
+            }
+        }
+    }
+    0
+}
+
+/// Get the link at a specific index
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_link_list_get(_ctx: Handle, list: Handle, index: i32) -> Handle {
+    if index < 0 {
+        return 0;
+    }
+    if let Some(l) = LINK_LISTS.get(list) {
+        if let Ok(guard) = l.lock() {
+            if let Some(link) = guard.get(index as usize) {
+                return LINKS.insert(link.clone());
+            }
+        }
+    }
+    0
+}
+
+/// Clone a link
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_clone_link(_ctx: Handle, link: Handle) -> Handle {
+    if let Some(l) = LINKS.get(link) {
+        if let Ok(guard) = l.lock() {
+            return LINKS.insert(guard.clone());
+        }
+    }
+    0
+}
+
+/// Check if a link is valid
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_link_is_valid(_ctx: Handle, link: Handle) -> i32 {
+    if LINKS.get(link).is_some() { 1 } else { 0 }
+}
+
+/// Set the URI of a link
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_set_link_uri(_ctx: Handle, link: Handle, uri: *const c_char) -> i32 {
+    if uri.is_null() {
+        return 0;
+    }
+    if let Some(l) = LINKS.get(link) {
+        if let Ok(mut guard) = l.lock() {
+            if let Ok(uri_str) = unsafe { CStr::from_ptr(uri).to_str() } {
+                guard.uri = uri_str.to_string();
+                return 1;
+            }
+        }
+    }
+    0
+}
+
+/// Set the rect of a link
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_set_link_rect(_ctx: Handle, link: Handle, rect: super::geometry::fz_rect) {
+    if let Some(l) = LINKS.get(link) {
+        if let Ok(mut guard) = l.lock() {
+            guard.rect = Rect::new(rect.x0, rect.y0, rect.x1, rect.y1);
+        }
+    }
+}
+
+/// Check if two links have the same URI
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_link_eq(_ctx: Handle, link1: Handle, link2: Handle) -> i32 {
+    if let (Some(l1), Some(l2)) = (LINKS.get(link1), LINKS.get(link2)) {
+        if let (Ok(g1), Ok(g2)) = (l1.lock(), l2.lock()) {
+            return if g1.uri == g2.uri { 1 } else { 0 };
+        }
+    }
+    0
+}
+
+/// Clear all links from a link list
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_link_list_clear(_ctx: Handle, list: Handle) {
+    if let Some(l) = LINK_LISTS.get(list) {
+        if let Ok(mut guard) = l.lock() {
+            guard.clear();
+        }
+    }
+}
+
+/// Clone a link list
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_clone_link_list(_ctx: Handle, list: Handle) -> Handle {
+    if let Some(l) = LINK_LISTS.get(list) {
+        if let Ok(guard) = l.lock() {
+            let cloned = guard.clone();
+            return LINK_LISTS.insert(cloned);
+        }
+    }
+    0
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
