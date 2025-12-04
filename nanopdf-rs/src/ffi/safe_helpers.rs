@@ -133,7 +133,7 @@ mod tests {
 
     #[test]
     fn test_copy_from_ptr() {
-        let data = vec![1u8, 2, 3, 4, 5];
+        let data = [1u8, 2, 3, 4, 5];
         let result = copy_from_ptr(data.as_ptr(), data.len());
         assert_eq!(result, Some(vec![1, 2, 3, 4, 5]));
 

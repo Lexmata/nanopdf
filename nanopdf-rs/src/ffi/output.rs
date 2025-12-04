@@ -715,8 +715,8 @@ mod tests {
         let ctx = 0;
         let out = fz_new_output_with_path(ctx, c_path.as_ptr(), 0);
 
-        fz_write_float_be(ctx, out, 3.14159);
-        fz_write_float_le(ctx, out, 2.71828);
+        fz_write_float_be(ctx, out, std::f32::consts::PI);
+        fz_write_float_le(ctx, out, std::f32::consts::E);
 
         fz_close_output(ctx, out);
         fz_drop_output(ctx, out);

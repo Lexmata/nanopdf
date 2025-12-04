@@ -16,7 +16,7 @@ fn fixture_path(name: &str) -> PathBuf {
 
 /// Read a fixture file as bytes
 fn read_fixture(name: &str) -> Vec<u8> {
-    std::fs::read(fixture_path(name)).expect(&format!("Failed to read fixture: {}", name))
+    std::fs::read(fixture_path(name)).unwrap_or_else(|_| panic!("Failed to read fixture: {}", name))
 }
 
 mod pdf_header {

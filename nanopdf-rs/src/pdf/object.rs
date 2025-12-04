@@ -240,8 +240,8 @@ mod tests {
 
     #[test]
     fn test_object_real() {
-        let obj = Object::Real(3.14);
-        assert_eq!(obj.as_real(), Some(3.14));
+        let obj = Object::Real(std::f64::consts::PI);
+        assert_eq!(obj.as_real(), Some(std::f64::consts::PI));
         assert_eq!(obj.as_int(), None);
     }
 

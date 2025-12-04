@@ -120,7 +120,7 @@ mod tests {
         let encoded = chain.encode(original.to_vec()).unwrap();
 
         // Should be compressed
-        assert!(encoded.len() > 0);
+        assert!(!encoded.is_empty());
 
         // Decode it back
         let decoded = chain.decode(encoded).unwrap();

@@ -845,7 +845,7 @@ mod tests {
     fn test_buffer_append_multiple() {
         let handle = fz_new_buffer(0, 0);
         for i in 0..100 {
-            fz_append_byte(0, handle, i as i32);
+            fz_append_byte(0, handle, i);
         }
         assert_eq!(fz_buffer_len(0, handle), 100);
         fz_drop_buffer(0, handle);

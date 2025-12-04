@@ -387,7 +387,7 @@ mod tests {
         let dict = pdf_new_dict(ctx, 0, 2);
         let key = pdf_new_name(ctx, CString::new("PI").unwrap().as_ptr());
 
-        pdf_dict_put_real(ctx, dict, key, 3.14159);
+        pdf_dict_put_real(ctx, dict, key, std::f64::consts::PI);
 
         assert_eq!(pdf_dict_len(ctx, dict), 1);
     }

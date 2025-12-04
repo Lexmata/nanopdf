@@ -414,7 +414,7 @@ mod tests {
     #[test]
     fn test_open_archive_with_buffer() {
         // Create simple test data (not a valid archive, but tests the API)
-        let data = vec![0u8; 100];
+        let data = [0u8; 100];
         let archive = fz_open_archive_with_buffer(0, data.as_ptr(), data.len());
         // Should return 0 since data is not a valid archive
         assert_eq!(archive, 0);

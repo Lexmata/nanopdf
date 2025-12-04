@@ -556,8 +556,8 @@ mod tests {
         let output = MemoryOutput::new();
         let mut out = Output::from_writer(output);
 
-        out.write_f32_be(3.14f32).unwrap();
-        out.write_f64_le(2.718281828f64).unwrap();
+        out.write_f32_be(std::f32::consts::PI).unwrap();
+        out.write_f64_le(std::f64::consts::E).unwrap();
 
         assert_eq!(out.tell().unwrap(), 12); // 4 + 8 bytes
     }

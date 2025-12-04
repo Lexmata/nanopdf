@@ -550,8 +550,8 @@ mod tests {
         let dir_path = temp_dir.path();
 
         // Create some test files
-        fs::write(dir_path.join("file1.txt"), b"content1").map_err(|e| Error::System(e))?;
-        fs::write(dir_path.join("file2.txt"), b"content2").map_err(|e| Error::System(e))?;
+        fs::write(dir_path.join("file1.txt"), b"content1").map_err(Error::System)?;
+        fs::write(dir_path.join("file2.txt"), b"content2").map_err(Error::System)?;
 
         let mut archive = Archive::open_directory(dir_path)?;
         assert_eq!(archive.format(), ArchiveFormat::Directory);

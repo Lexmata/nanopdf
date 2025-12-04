@@ -568,7 +568,7 @@ mod tests {
 
     #[test]
     fn test_method_names() {
-        assert_eq!(EncryptionAlgorithm::None.is_rc4(), false);
+        assert!(!EncryptionAlgorithm::None.is_rc4());
 
         let doc_id = vec![1, 2, 3, 4, 5, 6, 7, 8];
         let crypt = Crypt::new(

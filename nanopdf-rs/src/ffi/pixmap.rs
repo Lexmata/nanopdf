@@ -844,7 +844,7 @@ mod tests {
 
         // Value should be roughly the same
         let sample = fz_get_pixmap_sample(0, handle, 0, 0, 0);
-        assert!(sample >= 125 && sample <= 131);
+        assert!((125..=131).contains(&sample));
 
         fz_drop_pixmap(0, handle);
     }
