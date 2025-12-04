@@ -341,18 +341,18 @@ pub extern "C" fn fz_convert_error(ctx: Handle, code: *mut c_int) -> *const c_ch
                     *code = err_code;
                 }
             }
-            
+
             if message.is_empty() {
                 return c"No error".as_ptr();
             }
-            
+
             // Warning: This leaks memory
             if let Ok(c_str) = std::ffi::CString::new(message) {
                 return c_str.into_raw();
             }
         }
     }
-    
+
     if !code.is_null() {
         #[allow(unsafe_code)]
         unsafe {
@@ -410,36 +410,36 @@ mod tests {
     #[test]
     fn test_error_handling() {
         let ctx = unsafe { fz_new_context(std::ptr::null(), std::ptr::null(), 1024 * 1024) };
-        
+
         let msg = std::ffi::CString::new("Test error").unwrap();
         unsafe {
             fz_throw(ctx, FzErrorType::Argument as c_int, msg.as_ptr());
         }
-        
+
         let code = fz_caught(ctx);
         assert_eq!(code, FzErrorType::Argument as c_int);
-        
+
         fz_ignore_error(ctx);
         let code = fz_caught(ctx);
         assert_eq!(code, FzErrorType::None as c_int);
-        
+
         fz_drop_context(ctx);
     }
 
     #[test]
     fn test_user_context() {
         let ctx = unsafe { fz_new_context(std::ptr::null(), std::ptr::null(), 1024 * 1024) };
-        
+
         let user_data = 42i32;
         let user_ptr = &user_data as *const i32 as *mut c_void;
-        
+
         unsafe {
             fz_set_user_context(ctx, user_ptr);
         }
-        
+
         let retrieved = fz_user_context(ctx);
         assert_eq!(retrieved, user_ptr);
-        
+
         fz_drop_context(ctx);
     }
 
@@ -473,48 +473,48 @@ mod tests {
     #[test]
     fn test_rethrow() {
         let ctx = unsafe { fz_new_context(std::ptr::null(), std::ptr::null(), 1024 * 1024) };
-        
+
         let msg = std::ffi::CString::new("Original error").unwrap();
         unsafe {
             fz_throw(ctx, FzErrorType::Format as c_int, msg.as_ptr());
         }
-        
+
         fz_rethrow(ctx);
-        
+
         let code = fz_caught(ctx);
         assert_eq!(code, FzErrorType::Format as c_int);
-        
+
         fz_drop_context(ctx);
     }
 
     #[test]
     fn test_convert_error() {
         let ctx = unsafe { fz_new_context(std::ptr::null(), std::ptr::null(), 1024 * 1024) };
-        
+
         let msg = std::ffi::CString::new("Conversion test").unwrap();
         unsafe {
             fz_throw(ctx, FzErrorType::Limit as c_int, msg.as_ptr());
         }
-        
+
         let mut code: c_int = 0;
         let _msg_ptr = fz_convert_error(ctx, &mut code);
         assert_eq!(code, FzErrorType::Limit as c_int);
-        
+
         fz_drop_context(ctx);
     }
 
     #[test]
     fn test_caught_message() {
         let ctx = unsafe { fz_new_context(std::ptr::null(), std::ptr::null(), 1024 * 1024) };
-        
+
         let msg = std::ffi::CString::new("Detailed error").unwrap();
         unsafe {
             fz_throw(ctx, FzErrorType::Generic as c_int, msg.as_ptr());
         }
-        
+
         let msg_ptr = fz_caught_message(ctx);
         assert!(!msg_ptr.is_null());
-        
+
         fz_drop_context(ctx);
     }
 
@@ -528,14 +528,14 @@ mod tests {
     #[test]
     fn test_report_error() {
         let ctx = unsafe { fz_new_context(std::ptr::null(), std::ptr::null(), 1024 * 1024) };
-        
+
         let msg = std::ffi::CString::new("Report test").unwrap();
         unsafe {
             fz_throw(ctx, FzErrorType::System as c_int, msg.as_ptr());
         }
-        
+
         fz_report_error(ctx); // Should not panic
-        
+
         fz_drop_context(ctx);
     }
 }
