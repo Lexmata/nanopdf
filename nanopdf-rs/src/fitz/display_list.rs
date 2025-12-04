@@ -115,6 +115,7 @@ enum Command {
 }
 
 /// Display list - records drawing operations for playback
+#[derive(Clone)]
 pub struct DisplayList {
     mediabox: Rect,
     commands: Vec<Command>,
