@@ -67,6 +67,18 @@ pub extern "C" fn fz_open_archive_with_buffer(
     0
 }
 
+/// Keep an archive (increment ref count)
+///
+/// # Arguments
+/// * `archive` - Handle to the archive
+///
+/// # Returns
+/// The same handle
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_keep_archive(_ctx: Handle, archive: Handle) -> Handle {
+    archive
+}
+
 /// Drop an archive
 ///
 /// # Arguments
@@ -268,6 +280,48 @@ pub extern "C" fn fz_archive_entry_names(
             }
 
             return copy_len as i32;
+        }
+    }
+    -1
+}
+
+/// Check if an archive is valid
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_archive_is_valid(_ctx: Handle, archive: Handle) -> i32 {
+    if ARCHIVES.get(archive).is_some() { 1 } else { 0 }
+}
+
+/// Clone an archive (increase ref count)
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_clone_archive(_ctx: Handle, archive: Handle) -> Handle {
+    fz_keep_archive(_ctx, archive)
+}
+
+/// Get archive entry size
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_archive_entry_size(
+    _ctx: Handle,
+    archive: Handle,
+    name: *const c_char,
+) -> i32 {
+    if name.is_null() {
+        return -1;
+    }
+
+    let c_name = unsafe {
+        match CStr::from_ptr(name).to_str() {
+            Ok(s) => s,
+            Err(_) => return -1,
+        }
+    };
+
+    if let Some(a) = ARCHIVES.get(archive) {
+        if let Ok(mut guard) = a.lock() {
+            if guard.has_entry(c_name) {
+                if let Ok(data) = guard.read_entry(c_name) {
+                    return data.len() as i32;
+                }
+            }
         }
     }
     -1
