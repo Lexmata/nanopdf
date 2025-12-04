@@ -204,7 +204,7 @@ pub extern "C" fn fz_encode_character_with_fallback(
 pub extern "C" fn fz_advance_glyph(_ctx: Handle, font: Handle, glyph: i32, _wmode: i32) -> f32 {
     if let Some(f) = FONTS.get(font) {
         if let Ok(guard) = f.lock() {
-            return guard.glyph_advance(glyph);
+            return guard.glyph_advance(glyph as u16);
         }
     }
     0.0
@@ -215,7 +215,7 @@ pub extern "C" fn fz_advance_glyph(_ctx: Handle, font: Handle, glyph: i32, _wmod
 pub extern "C" fn fz_bound_glyph(_ctx: Handle, font: Handle, glyph: i32, _transform: super::geometry::fz_matrix) -> super::geometry::fz_rect {
     if let Some(f) = FONTS.get(font) {
         if let Ok(guard) = f.lock() {
-            let bbox = guard.glyph_bbox(glyph);
+            let bbox = guard.glyph_bbox(glyph as u16);
             return super::geometry::fz_rect {
                 x0: bbox.x0,
                 y0: bbox.y0,
@@ -254,9 +254,8 @@ pub extern "C" fn fz_outline_glyph(
 ) -> Handle {
     if let Some(f) = FONTS.get(font) {
         if let Ok(guard) = f.lock() {
-            if let Some(path) = guard.outline_glyph(glyph) {
-                return super::path::PATHS.insert(Arc::new(Mutex::new(path)));
-            }
+            let path = guard.outline_glyph(glyph as u16);
+            return super::path::PATHS.insert(path);
         }
     }
     0

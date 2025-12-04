@@ -30,6 +30,10 @@ impl Pixmap {
     }
     pub fn width(&self) -> i32 { self.inner.w }
     pub fn height(&self) -> i32 { self.inner.h }
+    /// Alias for width()
+    pub fn w(&self) -> i32 { self.inner.w }
+    /// Alias for height()
+    pub fn h(&self) -> i32 { self.inner.h }
     pub fn n(&self) -> u8 { self.inner.n }
     pub fn has_alpha(&self) -> bool { self.inner.alpha > 0 }
     pub fn stride(&self) -> usize { self.inner.stride }

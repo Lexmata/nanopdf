@@ -90,6 +90,16 @@ impl Pixmap {
             *sample = value;
         }
     }
+
+    /// Get width
+    pub fn w(&self) -> i32 {
+        self.width
+    }
+
+    /// Get height
+    pub fn h(&self) -> i32 {
+        self.height
+    }
 }
 
 /// Create a new pixmap
