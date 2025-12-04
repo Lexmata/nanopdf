@@ -682,7 +682,7 @@ pub extern "C" fn fz_append_hex(
         if let Ok(mut guard) = buffer.lock() {
             // SAFETY: Caller guarantees data points to valid memory of size bytes
             let data_slice = unsafe { std::slice::from_raw_parts(data, size) };
-            
+
             const HEX_CHARS: &[u8] = b"0123456789abcdef";
             for &byte in data_slice {
                 guard.append_byte(HEX_CHARS[(byte >> 4) as usize]);

@@ -394,31 +394,31 @@ pub extern "C" fn fz_write_base64(
         if let Ok(mut guard) = output_arc.lock() {
             // SAFETY: Caller guarantees data points to valid memory of size bytes
             let data_slice = unsafe { std::slice::from_raw_parts(data, size) };
-            
+
             // Simple base64 encoding
             const BASE64_CHARS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
             let mut col = 0;
-            
+
             for chunk in data_slice.chunks(3) {
                 let b1 = chunk[0];
                 let b2 = chunk.get(1).copied().unwrap_or(0);
                 let b3 = chunk.get(2).copied().unwrap_or(0);
-                
+
                 let _ = guard.write_byte(BASE64_CHARS[((b1 >> 2) & 0x3F) as usize]);
                 let _ = guard.write_byte(BASE64_CHARS[(((b1 << 4) | (b2 >> 4)) & 0x3F) as usize]);
-                
+
                 if chunk.len() > 1 {
                     let _ = guard.write_byte(BASE64_CHARS[(((b2 << 2) | (b3 >> 6)) & 0x3F) as usize]);
                 } else {
                     let _ = guard.write_byte(b'=');
                 }
-                
+
                 if chunk.len() > 2 {
                     let _ = guard.write_byte(BASE64_CHARS[(b3 & 0x3F) as usize]);
                 } else {
                     let _ = guard.write_byte(b'=');
                 }
-                
+
                 col += 4;
                 if newline > 0 && col >= newline {
                     let _ = guard.write_byte(b'\n');
@@ -448,22 +448,22 @@ pub extern "C" fn fz_write_base64_uri(
         if let Ok(mut guard) = output_arc.lock() {
             // SAFETY: Caller guarantees data points to valid memory of size bytes
             let data_slice = unsafe { std::slice::from_raw_parts(data, size) };
-            
+
             // URL-safe base64 encoding (- and _ instead of + and /)
             const BASE64_CHARS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-            
+
             for chunk in data_slice.chunks(3) {
                 let b1 = chunk[0];
                 let b2 = chunk.get(1).copied().unwrap_or(0);
                 let b3 = chunk.get(2).copied().unwrap_or(0);
-                
+
                 let _ = guard.write_byte(BASE64_CHARS[((b1 >> 2) & 0x3F) as usize]);
                 let _ = guard.write_byte(BASE64_CHARS[(((b1 << 4) | (b2 >> 4)) & 0x3F) as usize]);
-                
+
                 if chunk.len() > 1 {
                     let _ = guard.write_byte(BASE64_CHARS[(((b2 << 2) | (b3 >> 6)) & 0x3F) as usize]);
                 }
-                
+
                 if chunk.len() > 2 {
                     let _ = guard.write_byte(BASE64_CHARS[(b3 & 0x3F) as usize]);
                 }
@@ -489,13 +489,13 @@ pub extern "C" fn fz_write_bits(
             // Write bits most significant first
             let val = value;
             let mut bits_left = count;
-            
+
             while bits_left >= 8 {
                 bits_left -= 8;
                 let byte = ((val >> bits_left) & 0xFF) as u8;
                 let _ = guard.write_byte(byte);
             }
-            
+
             if bits_left > 0 {
                 let byte = ((val & ((1 << bits_left) - 1)) << (8 - bits_left)) as u8;
                 let _ = guard.write_byte(byte);

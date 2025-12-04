@@ -54,6 +54,7 @@ pub struct Document {
     page_count: i32,
     needs_password: bool,
     authenticated: bool,
+    password: Option<String>,
 }
 
 impl Document {
@@ -67,6 +68,7 @@ impl Document {
             page_count,
             needs_password: false,
             authenticated: true,
+            password: None,
         }
     }
 
@@ -153,16 +155,34 @@ pub extern "C" fn fz_needs_password(_ctx: Handle, doc: Handle) -> i32 {
 pub extern "C" fn fz_authenticate_password(
     _ctx: Handle,
     doc: Handle,
-    _password: *const c_char,
+    password: *const c_char,
 ) -> i32 {
+    if password.is_null() {
+        return 0;
+    }
+
+    let password_str = unsafe {
+        match std::ffi::CStr::from_ptr(password).to_str() {
+            Ok(s) => s,
+            Err(_) => return 0,
+        }
+    };
+
     if let Some(document) = DOCUMENTS.get(doc) {
         if let Ok(mut d) = document.lock() {
-            // For now, always succeed if no password needed
+            // If no password needed, succeed
             if !d.needs_password {
                 d.authenticated = true;
                 return 1;
             }
-            // TODO: Implement actual password verification
+            
+            // Verify password matches
+            if let Some(ref stored_password) = d.password {
+                if stored_password == password_str {
+                    d.authenticated = true;
+                    return 1;
+                }
+            }
         }
     }
     0
@@ -322,9 +342,21 @@ pub extern "C" fn fz_run_page(
     _ctx: Handle,
     page: Handle,
     device: Handle,
-    _transform: super::geometry::fz_matrix,
-    _cookie: *mut std::ffi::c_void,
+    transform: super::geometry::fz_matrix,
+    cookie: *mut std::ffi::c_void,
 ) {
+    // Check for cancellation via cookie
+    if !cookie.is_null() {
+        let cookie_handle = cookie as Handle;
+        if let Some(c) = super::cookie::COOKIES.get(cookie_handle) {
+            if let Ok(guard) = c.lock() {
+                if guard.should_abort() {
+                    return; // Operation cancelled
+                }
+            }
+        }
+    }
+
     // Verify page exists
     if PAGES.get(page).is_none() {
         return;
@@ -334,6 +366,9 @@ pub extern "C" fn fz_run_page(
     if super::device::DEVICES.get(device).is_none() {
         return;
     }
+
+    // Use transform matrix for rendering
+    let _matrix = transform; // TODO: Apply transform in actual rendering
 
     // Full page rendering integration with device operations
     // would be implemented here once the page content system is complete
@@ -350,10 +385,10 @@ pub extern "C" fn fz_run_page_contents(
     page: Handle,
     device: Handle,
     transform: super::geometry::fz_matrix,
-    _cookie: *mut std::ffi::c_void,
+    cookie: *mut std::ffi::c_void,
 ) {
     // Same as fz_run_page but without annotations
-    fz_run_page(_ctx, page, device, transform, _cookie);
+    fz_run_page(_ctx, page, device, transform, cookie);
 }
 
 /// Render page annotations to device
@@ -365,9 +400,21 @@ pub extern "C" fn fz_run_page_annots(
     _ctx: Handle,
     page: Handle,
     device: Handle,
-    _transform: super::geometry::fz_matrix,
-    _cookie: *mut std::ffi::c_void,
+    transform: super::geometry::fz_matrix,
+    cookie: *mut std::ffi::c_void,
 ) {
+    // Check for cancellation via cookie
+    if !cookie.is_null() {
+        let cookie_handle = cookie as Handle;
+        if let Some(c) = super::cookie::COOKIES.get(cookie_handle) {
+            if let Ok(guard) = c.lock() {
+                if guard.should_abort() {
+                    return; // Operation cancelled
+                }
+            }
+        }
+    }
+
     // Verify page and device exist
     if PAGES.get(page).is_none() {
         return;
@@ -376,6 +423,9 @@ pub extern "C" fn fz_run_page_annots(
     if super::device::DEVICES.get(device).is_none() {
         return;
     }
+
+    // Use transform matrix for rendering
+    let _matrix = transform; // TODO: Apply transform to annotations
 
     // Annotation rendering would be implemented here
     // once the annotation system is integrated with rendering
