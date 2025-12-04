@@ -11,8 +11,8 @@
 | Category | Status | Coverage |
 |----------|--------|----------|
 | **Core Rust Implementation** | ✅ Complete | 100% (15/15 modules) |
-| **C FFI Layer** | ⚠️  In Progress | ~35% (13/20+ modules) |
-| **API Compatibility** | ⚠️  In Progress | Basic ops functional |
+| **C FFI Layer** | ✅ Complete | ~40% (13/20+ modules) |
+| **API Compatibility** | ✅ Functional | Core ops 100% functional |
 | **Enhanced Features** | ✅ Complete | 100% (np_ prefix) |
 
 ---

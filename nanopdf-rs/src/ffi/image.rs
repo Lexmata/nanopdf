@@ -11,6 +11,17 @@ use std::sync::{Arc, LazyLock, Mutex};
 pub static IMAGES: LazyLock<HandleStore<Image>> =
     LazyLock::new(HandleStore::default);
 
+/// Helper to convert fitz::colorspace::Colorspace to a colorspace handle
+fn colorspace_to_handle(cs: &crate::fitz::colorspace::Colorspace) -> u64 {
+    match cs.name() {
+        "DeviceGray" => super::colorspace::FZ_COLORSPACE_GRAY,
+        "DeviceRGB" => super::colorspace::FZ_COLORSPACE_RGB,
+        "DeviceCMYK" => super::colorspace::FZ_COLORSPACE_CMYK,
+        "DeviceBGR" => super::colorspace::FZ_COLORSPACE_BGR,
+        _ => 0, // Unknown colorspace
+    }
+}
+
 /// Create a new image from pixmap
 #[unsafe(no_mangle)]
 pub extern "C" fn fz_new_image_from_pixmap(
@@ -20,8 +31,8 @@ pub extern "C" fn fz_new_image_from_pixmap(
 ) -> Handle {
     if let Some(pm) = PIXMAPS.get(pixmap) {
         if let Ok(guard) = pm.lock() {
-            let w = guard.w() as usize;
-            let h = guard.h() as usize;
+            let w = guard.w();
+            let h = guard.h();
 
             // Create image from pixmap dimensions
             // The Image will use the pixmap data internally
@@ -124,7 +135,7 @@ pub extern "C" fn fz_image_colorspace(_ctx: Handle, image: Handle) -> Handle {
     if let Some(img) = IMAGES.get(image) {
         if let Ok(guard) = img.lock() {
             if let Some(cs) = guard.colorspace() {
-                return super::colorspace::COLORSPACES.insert(Arc::new(Mutex::new(cs.clone())));
+                return colorspace_to_handle(cs);
             }
         }
     }
@@ -166,11 +177,13 @@ pub extern "C" fn fz_get_pixmap_from_image(
                 unsafe { *h = img_h as i32; }
             }
 
-            // Create pixmap
-            let cs = guard.colorspace();
-            if let Ok(pixmap) = Pixmap::new(cs, img_w as i32, img_h as i32, true) {
-                return PIXMAPS.insert(Arc::new(Mutex::new(pixmap)));
-            }
+            // Create pixmap using FFI Pixmap type
+            let cs_handle = match guard.colorspace() {
+                Some(cs) => colorspace_to_handle(cs),
+                None => 0,
+            };
+            let pixmap = super::pixmap::Pixmap::new(cs_handle, img_w as i32, img_h as i32, true);
+            return PIXMAPS.insert(pixmap);
         }
     }
     0
@@ -188,12 +201,14 @@ pub extern "C" fn fz_decode_image(
         if let Ok(guard) = img.lock() {
             let img_w = guard.width();
             let img_h = guard.height();
-            let cs = guard.colorspace();
 
-            // Create pixmap from image data
-            if let Ok(pixmap) = Pixmap::new(cs, img_w as i32, img_h as i32, true) {
-                return PIXMAPS.insert(Arc::new(Mutex::new(pixmap)));
-            }
+            // Create pixmap from image data using FFI Pixmap type
+            let cs_handle = match guard.colorspace() {
+                Some(cs) => colorspace_to_handle(cs),
+                None => 0,
+            };
+            let pixmap = super::pixmap::Pixmap::new(cs_handle, img_w as i32, img_h as i32, true);
+            return PIXMAPS.insert(pixmap);
         }
     }
     0
@@ -211,12 +226,13 @@ pub extern "C" fn fz_decode_image_scaled(
 ) -> Handle {
     if let Some(img) = IMAGES.get(image) {
         if let Ok(guard) = img.lock() {
-            let cs = guard.colorspace();
-
-            // Create scaled pixmap
-            if let Ok(pixmap) = Pixmap::new(cs, w, h, true) {
-                return PIXMAPS.insert(Arc::new(Mutex::new(pixmap)));
-            }
+            // Create scaled pixmap using FFI Pixmap type
+            let cs_handle = match guard.colorspace() {
+                Some(cs) => colorspace_to_handle(cs),
+                None => 0,
+            };
+            let pixmap = super::pixmap::Pixmap::new(cs_handle, w, h, true);
+            return PIXMAPS.insert(pixmap);
         }
     }
     0

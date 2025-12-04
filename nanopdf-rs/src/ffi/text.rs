@@ -54,12 +54,15 @@ pub extern "C" fn fz_show_glyph(
                         transform.d, transform.e, transform.f
                     );
 
+                    // Clone the font and wrap in Arc for the Text API
+                    let font_arc = Arc::new(font_guard.clone());
+
                     guard.show_glyph(
-                        Arc::clone(&f),
+                        font_arc,
                         matrix,
                         glyph,
                         unicode,
-                        wmode,
+                        wmode != 0,
                         0, // bidi_level
                         crate::fitz::text::BidiDirection::Ltr, // markup_dir
                         crate::fitz::text::TextLanguage::Unset, // language
@@ -92,17 +95,20 @@ pub extern "C" fn fz_show_string(
         if let Ok(mut guard) = t.lock() {
             // Get font from handle
             if let Some(f) = super::font::FONTS.get(font) {
-                if let Ok(_font_guard) = f.lock() {
+                if let Ok(font_guard) = f.lock() {
                     let matrix = Matrix::new(
                         transform.a, transform.b, transform.c,
                         transform.d, transform.e, transform.f
                     );
 
+                    // Clone the font and wrap in Arc for the Text API
+                    let font_arc = Arc::new(font_guard.clone());
+
                     let _ = guard.show_string(
-                        Arc::clone(&f),
+                        font_arc,
                         matrix,
                         s,
-                        wmode,
+                        wmode != 0,
                         0, // bidi_level
                         crate::fitz::text::BidiDirection::Ltr, // markup_dir
                         crate::fitz::text::TextLanguage::Unset, // language
@@ -131,8 +137,7 @@ pub extern "C" fn fz_bound_text(
             // Get stroke state if provided
             let stroke_opt = if stroke != 0 {
                 super::path::STROKE_STATES.get(stroke)
-                    .and_then(|s| s.lock().ok())
-                    .map(|s| s.clone())
+                    .and_then(|s| s.lock().ok().map(|guard| guard.clone()))
             } else {
                 None
             };
