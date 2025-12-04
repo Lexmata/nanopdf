@@ -8,11 +8,11 @@ mkdir -p "$PROJECT_DIR/dist"
 
 case "$1" in
     deb)
-        docker build -f "$SCRIPT_DIR/Dockerfile.deb" -t nanopdf-deb-builder "$PROJECT_DIR"
+        docker build -f "$SCRIPT_DIR/Dockerfile.debian" -t nanopdf-deb-builder "$PROJECT_DIR"
         docker run --rm -v "$PROJECT_DIR/dist:/dist" nanopdf-deb-builder
         ;;
     rpm)
-        docker build -f "$SCRIPT_DIR/Dockerfile.rpm" -t nanopdf-rpm-builder "$PROJECT_DIR"
+        docker build -f "$SCRIPT_DIR/Dockerfile.redhat" -t nanopdf-rpm-builder "$PROJECT_DIR"
         docker run --rm -v "$PROJECT_DIR/dist:/dist" nanopdf-rpm-builder
         ;;
     all)

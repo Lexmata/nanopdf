@@ -271,7 +271,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./nanopdf-rs
-          file: nanopdf-rs/docker/Dockerfile.deb
+          file: nanopdf-rs/docker/Dockerfile.debian
           push: false
           tags: nanopdf:debian-test
           cache-from: type=gha
@@ -281,7 +281,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./nanopdf-rs
-          file: nanopdf-rs/docker/Dockerfile.rpm
+          file: nanopdf-rs/docker/Dockerfile.redhat
           push: false
           tags: nanopdf:rpm-test
           cache-from: type=gha
