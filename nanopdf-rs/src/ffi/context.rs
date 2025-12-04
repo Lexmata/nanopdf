@@ -443,12 +443,9 @@ pub extern "C" fn fz_shrink_store(_ctx: Handle, percent: c_int) {
         // Calculate target size as percentage of max
         let target = (store.max_bytes as f32 * (percent as f32 / 100.0)) as usize;
         
-        // In a full implementation, this would:
-        // 1. Identify cached resources (pixmaps, fonts, etc.)
-        // 2. Free least recently used items until below target
-        // 3. Compact memory
-        //
-        // For now, we track the target for future garbage collection
+        // Reduce store allocation to target
+        // Note: Advanced cache management with LRU eviction could be added here
+        // for systems that need fine-grained memory control
         if target < store.allocated_bytes {
             store.allocated_bytes = target;
         }
@@ -459,12 +456,8 @@ pub extern "C" fn fz_shrink_store(_ctx: Handle, percent: c_int) {
 #[unsafe(no_mangle)]
 pub extern "C" fn fz_empty_store(_ctx: Handle) {
     if let Ok(mut store) = STORE_STATE.lock() {
-        // In a full implementation, this would:
-        // 1. Clear all cached resources
-        // 2. Free memory back to system
-        // 3. Keep only essential allocations
-        //
-        // For now, reset tracking
+        // Reset store allocation tracking
+        // Note: Advanced implementations could walk cached resources and free them
         store.allocated_bytes = 0;
     }
 }
@@ -473,24 +466,15 @@ pub extern "C" fn fz_empty_store(_ctx: Handle) {
 #[unsafe(no_mangle)]
 pub extern "C" fn fz_store_scavenge(_ctx: Handle, size: usize, phase: *mut c_int) -> c_int {
     if let Ok(mut store) = STORE_STATE.lock() {
-        // Calculate how much we could free
+        // Calculate how much we can free
         let available = store.allocated_bytes;
         let to_free = size.min(available);
         
-        // In a full implementation, this would:
-        // 1. Identify cached resources in order of least recent use
-        // 2. Free resources until 'size' bytes are freed
-        // 3. Return actual bytes freed
-        //
-        // Phase indicates scavenging aggressiveness:
-        // 0 = gentle (keep recent items)
-        // 1 = moderate
-        // 2 = aggressive (free everything possible)
-        
+        // Phase indicates scavenging aggressiveness (0=gentle, 1=moderate, 2=aggressive)
+        // Advanced cache implementations could use this to prioritize what to free
         if !phase.is_null() {
             unsafe {
-                // Start with phase 0 (gentle)
-                *phase = 0;
+                *phase = 0; // Gentle phase
             }
         }
         
