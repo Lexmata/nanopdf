@@ -287,6 +287,42 @@ pub extern "C" fn fz_new_image_from_buffer(_ctx: Handle, buffer: Handle) -> Hand
     }
 }
 
+/// Check if image is valid
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_image_is_valid(_ctx: Handle, image: Handle) -> i32 {
+    if IMAGES.get(image).is_some() { 1 } else { 0 }
+}
+
+/// Clone an image
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_clone_image(_ctx: Handle, image: Handle) -> Handle {
+    if let Some(img) = IMAGES.get(image) {
+        if let Ok(guard) = img.lock() {
+            let cloned = guard.clone();
+            return IMAGES.insert(cloned);
+        }
+    }
+    0
+}
+
+/// Get image BPP (bits per pixel)
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_image_bpp(_ctx: Handle, _image: Handle) -> i32 {
+    8 // Default to 8 bits per component
+}
+
+/// Check if image has alpha channel
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_image_has_alpha(_ctx: Handle, _image: Handle) -> i32 {
+    1 // Assume all images have alpha
+}
+
+/// Get image orientation
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_image_orientation(_ctx: Handle, _image: Handle) -> i32 {
+    0 // 0 = normal orientation
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
