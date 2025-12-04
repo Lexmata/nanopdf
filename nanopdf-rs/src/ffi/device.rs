@@ -5,17 +5,27 @@
 use super::{Handle, HandleStore, PIXMAPS};
 use crate::fitz::device::{Device, BBoxDevice, TraceDevice, NullDevice};
 use crate::fitz::display_list::ListDevice;
-use crate::fitz::geometry::{Matrix, Point, Rect};
-use crate::fitz::colorspace::Colorspace;
-use crate::fitz::pixmap::Pixmap;
-use crate::fitz::path::{Path, StrokeState};
-use crate::fitz::text::Text;
-use crate::fitz::image::Image;
-use std::sync::{Arc, LazyLock, Mutex};
+use crate::fitz::geometry::{Matrix, Rect};
+use crate::fitz::colorspace::Colorspace as FitzColorspace;
+use std::sync::LazyLock;
 
-/// Device storage
-pub static DEVICES: LazyLock<HandleStore<Box<dyn Device>>> =
+/// Device storage  
+pub static DEVICES: LazyLock<HandleStore<Box<dyn Device + Send + Sync>>> =
     LazyLock::new(HandleStore::default);
+
+/// Convert FFI colorspace to Fitz colorspace
+fn get_fitz_colorspace(handle: Handle) -> Option<FitzColorspace> {
+    super::colorspace::COLORSPACES.get(handle).and_then(|cs_arc| {
+        cs_arc.lock().ok().map(|cs_guard| {
+            match cs_guard.cs_type {
+                super::colorspace::ColorspaceType::Gray => FitzColorspace::device_gray(),
+                super::colorspace::ColorspaceType::Rgb => FitzColorspace::device_rgb(),
+                super::colorspace::ColorspaceType::Cmyk => FitzColorspace::device_cmyk(),
+                _ => FitzColorspace::device_rgb(), // Default fallback
+            }
+        })
+    })
+}
 
 /// Create a new draw device for rendering to a pixmap
 ///
@@ -29,9 +39,9 @@ pub extern "C" fn fz_new_draw_device(
 ) -> Handle {
     // Get pixmap from handle
     if let Some(pm) = PIXMAPS.get(pixmap) {
-        if let Ok(guard) = pm.lock() {
+        if let Ok(_guard) = pm.lock() {
             // Create a null device for now (draw device requires more infrastructure)
-            let device: Box<dyn Device> = Box::new(NullDevice::new());
+            let device: Box<dyn Device + Send + Sync> = Box::new(NullDevice);
             return DEVICES.insert(device);
         }
     }
@@ -45,14 +55,14 @@ pub extern "C" fn fz_new_bbox_device(_ctx: Handle, rect: *mut super::geometry::f
         return 0;
     }
 
-    let device: Box<dyn Device> = Box::new(BBoxDevice::new());
+    let device: Box<dyn Device + Send + Sync> = Box::new(BBoxDevice::new());
     DEVICES.insert(device)
 }
 
 /// Create a trace device (debug output)
 #[unsafe(no_mangle)]
 pub extern "C" fn fz_new_trace_device(_ctx: Handle) -> Handle {
-    let device: Box<dyn Device> = Box::new(TraceDevice::new());
+    let device: Box<dyn Device + Send + Sync> = Box::new(TraceDevice::new());
     DEVICES.insert(device)
 }
 
@@ -61,8 +71,10 @@ pub extern "C" fn fz_new_trace_device(_ctx: Handle) -> Handle {
 /// # Safety
 /// Caller must ensure list is a valid handle.
 #[unsafe(no_mangle)]
-pub extern "C" fn fz_new_list_device(_ctx: Handle, list: Handle) -> Handle {
-    let device: Box<dyn Device> = Box::new(ListDevice::new());
+pub extern "C" fn fz_new_list_device(_ctx: Handle, _list: Handle) -> Handle {
+    // Create list device with default media box (will be updated when used)
+    let mediabox = Rect::new(0.0, 0.0, 612.0, 792.0); // Letter size default
+    let device: Box<dyn Device + Send + Sync> = Box::new(ListDevice::new(mediabox));
     DEVICES.insert(device)
 }
 
@@ -108,16 +120,10 @@ pub extern "C" fn fz_begin_tile(
                 transform.d, transform.e, transform.f
             );
 
-            match guard.begin_tile(area_rect, view_rect, xstep, ystep, matrix) {
-                Ok(_) => 1,
-                Err(_) => 0,
-            }
-        } else {
-            0
+            return guard.begin_tile(area_rect, view_rect, xstep, ystep, &matrix);
         }
-    } else {
-        0
     }
+    0
 }
 
 /// End tile rendering
@@ -160,33 +166,25 @@ pub extern "C" fn fz_fill_path(
                     );
 
                     // Get colorspace
-                    let cs = if let Some(cs_arc) = super::colorspace::COLORSPACES.get(colorspace) {
-                        if let Ok(cs_guard) = cs_arc.lock() {
-                            Some(cs_guard.clone())
-                        } else {
-                            None
+                    if let Some(cs) = get_fitz_colorspace(colorspace) {
+                        // Read color components
+                        let n = cs.n() as usize;
+                        let mut color_vec = vec![0.0; n];
+                        unsafe {
+                            for i in 0..n {
+                                color_vec[i] = *color.add(i);
+                            }
                         }
-                    } else {
-                        None
-                    };
 
-                    // Read color components
-                    let n = cs.as_ref().map(|c| c.n()).unwrap_or(3);
-                    let mut color_vec = vec![0.0; n];
-                    unsafe {
-                        for i in 0..n {
-                            color_vec[i] = *color.add(i);
-                        }
+                        let _ = guard.fill_path(
+                            &path_guard,
+                            even_odd != 0,
+                            &matrix,
+                            &cs,
+                            &color_vec,
+                            alpha,
+                        );
                     }
-
-                    let _ = guard.fill_path(
-                        &path_guard,
-                        even_odd != 0,
-                        matrix,
-                        cs,
-                        &color_vec,
-                        alpha,
-                    );
                 }
             }
         }
@@ -226,33 +224,25 @@ pub extern "C" fn fz_stroke_path(
                             );
 
                             // Get colorspace
-                            let cs = if let Some(cs_arc) = super::colorspace::COLORSPACES.get(colorspace) {
-                                if let Ok(cs_guard) = cs_arc.lock() {
-                                    Some(cs_guard.clone())
-                                } else {
-                                    None
+                            if let Some(cs) = get_fitz_colorspace(colorspace) {
+                                // Read color components
+                                let n = cs.n() as usize;
+                                let mut color_vec = vec![0.0; n];
+                                unsafe {
+                                    for i in 0..n {
+                                        color_vec[i] = *color.add(i);
+                                    }
                                 }
-                            } else {
-                                None
-                            };
 
-                            // Read color components
-                            let n = cs.as_ref().map(|c| c.n()).unwrap_or(3);
-                            let mut color_vec = vec![0.0; n];
-                            unsafe {
-                                for i in 0..n {
-                                    color_vec[i] = *color.add(i);
-                                }
+                                let _ = guard.stroke_path(
+                                    &path_guard,
+                                    &stroke_guard,
+                                    &matrix,
+                                    &cs,
+                                    &color_vec,
+                                    alpha,
+                                );
                             }
-
-                            let _ = guard.stroke_path(
-                                &path_guard,
-                                &stroke_guard,
-                                matrix,
-                                cs,
-                                &color_vec,
-                                alpha,
-                            );
                         }
                     }
                 }
@@ -282,7 +272,9 @@ pub extern "C" fn fz_clip_path(
                         transform.d, transform.e, transform.f
                     );
 
-                    let _ = guard.clip_path(&path_guard, even_odd != 0, matrix);
+                    // Use infinite scissor rect for now
+                    let scissor = Rect::new(-1e6, -1e6, 1e6, 1e6);
+                    let _ = guard.clip_path(&path_guard, even_odd != 0, &matrix, scissor);
                 }
             }
         }
@@ -312,7 +304,9 @@ pub extern "C" fn fz_clip_stroke_path(
                                 transform.d, transform.e, transform.f
                             );
 
-                            let _ = guard.clip_stroke_path(&path_guard, &stroke_guard, matrix);
+                            // Use infinite scissor rect for now
+                            let scissor = Rect::new(-1e6, -1e6, 1e6, 1e6);
+                            let _ = guard.clip_stroke_path(&path_guard, &stroke_guard, &matrix, scissor);
                         }
                     }
                 }
@@ -349,26 +343,18 @@ pub extern "C" fn fz_fill_text(
                     );
 
                     // Get colorspace
-                    let cs = if let Some(cs_arc) = super::colorspace::COLORSPACES.get(colorspace) {
-                        if let Ok(cs_guard) = cs_arc.lock() {
-                            Some(cs_guard.clone())
-                        } else {
-                            None
+                    if let Some(cs) = get_fitz_colorspace(colorspace) {
+                        // Read color components
+                        let n = cs.n() as usize;
+                        let mut color_vec = vec![0.0; n];
+                        unsafe {
+                            for i in 0..n {
+                                color_vec[i] = *color.add(i);
+                            }
                         }
-                    } else {
-                        None
-                    };
 
-                    // Read color components
-                    let n = cs.as_ref().map(|c| c.n()).unwrap_or(3);
-                    let mut color_vec = vec![0.0; n];
-                    unsafe {
-                        for i in 0..n {
-                            color_vec[i] = *color.add(i);
-                        }
+                        let _ = guard.fill_text(&text_guard, &matrix, &cs, &color_vec, alpha);
                     }
-
-                    let _ = guard.fill_text(&text_guard, matrix, cs, &color_vec, alpha);
                 }
             }
         }
@@ -406,33 +392,25 @@ pub extern "C" fn fz_stroke_text(
                             );
 
                             // Get colorspace
-                            let cs = if let Some(cs_arc) = super::colorspace::COLORSPACES.get(colorspace) {
-                                if let Ok(cs_guard) = cs_arc.lock() {
-                                    Some(cs_guard.clone())
-                                } else {
-                                    None
+                            if let Some(cs) = get_fitz_colorspace(colorspace) {
+                                // Read color components
+                                let n = cs.n() as usize;
+                                let mut color_vec = vec![0.0; n];
+                                unsafe {
+                                    for i in 0..n {
+                                        color_vec[i] = *color.add(i);
+                                    }
                                 }
-                            } else {
-                                None
-                            };
 
-                            // Read color components
-                            let n = cs.as_ref().map(|c| c.n()).unwrap_or(3);
-                            let mut color_vec = vec![0.0; n];
-                            unsafe {
-                                for i in 0..n {
-                                    color_vec[i] = *color.add(i);
-                                }
+                                let _ = guard.stroke_text(
+                                    &text_guard,
+                                    &stroke_guard,
+                                    &matrix,
+                                    &cs,
+                                    &color_vec,
+                                    alpha,
+                                );
                             }
-
-                            let _ = guard.stroke_text(
-                                &text_guard,
-                                &stroke_guard,
-                                matrix,
-                                cs,
-                                &color_vec,
-                                alpha,
-                            );
                         }
                     }
                 }
@@ -461,7 +439,9 @@ pub extern "C" fn fz_clip_text(
                         transform.d, transform.e, transform.f
                     );
 
-                    let _ = guard.clip_text(&text_guard, matrix);
+                    // Use infinite scissor rect for now
+                    let scissor = Rect::new(-1e6, -1e6, 1e6, 1e6);
+                    let _ = guard.clip_text(&text_guard, &matrix, scissor);
                 }
             }
         }
@@ -491,7 +471,9 @@ pub extern "C" fn fz_clip_stroke_text(
                                 transform.d, transform.e, transform.f
                             );
 
-                            let _ = guard.clip_stroke_text(&text_guard, &stroke_guard, matrix);
+                            // Use infinite scissor rect for now
+                            let scissor = Rect::new(-1e6, -1e6, 1e6, 1e6);
+                            let _ = guard.clip_stroke_text(&text_guard, &stroke_guard, &matrix, scissor);
                         }
                     }
                 }
@@ -520,7 +502,7 @@ pub extern "C" fn fz_ignore_text(
                         transform.d, transform.e, transform.f
                     );
 
-                    let _ = guard.ignore_text(&text_guard, matrix);
+                    let _ = guard.ignore_text(&text_guard, &matrix);
                 }
             }
         }
@@ -548,7 +530,7 @@ pub extern "C" fn fz_fill_image(
                         transform.d, transform.e, transform.f
                     );
 
-                    let _ = guard.fill_image(&img_guard, matrix, alpha);
+                    let _ = guard.fill_image(&img_guard, &matrix, alpha);
                 }
             }
         }
@@ -583,32 +565,24 @@ pub extern "C" fn fz_fill_image_mask(
                     );
 
                     // Get colorspace
-                    let cs = if let Some(cs_arc) = super::colorspace::COLORSPACES.get(colorspace) {
-                        if let Ok(cs_guard) = cs_arc.lock() {
-                            Some(cs_guard.clone())
-                        } else {
-                            None
+                    if let Some(cs) = get_fitz_colorspace(colorspace) {
+                        // Read color components
+                        let n = cs.n() as usize;
+                        let mut color_vec = vec![0.0; n];
+                        unsafe {
+                            for i in 0..n {
+                                color_vec[i] = *color.add(i);
+                            }
                         }
-                    } else {
-                        None
-                    };
 
-                    // Read color components
-                    let n = cs.as_ref().map(|c| c.n()).unwrap_or(3);
-                    let mut color_vec = vec![0.0; n];
-                    unsafe {
-                        for i in 0..n {
-                            color_vec[i] = *color.add(i);
-                        }
+                        let _ = guard.fill_image_mask(
+                            &img_guard,
+                            &matrix,
+                            &cs,
+                            &color_vec,
+                            alpha,
+                        );
                     }
-
-                    let _ = guard.fill_image_mask(
-                        &img_guard,
-                        matrix,
-                        cs,
-                        &color_vec,
-                        alpha,
-                    );
                 }
             }
         }
@@ -635,7 +609,9 @@ pub extern "C" fn fz_clip_image_mask(
                         transform.d, transform.e, transform.f
                     );
 
-                    let _ = guard.clip_image_mask(&img_guard, matrix);
+                    // Use infinite scissor rect for now
+                    let scissor = Rect::new(-1e6, -1e6, 1e6, 1e6);
+                    let _ = guard.clip_image_mask(&img_guard, &matrix, scissor);
                 }
             }
         }
@@ -668,22 +644,14 @@ pub extern "C" fn fz_begin_mask(
 
             // Get colorspace
             let cs = if !color.is_null() && colorspace != 0 {
-                if let Some(cs_arc) = super::colorspace::COLORSPACES.get(colorspace) {
-                    if let Ok(cs_guard) = cs_arc.lock() {
-                        Some(cs_guard.clone())
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
+                get_fitz_colorspace(colorspace)
             } else {
                 None
             };
 
             // Read color if provided
             let color_vec = if !color.is_null() && cs.is_some() {
-                let n = cs.as_ref().unwrap().n();
+                let n = cs.as_ref().unwrap().n() as usize;
                 let mut vec = vec![0.0; n];
                 unsafe {
                     for i in 0..n {
@@ -695,7 +663,10 @@ pub extern "C" fn fz_begin_mask(
                 None
             };
 
-            let _ = guard.begin_mask(rect, luminosity != 0, cs, color_vec.as_deref());
+            if let Some(ref cs_val) = cs {
+                let color_slice = color_vec.as_deref().unwrap_or(&[]);
+                let _ = guard.begin_mask(rect, luminosity != 0, cs_val, color_slice);
+            }
         }
     }
 }
@@ -728,15 +699,7 @@ pub extern "C" fn fz_begin_group(
 
             // Get colorspace
             let cs = if colorspace != 0 {
-                if let Some(cs_arc) = super::colorspace::COLORSPACES.get(colorspace) {
-                    if let Ok(cs_guard) = cs_arc.lock() {
-                        Some(cs_guard.clone())
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
+                get_fitz_colorspace(colorspace)
             } else {
                 None
             };
@@ -761,7 +724,7 @@ pub extern "C" fn fz_begin_group(
 
             let _ = guard.begin_group(
                 rect,
-                cs,
+                cs.as_ref(),
                 isolated != 0,
                 knockout != 0,
                 blend,
