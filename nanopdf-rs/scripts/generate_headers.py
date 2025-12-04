@@ -255,7 +255,8 @@ def main():
     fitz_modules = {
         'geometry', 'buffer', 'stream', 'output', 'colorspace',
         'pixmap', 'font', 'image', 'path', 'text', 'device',
-        'display_list', 'link', 'archive', 'cookie', 'context'
+        'display_list', 'link', 'archive', 'cookie', 'context',
+        'enhanced'  # Enhanced/extended functionality (np_* functions)
     }
 
     pdf_modules = {'annot', 'form', 'document', 'pdf_object'}
