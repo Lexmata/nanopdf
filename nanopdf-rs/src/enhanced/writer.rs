@@ -267,7 +267,7 @@ impl PdfWriter {
                         b'\n' => writer.write_all(b"\\n")?,
                         b'\r' => writer.write_all(b"\\r")?,
                         b'\t' => writer.write_all(b"\\t")?,
-                        _ if byte >= 32 && byte <= 126 => writer.write_all(&[byte])?,
+                        _ if (32..=126).contains(&byte) => writer.write_all(&[byte])?,
                         _ => writer.write_all(format!("\\{:03o}", byte).as_bytes())?,
                     }
                 }

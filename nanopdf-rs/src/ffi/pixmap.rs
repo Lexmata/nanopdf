@@ -643,8 +643,8 @@ pub extern "C" fn fz_scale_pixmap(
                     let src_y = ((y as f32) / yscale) as i32;
                     
                     for c in 0..guard.n {
-                        if let Some(value) = guard.get_sample(src_x, src_y, c as i32) {
-                            scaled.set_sample(x, y, c as i32, value);
+                        if let Some(value) = guard.get_sample(src_x, src_y, c) {
+                            scaled.set_sample(x, y, c, value);
                         }
                     }
                 }

@@ -125,7 +125,7 @@ impl ZipArchive {
         
         // Extract central directory info
         let cd_entries = u16::from_le_bytes([eocd[10], eocd[11]]) as usize;
-        let cd_size = u32::from_le_bytes([eocd[12], eocd[13], eocd[14], eocd[15]]) as usize;
+        let _cd_size = u32::from_le_bytes([eocd[12], eocd[13], eocd[14], eocd[15]]) as usize;
         let cd_offset = u32::from_le_bytes([eocd[16], eocd[17], eocd[18], eocd[19]]) as usize;
         
         // Parse central directory entries
@@ -156,7 +156,7 @@ impl ZipArchive {
             ]) as usize;
             
             // Read compressed and uncompressed sizes
-            let compressed_size = u32::from_le_bytes([
+            let _compressed_size = u32::from_le_bytes([
                 self.data[pos + 20],
                 self.data[pos + 21],
                 self.data[pos + 22],
@@ -239,6 +239,7 @@ impl ArchiveReader for ZipArchive {
 }
 
 /// TAR archive reader
+#[allow(dead_code)]
 struct TarArchive {
     entries: HashMap<String, ArchiveEntry>,
     entry_order: Vec<String>,
@@ -331,8 +332,8 @@ impl DirectoryArchive {
     }
 
     fn scan_dir(&mut self, dir: &Path, prefix: &str) -> Result<()> {
-        for entry in fs::read_dir(dir).map_err(|e| Error::System(e))? {
-            let entry = entry.map_err(|e| Error::System(e))?;
+        for entry in fs::read_dir(dir).map_err(Error::System)? {
+            let entry = entry.map_err(Error::System)?;
             let path = entry.path();
             let name = if prefix.is_empty() {
                 path.file_name()
@@ -347,7 +348,7 @@ impl DirectoryArchive {
                 )
             };
 
-            let metadata = entry.metadata().map_err(|e| Error::System(e))?;
+            let metadata = entry.metadata().map_err(Error::System)?;
             let is_dir = metadata.is_dir();
             let size = metadata.len();
 
@@ -392,7 +393,7 @@ impl ArchiveReader for DirectoryArchive {
             return Err(Error::Argument(format!("Entry not found: {}", name)));
         }
 
-        fs::read(&entry_path).map_err(|e| Error::System(e))
+        fs::read(&entry_path).map_err(Error::System)
     }
 
     fn entry_names(&self) -> Vec<&str> {
@@ -416,7 +417,7 @@ impl Archive {
         }
 
         // Read file data
-        let data = fs::read(path).map_err(|e| Error::System(e))?;
+        let data = fs::read(path).map_err(Error::System)?;
 
         // Detect format
         let format = Self::detect_format(&data);
