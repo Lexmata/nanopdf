@@ -522,7 +522,7 @@ pub extern "C" fn fz_new_buffer_from_data(
 
     // SAFETY: Caller guarantees data points to valid memory of `size` bytes
     let data_slice = unsafe { std::slice::from_raw_parts(data, size) };
-    
+
     // Copy the data to maintain safety (no actual ownership transfer in Rust FFI)
     BUFFERS.insert(Buffer::from_data(data_slice))
 }
@@ -586,37 +586,37 @@ pub extern "C" fn fz_append_base64(
         if let Ok(mut guard) = buffer.lock() {
             // SAFETY: Caller guarantees data points to valid memory
             let data_slice = unsafe { std::slice::from_raw_parts(data, size) };
-            
+
             // Simple base64 encoding
             const BASE64_CHARS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-            
+
             let mut line_len = 0;
             let mut i = 0;
-            
+
             while i + 2 < size {
                 let b1 = data_slice[i];
                 let b2 = data_slice[i + 1];
                 let b3 = data_slice[i + 2];
-                
+
                 guard.append_byte(BASE64_CHARS[((b1 >> 2) & 0x3F) as usize]);
                 guard.append_byte(BASE64_CHARS[(((b1 & 0x03) << 4) | ((b2 >> 4) & 0x0F)) as usize]);
                 guard.append_byte(BASE64_CHARS[(((b2 & 0x0F) << 2) | ((b3 >> 6) & 0x03)) as usize]);
                 guard.append_byte(BASE64_CHARS[(b3 & 0x3F) as usize]);
-                
+
                 line_len += 4;
                 if newline != 0 && line_len >= 76 {
                     guard.append_byte(b'\n');
                     line_len = 0;
                 }
-                
+
                 i += 3;
             }
-            
+
             // Handle remaining bytes
             if i < size {
                 let b1 = data_slice[i];
                 guard.append_byte(BASE64_CHARS[((b1 >> 2) & 0x3F) as usize]);
-                
+
                 if i + 1 < size {
                     let b2 = data_slice[i + 1];
                     guard.append_byte(BASE64_CHARS[(((b1 & 0x03) << 4) | ((b2 >> 4) & 0x0F)) as usize]);

@@ -387,33 +387,37 @@ mod colorspace_integration {
 
     #[test]
     fn test_device_colorspaces() {
-        let gray = fz_device_gray(0);
-        let rgb = fz_device_rgb(0);
-        let cmyk = fz_device_cmyk(0);
+        unsafe {
+            let gray = fz_device_gray(0);
+            let rgb = fz_device_rgb(0);
+            let cmyk = fz_device_cmyk(0);
 
-        assert_eq!(fz_colorspace_n(0, gray), 1);
-        assert_eq!(fz_colorspace_n(0, rgb), 3);
-        assert_eq!(fz_colorspace_n(0, cmyk), 4);
+            assert_eq!(fz_colorspace_n(0, gray), 1);
+            assert_eq!(fz_colorspace_n(0, rgb), 3);
+            assert_eq!(fz_colorspace_n(0, cmyk), 4);
 
-        assert_eq!(fz_colorspace_is_gray(0, gray), 1);
-        assert_eq!(fz_colorspace_is_rgb(0, rgb), 1);
-        assert_eq!(fz_colorspace_is_cmyk(0, cmyk), 1);
+            assert_eq!(fz_colorspace_is_gray(0, gray), 1);
+            assert_eq!(fz_colorspace_is_rgb(0, rgb), 1);
+            assert_eq!(fz_colorspace_is_cmyk(0, cmyk), 1);
+        }
     }
 
     #[test]
     fn test_color_conversion() {
-        let gray = fz_device_gray(0);
-        let rgb = fz_device_rgb(0);
+        unsafe {
+            let gray = fz_device_gray(0);
+            let rgb = fz_device_rgb(0);
 
-        let src = [0.5f32];
-        let mut dst = [0.0f32; 3];
+            let src = [0.5f32];
+            let mut dst = [0.0f32; 3];
 
-        fz_convert_color(0, gray, src.as_ptr(), rgb, dst.as_mut_ptr(), 0);
+            fz_convert_color(0, gray, src.as_ptr(), rgb, dst.as_mut_ptr(), 0);
 
-        // Gray to RGB should produce equal components
-        assert!((dst[0] - 0.5).abs() < 0.01);
-        assert!((dst[1] - 0.5).abs() < 0.01);
-        assert!((dst[2] - 0.5).abs() < 0.01);
+            // Gray to RGB should produce equal components
+            assert!((dst[0] - 0.5).abs() < 0.01);
+            assert!((dst[1] - 0.5).abs() < 0.01);
+            assert!((dst[2] - 0.5).abs() < 0.01);
+        }
     }
 }
 
@@ -423,40 +427,44 @@ mod pixmap_integration {
 
     #[test]
     fn test_pixmap_creation_and_manipulation() {
-        let rgb = fz_device_rgb(0);
-        let pix = fz_new_pixmap(0, rgb, 100, 100, 0, 1);
+        unsafe {
+            let rgb = fz_device_rgb(0);
+            let pix = fz_new_pixmap(0, rgb, 100, 100, 0, 1);
 
-        assert_ne!(pix, 0);
-        assert_eq!(fz_pixmap_width(0, pix), 100);
-        assert_eq!(fz_pixmap_height(0, pix), 100);
-        assert_eq!(fz_pixmap_alpha(0, pix), 1);
-        assert_eq!(fz_pixmap_components(0, pix), 4); // RGB + alpha
+            assert_ne!(pix, 0);
+            assert_eq!(fz_pixmap_width(0, pix), 100);
+            assert_eq!(fz_pixmap_height(0, pix), 100);
+            assert_eq!(fz_pixmap_alpha(0, pix), 1);
+            assert_eq!(fz_pixmap_components(0, pix), 4); // RGB + alpha
 
-        // Test clear
-        fz_clear_pixmap_with_value(0, pix, 128);
-        assert_eq!(fz_get_pixmap_sample(0, pix, 0, 0, 0), 128);
+            // Test clear
+            fz_clear_pixmap_with_value(0, pix, 128);
+            assert_eq!(fz_get_pixmap_sample(0, pix, 0, 0, 0), 128);
 
-        // Test set/get
-        fz_set_pixmap_sample(0, pix, 50, 50, 0, 255);
-        assert_eq!(fz_get_pixmap_sample(0, pix, 50, 50, 0), 255);
+            // Test set/get
+            fz_set_pixmap_sample(0, pix, 50, 50, 0, 255);
+            assert_eq!(fz_get_pixmap_sample(0, pix, 50, 50, 0), 255);
 
-        fz_drop_pixmap(0, pix);
+            fz_drop_pixmap(0, pix);
+        }
     }
 
     #[test]
     fn test_pixmap_bbox() {
         use nanopdf::ffi::geometry::fz_irect;
 
-        let rgb = fz_device_rgb(0);
-        let bbox = fz_irect { x0: 10, y0: 20, x1: 110, y1: 120 };
-        let pix = fz_new_pixmap_with_bbox(0, rgb, bbox, 0, 0);
+        unsafe {
+            let rgb = fz_device_rgb(0);
+            let bbox = fz_irect { x0: 10, y0: 20, x1: 110, y1: 120 };
+            let pix = fz_new_pixmap_with_bbox(0, rgb, bbox, 0, 0);
 
-        assert_eq!(fz_pixmap_x(0, pix), 10);
-        assert_eq!(fz_pixmap_y(0, pix), 20);
-        assert_eq!(fz_pixmap_width(0, pix), 100);
-        assert_eq!(fz_pixmap_height(0, pix), 100);
+            assert_eq!(fz_pixmap_x(0, pix), 10);
+            assert_eq!(fz_pixmap_y(0, pix), 20);
+            assert_eq!(fz_pixmap_width(0, pix), 100);
+            assert_eq!(fz_pixmap_height(0, pix), 100);
 
-        fz_drop_pixmap(0, pix);
+            fz_drop_pixmap(0, pix);
+        }
     }
 }
 
@@ -466,31 +474,33 @@ mod stream_integration {
 
     #[test]
     fn test_stream_from_memory() {
-        let ctx = fz_new_context(std::ptr::null(), std::ptr::null(), 0);
-        let data = b"Hello, Stream!";
-        let stm = fz_open_memory(ctx, data.as_ptr(), data.len());
+        unsafe {
+            let ctx = fz_new_context(std::ptr::null(), std::ptr::null(), 0);
+            let data = b"Hello, Stream!";
+            let stm = fz_open_memory(ctx, data.as_ptr(), data.len());
 
-        assert_ne!(stm, 0);
+            assert_ne!(stm, 0);
 
-        // Read byte by byte
-        assert_eq!(fz_read_byte(ctx, stm), b'H' as i32);
-        assert_eq!(fz_read_byte(ctx, stm), b'e' as i32);
-        assert_eq!(fz_read_byte(ctx, stm), b'l' as i32);
+            // Read byte by byte
+            assert_eq!(fz_read_byte(ctx, stm), b'H' as i32);
+            assert_eq!(fz_read_byte(ctx, stm), b'e' as i32);
+            assert_eq!(fz_read_byte(ctx, stm), b'l' as i32);
 
-        // Check position
-        assert_eq!(fz_tell(ctx, stm), 3);
+            // Check position
+            assert_eq!(fz_tell(ctx, stm), 3);
 
-        // Seek to beginning
-        fz_seek(ctx, stm, 0, 0);
-        assert_eq!(fz_tell(ctx, stm), 0);
-        assert_eq!(fz_read_byte(ctx, stm), b'H' as i32);
+            // Seek to beginning
+            fz_seek(ctx, stm, 0, 0);
+            assert_eq!(fz_tell(ctx, stm), 0);
+            assert_eq!(fz_read_byte(ctx, stm), b'H' as i32);
 
-        // Check EOF
-        fz_seek(ctx, stm, 0, 2); // SEEK_END
-        assert_eq!(fz_is_eof(ctx, stm), 1);
+            // Check EOF
+            fz_seek(ctx, stm, 0, 2); // SEEK_END
+            assert_eq!(fz_is_eof(ctx, stm), 1);
 
-        fz_drop_stream(ctx, stm);
-        fz_drop_context(ctx);
+            fz_drop_stream(ctx, stm);
+            fz_drop_context(ctx);
+        }
     }
 }
 

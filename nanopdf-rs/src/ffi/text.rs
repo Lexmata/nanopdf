@@ -55,12 +55,15 @@ pub extern "C" fn fz_show_glyph(
                         transform.d, transform.e, transform.f
                     );
 
-                    let _ = guard.show_glyph(
+                    guard.show_glyph(
                         Arc::clone(&f),
                         matrix,
                         glyph,
                         unicode,
                         wmode,
+                        0, // bidi_level
+                        crate::fitz::text::BidiDirection::Ltr, // markup_dir
+                        crate::fitz::text::TextLanguage::Unset, // language
                     );
                 }
             }
@@ -96,7 +99,15 @@ pub extern "C" fn fz_show_string(
                         transform.d, transform.e, transform.f
                     );
 
-                    let _ = guard.show_string(Arc::clone(&f), matrix, s, wmode);
+                    let _ = guard.show_string(
+                        Arc::clone(&f),
+                        matrix,
+                        s,
+                        wmode,
+                        0, // bidi_level
+                        crate::fitz::text::BidiDirection::Ltr, // markup_dir
+                        crate::fitz::text::TextLanguage::Unset, // language
+                    );
                 }
             }
         }
