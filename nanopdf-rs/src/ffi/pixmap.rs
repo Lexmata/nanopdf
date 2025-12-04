@@ -417,8 +417,8 @@ pub extern "C" fn fz_convert_pixmap(
 
                     // Get source color values
                     let mut src_colors = [0u8; 4];
-                    for c in 0..src_colorants.min(4) {
-                        src_colors[c] = guard.samples.get(src_offset + c).copied().unwrap_or(0);
+                    for (c, color) in src_colors.iter_mut().enumerate().take(src_colorants.min(4)) {
+                        *color = guard.samples.get(src_offset + c).copied().unwrap_or(0);
                     }
 
                     // Convert colors (simple mapping)
