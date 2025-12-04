@@ -1,8 +1,17 @@
 /**
  * NanoPDF - Fast, lightweight PDF library
  *
- * This is a MuPDF-compatible C FFI header for the NanoPDF Rust library.
+ * This is a comprehensive C FFI header for the NanoPDF Rust library.
  * All functions are prefixed with fz_ or pdf_ for compatibility with MuPDF.
+ *
+ * This header includes all auto-generated module headers with complete
+ * function declarations for all 660+ FFI functions.
+ *
+ * Usage:
+ *   #include <nanopdf.h>
+ *
+ * For MuPDF drop-in compatibility:
+ *   #include <mupdf.h>
  */
 
 #ifndef NANOPDF_H
@@ -16,7 +25,10 @@
 extern "C" {
 #endif
 
-/* Forward declarations - opaque handles */
+// ============================================================================
+// Type Definitions - Opaque handles for resource management
+// ============================================================================
+
 typedef int32_t fz_context;
 typedef int32_t fz_document;
 typedef int32_t fz_page;
@@ -38,8 +50,54 @@ typedef int32_t pdf_obj;
 typedef int32_t pdf_annot;
 typedef int32_t pdf_form_field;
 
-/* Core FFI functions are defined in the compiled library */
-/* See the Rust documentation for detailed function signatures */
+// ============================================================================
+// Geometry types (used by many modules)
+// ============================================================================
+
+typedef struct {
+    float x, y;
+} fz_point;
+
+typedef struct {
+    float x0, y0;
+    float x1, y1;
+} fz_rect;
+
+typedef struct {
+    int x0, y0;
+    int x1, y1;
+} fz_irect;
+
+typedef struct {
+    float a, b, c, d, e, f;
+} fz_matrix;
+
+typedef struct {
+    fz_point ul, ur, ll, lr;
+} fz_quad;
+
+// ============================================================================
+// Common type aliases
+// ============================================================================
+
+typedef int32_t PdfObjHandle;
+typedef int32_t Handle;
+
+// ============================================================================
+// Function Declarations
+// ============================================================================
+
+/*
+ * All function declarations are auto-generated from Rust FFI source.
+ * See individual module headers in mupdf/fitz/ and mupdf/pdf/ for details.
+ *
+ * Total: 660+ functions covering:
+ * - Core fitz functions (geometry, buffers, streams, devices, etc.)
+ * - PDF-specific functions (annotations, forms, objects, etc.)
+ */
+
+// For complete function declarations, include the comprehensive header:
+#include "mupdf.h"
 
 #ifdef __cplusplus
 }
