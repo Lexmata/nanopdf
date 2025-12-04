@@ -4,7 +4,7 @@
 
 use super::{Handle, HandleStore, PIXMAPS, BUFFERS};
 use crate::fitz::image::Image;
-use std::sync::LazyLock;
+use std::sync::{Arc, LazyLock, Mutex};
 
 /// Image storage
 pub static IMAGES: LazyLock<HandleStore<Image>> =

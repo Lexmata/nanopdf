@@ -265,7 +265,7 @@ mod tests {
     #[test]
     fn test_bound_text() {
         let text_handle = fz_new_text(0);
-        let bounds = fz_bound_text(0, text_handle, 0, super::super::geometry::fz_matrix::IDENTITY);
+        let bounds = fz_bound_text(0, text_handle, 0, super::super::geometry::fz_matrix::identity());
         // Empty text should have zero bounds
         assert_eq!(bounds.x0, 0.0);
         assert_eq!(bounds.y0, 0.0);
