@@ -391,7 +391,7 @@ mod tests {
 
         fz_rectto(0, path_handle, 0.0, 0.0, 100.0, 200.0);
 
-        let bounds = fz_bound_path(0, path_handle, 0, super::super::geometry::fz_matrix::IDENTITY);
+        let bounds = fz_bound_path(0, path_handle, 0, super::super::geometry::fz_matrix::identity());
         assert!((bounds.x0 - 0.0).abs() < 0.1);
         assert!((bounds.y0 - 0.0).abs() < 0.1);
         assert!((bounds.x1 - 100.0).abs() < 0.1);

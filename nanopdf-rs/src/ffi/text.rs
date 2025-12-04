@@ -324,7 +324,7 @@ mod tests {
             0,
             text_handle,
             font_handle,
-            super::super::geometry::fz_matrix::IDENTITY,
+            super::super::geometry::fz_matrix::identity(),
             c"Hello".as_ptr(),
             0,
         );
