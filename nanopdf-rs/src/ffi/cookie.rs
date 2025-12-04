@@ -396,13 +396,13 @@ mod tests {
     fn test_abort() {
         let cookie = fz_new_cookie(0);
         assert_eq!(fz_cookie_should_abort(0, cookie), 0);
-        
+
         fz_cookie_abort(0, cookie);
         assert_eq!(fz_cookie_should_abort(0, cookie), 1);
-        
+
         fz_cookie_reset_abort(0, cookie);
         assert_eq!(fz_cookie_should_abort(0, cookie), 0);
-        
+
         fz_drop_cookie(0, cookie);
     }
 
@@ -410,17 +410,17 @@ mod tests {
     fn test_progress() {
         let cookie = fz_new_cookie(0);
         fz_cookie_set_progress_max(0, cookie, 100);
-        
+
         assert_eq!(fz_cookie_get_progress(0, cookie), 0);
         assert_eq!(fz_cookie_progress_percent(0, cookie), 0);
-        
+
         fz_cookie_set_progress(0, cookie, 50);
         assert_eq!(fz_cookie_get_progress(0, cookie), 50);
         assert_eq!(fz_cookie_progress_percent(0, cookie), 50);
-        
+
         fz_cookie_inc_progress(0, cookie);
         assert_eq!(fz_cookie_get_progress(0, cookie), 51);
-        
+
         fz_drop_cookie(0, cookie);
     }
 
@@ -428,13 +428,13 @@ mod tests {
     fn test_errors() {
         let cookie = fz_new_cookie(0);
         assert_eq!(fz_cookie_get_errors(0, cookie), 0);
-        
+
         fz_cookie_inc_errors(0, cookie);
         assert_eq!(fz_cookie_get_errors(0, cookie), 1);
-        
+
         fz_cookie_inc_errors(0, cookie);
         assert_eq!(fz_cookie_get_errors(0, cookie), 2);
-        
+
         fz_drop_cookie(0, cookie);
     }
 
@@ -442,13 +442,13 @@ mod tests {
     fn test_incomplete() {
         let cookie = fz_new_cookie(0);
         assert_eq!(fz_cookie_is_incomplete(0, cookie), 0);
-        
+
         fz_cookie_set_incomplete(0, cookie, 1);
         assert_eq!(fz_cookie_is_incomplete(0, cookie), 1);
-        
+
         fz_cookie_set_incomplete(0, cookie, 0);
         assert_eq!(fz_cookie_is_incomplete(0, cookie), 0);
-        
+
         fz_drop_cookie(0, cookie);
     }
 
@@ -460,15 +460,15 @@ mod tests {
         fz_cookie_set_progress_max(0, cookie, 100);
         fz_cookie_inc_errors(0, cookie);
         fz_cookie_set_incomplete(0, cookie, 1);
-        
+
         fz_cookie_reset(0, cookie);
-        
+
         assert_eq!(fz_cookie_should_abort(0, cookie), 0);
         assert_eq!(fz_cookie_get_progress(0, cookie), 0);
         assert_eq!(fz_cookie_get_progress_max(0, cookie), 0);
         assert_eq!(fz_cookie_get_errors(0, cookie), 0);
         assert_eq!(fz_cookie_is_incomplete(0, cookie), 0);
-        
+
         fz_drop_cookie(0, cookie);
     }
 
@@ -477,7 +477,7 @@ mod tests {
         assert_eq!(fz_cookie_should_abort(0, 9999), 0);
         assert_eq!(fz_cookie_get_progress(0, 9999), 0);
         assert_eq!(fz_cookie_get_errors(0, 9999), 0);
-        
+
         // These should not crash
         fz_cookie_abort(0, 9999);
         fz_cookie_set_progress(0, 9999, 50);

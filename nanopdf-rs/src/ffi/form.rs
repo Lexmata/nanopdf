@@ -693,7 +693,7 @@ pub extern "C" fn pdf_field_default_value(
             let default_val = &guard.default_value;
             let bytes = default_val.as_bytes();
             let len = (bytes.len() as i32).min(buf_size - 1);
-            
+
             unsafe {
                 std::ptr::copy_nonoverlapping(bytes.as_ptr(), buf as *mut u8, len as usize);
                 *buf.offset(len as isize) = 0;

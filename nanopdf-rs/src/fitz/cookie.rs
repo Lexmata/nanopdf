@@ -142,10 +142,10 @@ mod tests {
     fn test_abort() {
         let cookie = Cookie::new();
         assert!(!cookie.should_abort());
-        
+
         cookie.abort();
         assert!(cookie.should_abort());
-        
+
         cookie.reset_abort();
         assert!(!cookie.should_abort());
     }
@@ -154,14 +154,14 @@ mod tests {
     fn test_progress() {
         let cookie = Cookie::new();
         cookie.set_progress_max(100);
-        
+
         assert_eq!(cookie.progress(), 0);
         assert_eq!(cookie.progress_percent(), 0.0);
-        
+
         cookie.set_progress(50);
         assert_eq!(cookie.progress(), 50);
         assert_eq!(cookie.progress_percent(), 50.0);
-        
+
         cookie.inc_progress();
         assert_eq!(cookie.progress(), 51);
     }
@@ -170,10 +170,10 @@ mod tests {
     fn test_errors() {
         let cookie = Cookie::new();
         assert_eq!(cookie.errors(), 0);
-        
+
         cookie.inc_errors();
         assert_eq!(cookie.errors(), 1);
-        
+
         cookie.inc_errors();
         assert_eq!(cookie.errors(), 2);
     }
@@ -182,10 +182,10 @@ mod tests {
     fn test_incomplete() {
         let cookie = Cookie::new();
         assert!(!cookie.is_incomplete());
-        
+
         cookie.set_incomplete(true);
         assert!(cookie.is_incomplete());
-        
+
         cookie.set_incomplete(false);
         assert!(!cookie.is_incomplete());
     }
@@ -198,9 +198,9 @@ mod tests {
         cookie.set_progress_max(100);
         cookie.inc_errors();
         cookie.set_incomplete(true);
-        
+
         cookie.reset();
-        
+
         assert!(!cookie.should_abort());
         assert_eq!(cookie.progress(), 0);
         assert_eq!(cookie.progress_max(), 0);
@@ -213,10 +213,10 @@ mod tests {
         let cookie1 = Cookie::new();
         cookie1.set_progress(10);
         cookie1.set_progress_max(100);
-        
+
         let cookie2 = cookie1.clone();
         cookie2.set_progress(20);
-        
+
         // Both should see the same progress since they share the Arc
         assert_eq!(cookie1.progress(), 20);
         assert_eq!(cookie2.progress(), 20);
@@ -226,7 +226,7 @@ mod tests {
     fn test_progress_percent_zero_max() {
         let cookie = Cookie::new();
         assert_eq!(cookie.progress_percent(), 0.0);
-        
+
         cookie.set_progress(10);
         assert_eq!(cookie.progress_percent(), 0.0); // Still 0 because max is 0
     }
