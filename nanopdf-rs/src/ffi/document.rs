@@ -594,10 +594,10 @@ pub extern "C" fn fz_resolve_link(
     };
 
     // Parse page number from URI (e.g., "#page=5" or just "5")
-    let page_num = if uri_str.starts_with("#page=") {
-        uri_str[6..].parse::<i32>().ok()
-    } else if uri_str.starts_with('#') {
-        uri_str[1..].parse::<i32>().ok()
+    let page_num = if let Some(num_str) = uri_str.strip_prefix("#page=") {
+        num_str.parse::<i32>().ok()
+    } else if let Some(num_str) = uri_str.strip_prefix('#') {
+        num_str.parse::<i32>().ok()
     } else {
         uri_str.parse::<i32>().ok()
     };
