@@ -2,15 +2,26 @@
 alwaysApply: true
 ---
 
-# No Stub Implementations
+# NO STUB IMPLEMENTATIONS - ZERO TOLERANCE POLICY
 
-All code must be fully implemented. Stub implementations, placeholders, and `NotImplemented` errors are prohibited.
+**CRITICAL REQUIREMENT**: Every single line of committed code must be fully functional. No exceptions.
 
-## Rule
+## Absolute Rule
 
-**NEVER create stub implementations, placeholder code, or functions that return `NotImplemented` errors.**
+**ALL CODE MUST BE COMPLETE AND WORKING**
 
-All functions, methods, and modules must be complete and functional when committed to the repository.
+This means:
+- ✅ Every function performs its actual stated operation
+- ✅ All algorithms are real, not placeholders
+- ✅ All data structures contain real data, not dummies
+- ✅ Every operation produces real results
+- ❌ ZERO validation-only implementations
+- ❌ ZERO "TODO" or "FIXME" comments
+- ❌ ZERO `unimplemented!()` or `todo!()` macros
+- ❌ ZERO functions that return success without doing work
+- ❌ ZERO hiding incomplete code in private functions
+
+**This applies to PUBLIC and PRIVATE functions equally.**
 
 ## Rationale
 
@@ -20,9 +31,29 @@ All functions, methods, and modules must be complete and functional when committ
 4. **Maintainability**: Stubs are often forgotten and left incomplete
 5. **Professionalism**: Production code should not contain placeholders
 
+## What Counts as "Fully Implemented"
+
+A function is ONLY considered fully implemented if:
+
+1. ✅ It performs the ACTUAL operation its name/docs describe
+2. ✅ It uses real algorithms and data structures, not placeholders
+3. ✅ It handles all specified inputs correctly
+4. ✅ It returns meaningful results
+5. ✅ It has proper error handling for edge cases
+6. ✅ It integrates with other modules as designed
+
+A function is NOT fully implemented if it:
+
+1. ❌ Only validates inputs without doing the work
+2. ❌ Returns success without performing operations
+3. ❌ Has comments saying "TODO", "FIXME", "In a full implementation"
+4. ❌ Contains `unimplemented!()`, `todo!()`, or similar macros
+5. ❌ Returns dummy/fake data instead of real results
+6. ❌ Just copies input to output without actual processing
+
 ## Prohibited Patterns
 
-### ❌ DO NOT DO THIS
+### ❌ ABSOLUTELY FORBIDDEN
 
 ```rust
 // BAD: Stub implementation with NotImplemented error
@@ -41,15 +72,38 @@ pub fn merge_pdfs(&self, files: &[&str]) -> Result<()> {
     todo!("Implement PDF merging")
 }
 
-// BAD: Empty implementation that doesn't do what it claims
+// BAD: Only validates without doing work
 pub fn save(&self, path: &str) -> Result<()> {
-    // Does nothing
+    if path.is_empty() {
+        return Err(Error::Invalid("path"));
+    }
+    // Full implementation would write the file...
     Ok(())
 }
 
-// BAD: Fake implementation
+// BAD: Fake implementation that just validates
+pub fn optimize_images(&self) -> Result<()> {
+    // Verify PDF exists
+    if !self.path.exists() {
+        return Err(Error::NotFound);
+    }
+    // "In a full implementation, this would optimize images"
+    Ok(())
+}
+
+// BAD: Returns dummy data
 pub fn get_page_count(&self) -> usize {
     0 // Always returns 0, not actually implemented
+}
+
+// BAD: Just copies input without processing
+pub fn compress(&self, data: &[u8]) -> Vec<u8> {
+    data.to_vec() // Doesn't actually compress!
+}
+
+// BAD: Private stub (still forbidden!)
+fn internal_helper(&self) -> Result<()> {
+    todo!("implement later")
 }
 ```
 
@@ -88,53 +142,47 @@ pub fn merge_pdfs(&self, files: &[&str]) -> Result<()> {
 }
 ```
 
-## Exceptions
+## No Exceptions for Incomplete Work
 
-### When Planning is Acceptable
+**CRITICAL**: There are NO EXCEPTIONS for incomplete implementations in committed code.
 
-During the **initial design phase** (before any commit), you may:
+### What This Means
 
-1. **Architecture Planning**: Outline module structure in comments
-2. **API Design**: Define function signatures with detailed doc comments
-3. **Prototyping**: Create experimental branches with incomplete code
+1. **No Private Stubs**: Making a function private does NOT excuse it from being fully implemented
+2. **No Hidden Stubs**: Moving incomplete code to internal modules is NOT acceptable
+3. **No Feature Flag Stubs**: Even behind feature flags, all code must be complete
+4. **No Comments Explaining Incompleteness**: Comments like "TODO", "FIXME", "In a full implementation" are prohibited
 
-**BUT**: None of this incomplete code should be committed to `main`, `develop`, or feature branches intended for review.
+### If a Feature is Too Complex
 
-### Phased Implementation
+If you encounter a feature that is genuinely too complex to implement:
 
-If a feature is too large to implement at once:
-
-**Option 1: Hidden/Private Implementation**
-
+**Option 1: Break It Down**
 ```rust
-// Keep incomplete functions private until ready
-mod internal {
-    // Work in progress, not exposed to users
-    fn experimental_feature() -> Result<()> {
-        todo!()
-    }
+// Instead of one stub function, implement it piece by piece
+pub fn complex_operation(&self) -> Result<()> {
+    self.step_one()?;
+    self.step_two()?;
+    self.step_three()?;
+    Ok(())
 }
 
-// Only expose what's complete
-pub fn stable_feature() -> Result<()> {
-    // Fully implemented
+// Each step is FULLY implemented
+fn step_one(&self) -> Result<()> {
+    // Complete implementation here
     Ok(())
 }
 ```
 
-**Option 2: Feature Flags**
-
+**Option 2: Don't Add the Function**
 ```rust
-#[cfg(feature = "experimental")]
-pub fn new_feature() -> Result<()> {
-    // May be incomplete, but behind feature flag
-    todo!()
-}
+// Don't add functions you can't implement
+// Wait until you CAN implement them fully
 ```
 
-**Option 3: Separate Branch**
+**Option 3: WIP Branch Only**
 
-Work on a WIP branch that doesn't get merged until complete.
+Work on a separate WIP branch that NEVER gets merged until ALL functions are complete.
 
 ## Implementation Checklist
 
@@ -316,20 +364,61 @@ pub fn set_color_with_opacity(&mut self, r: f32, g: f32, b: f32, a: f32) -> Resu
 }
 ```
 
+## Enforcement
+
+### Mandatory Requirements
+
+**EVERY function in committed code must:**
+
+1. Actually perform its stated operation
+2. Work correctly with real data
+3. Be testable and tested
+4. Have zero placeholder comments
+5. Use real algorithms, not validation-only code
+
+### Code Review Checklist
+
+Reviewers MUST reject code containing:
+- ❌ `todo!()` or `unimplemented!()` macros
+- ❌ Functions that only validate inputs
+- ❌ Comments mentioning "TODO", "FIXME", "full implementation", "would", "should"
+- ❌ Dummy return values
+- ❌ Success returns without actual work
+- ❌ Any incomplete functionality, public OR private
+
+### Automated Checks
+
+CI/CD should fail on:
+```bash
+# Detect stub patterns
+git grep -n "todo!()" src/
+git grep -n "unimplemented!()" src/
+git grep -n "full implementation" src/
+git grep -n "TODO:" src/
+git grep -n "FIXME:" src/
+```
+
 ## Summary
 
-**Rule**: Every public function must be fully implemented before commit.
+**ABSOLUTE RULE**: Every function—public, private, or internal—must be FULLY FUNCTIONAL before commit.
 
-**Exceptions**: Private/experimental code, feature-flagged code, or WIP branches.
+**NO EXCEPTIONS**: Private functions, feature-flagged code, and internal helpers must ALL be complete.
 
-**Goal**: High-quality, reliable code that users can depend on.
+**ZERO TOLERANCE**: A single stub, TODO, or incomplete function blocks the entire PR.
 
-**Benefit**: No technical debt, clear expectations, better user experience.
+**ENFORCEMENT**: MAXIMUM - Stubs are treated as critical bugs and block all merges.
 
 ---
 
-**Enforcement Level**: STRICT - No exceptions without explicit approval
+**What This Means For AI Assistants:**
 
-**Applies To**: All Rust code, FFI bindings, and public APIs
+When asked to implement a feature:
+1. **DO**: Implement it completely using actual algorithms and data structures
+2. **DO**: Break complex features into smaller fully-implemented pieces
+3. **DO**: Use existing codebase infrastructure to build real functionality
+4. **DON'T**: Add validation-only code that claims to be complete
+5. **DON'T**: Use phrases like "In a full implementation" or "This would"
+6. **DON'T**: Return success without doing the actual work
+7. **DON'T**: Hide stubs by making them private
 
-**Review Priority**: HIGH - Stubs should block PR approval
+**If you cannot fully implement something**: Tell the user honestly instead of creating stubs.
