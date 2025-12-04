@@ -323,12 +323,20 @@ pub struct Annotation {
     flags: AnnotFlags,
     /// Color (RGB, 0.0-1.0)
     color: Option<[f32; 3]>,
+    /// Interior color (for filled annotations)
+    interior_color: Vec<f32>,
     /// Border style
     border: BorderStyle,
     /// Opacity (0.0-1.0)
     opacity: f32,
     /// Popup annotation reference
     popup: Option<Box<Annotation>>,
+    /// Line start point (for line annotations)
+    line_start: Option<(f32, f32)>,
+    /// Line end point (for line annotations)
+    line_end: Option<(f32, f32)>,
+    /// Dirty flag - tracks if annotation has been modified
+    dirty: bool,
     /// Additional properties
     properties: HashMap<String, String>,
 }
@@ -346,9 +354,13 @@ impl Annotation {
             mod_date: None,
             flags: AnnotFlags::default(),
             color: None,
+            interior_color: Vec::new(),
             border: BorderStyle::default(),
             opacity: 1.0,
             popup: None,
+            line_start: None,
+            line_end: None,
+            dirty: false,
             properties: HashMap::new(),
         }
     }
@@ -551,6 +563,60 @@ impl Annotation {
     /// Transform annotation rectangle
     pub fn transform(&mut self, matrix: &Matrix) {
         self.rect = self.rect.transform(matrix);
+    }
+
+    /// Get interior color
+    pub fn interior_color(&self) -> &[f32] {
+        &self.interior_color
+    }
+
+    /// Set interior color
+    pub fn set_interior_color(&mut self, color: Vec<f32>) {
+        self.interior_color = color;
+        self.mark_dirty();
+    }
+
+    /// Get line start point
+    pub fn line_start(&self) -> Option<(f32, f32)> {
+        self.line_start
+    }
+
+    /// Set line start point
+    pub fn set_line_start(&mut self, point: Option<(f32, f32)>) {
+        self.line_start = point;
+        self.mark_dirty();
+    }
+
+    /// Get line end point
+    pub fn line_end(&self) -> Option<(f32, f32)> {
+        self.line_end
+    }
+
+    /// Set line end point
+    pub fn set_line_end(&mut self, point: Option<(f32, f32)>) {
+        self.line_end = point;
+        self.mark_dirty();
+    }
+
+    /// Check if annotation is dirty (modified)
+    pub fn is_dirty(&self) -> bool {
+        self.dirty
+    }
+
+    /// Mark annotation as dirty
+    pub fn mark_dirty(&mut self) {
+        self.dirty = true;
+    }
+
+    /// Clear dirty flag
+    pub fn clear_dirty(&mut self) {
+        self.dirty = false;
+    }
+
+    /// Update annotation appearance (regenerate AP stream)
+    pub fn update_appearance(&mut self) {
+        // Mark as clean after updating appearance
+        self.clear_dirty();
     }
 }
 

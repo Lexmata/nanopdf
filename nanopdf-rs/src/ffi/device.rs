@@ -7,11 +7,16 @@ use crate::fitz::device::{Device, BBoxDevice, TraceDevice, NullDevice};
 use crate::fitz::display_list::ListDevice;
 use crate::fitz::geometry::{Matrix, Rect};
 use crate::fitz::colorspace::Colorspace as FitzColorspace;
-use std::sync::LazyLock;
+use std::sync::{LazyLock, Mutex};
+use std::collections::HashMap;
 
 /// Device storage
 pub static DEVICES: LazyLock<HandleStore<Box<dyn Device + Send + Sync>>> =
     LazyLock::new(HandleStore::default);
+
+/// Device hints storage (device handle -> hints bitfield)
+static DEVICE_HINTS: LazyLock<Mutex<HashMap<Handle, i32>>> =
+    LazyLock::new(|| Mutex::new(HashMap::new()));
 
 /// Convert FFI colorspace to Fitz colorspace
 fn get_fitz_colorspace(handle: Handle) -> Option<FitzColorspace> {
@@ -762,14 +767,24 @@ pub extern "C" fn fz_device_type(_ctx: Handle, dev: Handle) -> *const std::ffi::
 
 /// Enable device hints
 #[unsafe(no_mangle)]
-pub extern "C" fn fz_enable_device_hints(_ctx: Handle, _dev: Handle, _hints: i32) {
-    // Placeholder - device hints not yet implemented
+pub extern "C" fn fz_enable_device_hints(_ctx: Handle, dev: Handle, hints: i32) {
+    if DEVICES.get(dev).is_some() {
+        if let Ok(mut hints_map) = DEVICE_HINTS.lock() {
+            let current_hints = hints_map.get(&dev).copied().unwrap_or(0);
+            hints_map.insert(dev, current_hints | hints);
+        }
+    }
 }
 
 /// Disable device hints
 #[unsafe(no_mangle)]
-pub extern "C" fn fz_disable_device_hints(_ctx: Handle, _dev: Handle, _hints: i32) {
-    // Placeholder - device hints not yet implemented
+pub extern "C" fn fz_disable_device_hints(_ctx: Handle, dev: Handle, hints: i32) {
+    if DEVICES.get(dev).is_some() {
+        if let Ok(mut hints_map) = DEVICE_HINTS.lock() {
+            let current_hints = hints_map.get(&dev).copied().unwrap_or(0);
+            hints_map.insert(dev, current_hints & !hints);
+        }
+    }
 }
 
 #[cfg(test)]

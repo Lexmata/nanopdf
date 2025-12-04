@@ -48,16 +48,30 @@ pub extern "C" fn pdf_drop_form(_ctx: Handle, form: Handle) {
 
 /// Get first widget on page
 #[unsafe(no_mangle)]
-pub extern "C" fn pdf_first_widget(_ctx: Handle, _page: Handle) -> Handle {
-    // For now, return 0 (no widgets)
-    // Full implementation would iterate page widgets
+pub extern "C" fn pdf_first_widget(_ctx: Handle, page: Handle) -> Handle {
+    if let Some(p) = super::document::PAGES.get(page) {
+        if let Ok(guard) = p.lock() {
+            return guard.first_widget().unwrap_or(0);
+        }
+    }
     0
 }
 
 /// Get next widget
 #[unsafe(no_mangle)]
-pub extern "C" fn pdf_next_widget(_ctx: Handle, _widget: Handle) -> Handle {
-    // For now, return 0 (end of list)
+pub extern "C" fn pdf_next_widget(_ctx: Handle, widget: Handle) -> Handle {
+    // Find the page this widget belongs to by searching all loaded pages
+    if FORM_FIELDS.get(widget).is_some() {
+        for page_handle in 1..10000 { // Reasonable page limit
+            if let Some(p) = super::document::PAGES.get(page_handle) {
+                if let Ok(guard) = p.lock() {
+                    if guard.widgets.contains(&widget) {
+                        return guard.next_widget(widget).unwrap_or(0);
+                    }
+                }
+            }
+        }
+    }
     0
 }
 

@@ -250,11 +250,57 @@ pub extern "C" fn fz_text_is_empty(_ctx: Handle, text: Handle) -> i32 {
     1
 }
 
-/// Walk through text items (simplified iterator)
+/// Text walk callback function type
+/// Callback receives: user arg, font handle, trm matrix, unicode char, glyph id
+type TextWalkCallback = extern "C" fn(
+    *mut std::ffi::c_void,
+    Handle,
+    *const super::geometry::fz_matrix,
+    i32,
+    i32,
+) -> i32;
+
+/// Walk through text items invoking callback for each glyph
 #[unsafe(no_mangle)]
-pub extern "C" fn fz_text_walk(_ctx: Handle, text: Handle, _callback: *const std::ffi::c_void, _arg: *mut std::ffi::c_void) -> i32 {
-    // Placeholder - full text walking would require more complex callback handling
-    if TEXTS.get(text).is_some() { 1 } else { 0 }
+pub extern "C" fn fz_text_walk(_ctx: Handle, text: Handle, callback: *const std::ffi::c_void, arg: *mut std::ffi::c_void) -> i32 {
+    if callback.is_null() {
+        return 0;
+    }
+
+    if let Some(txt) = TEXTS.get(text) {
+        if let Ok(guard) = txt.lock() {
+            // Cast callback pointer to function pointer
+            let cb: TextWalkCallback = unsafe { std::mem::transmute(callback) };
+            
+            // Walk through all spans
+            for span in guard.spans() {
+                // Get or create a font handle for this span's font
+                // Clone the Arc contents to create a new Font
+                let font_handle = super::font::FONTS.insert((*span.font).clone());
+                
+                // Convert trm matrix to FFI format
+                let trm = super::geometry::fz_matrix {
+                    a: span.trm.a,
+                    b: span.trm.b,
+                    c: span.trm.c,
+                    d: span.trm.d,
+                    e: span.trm.e,
+                    f: span.trm.f,
+                };
+                
+                // Walk through all items in this span
+                for item in span.items() {
+                    // Call the callback for this glyph
+                    let result = cb(arg, font_handle, &trm, item.ucs as i32, item.gid as i32);
+                    if result == 0 {
+                        return 0; // Callback requested termination
+                    }
+                }
+            }
+            return 1;
+        }
+    }
+    0
 }
 
 #[cfg(test)]

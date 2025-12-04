@@ -91,16 +91,30 @@ pub extern "C" fn pdf_drop_annot(_ctx: Handle, annot: Handle) {
 
 /// Get first annotation on page
 #[unsafe(no_mangle)]
-pub extern "C" fn pdf_first_annot(_ctx: Handle, _page: Handle) -> Handle {
-    // For now, return 0 (no annotations)
-    // Full implementation would iterate page annotations
+pub extern "C" fn pdf_first_annot(_ctx: Handle, page: Handle) -> Handle {
+    if let Some(p) = super::document::PAGES.get(page) {
+        if let Ok(guard) = p.lock() {
+            return guard.first_annotation().unwrap_or(0);
+        }
+    }
     0
 }
 
 /// Get next annotation
 #[unsafe(no_mangle)]
-pub extern "C" fn pdf_next_annot(_ctx: Handle, _annot: Handle) -> Handle {
-    // For now, return 0 (end of list)
+pub extern "C" fn pdf_next_annot(_ctx: Handle, annot: Handle) -> Handle {
+    // Find the page this annotation belongs to by searching all loaded pages
+    if ANNOTATIONS.get(annot).is_some() {
+        for page_handle in 1..10000 { // Reasonable page limit
+            if let Some(p) = super::document::PAGES.get(page_handle) {
+                if let Ok(guard) = p.lock() {
+                    if guard.annotations.contains(&annot) {
+                        return guard.next_annotation(annot).unwrap_or(0);
+                    }
+                }
+            }
+        }
+    }
     0
 }
 
@@ -333,14 +347,21 @@ pub extern "C" fn pdf_set_annot_color(_ctx: Handle, annot: Handle, n: i32, color
 /// # Safety
 /// Caller must ensure color array points to valid memory for n floats
 #[unsafe(no_mangle)]
-pub extern "C" fn pdf_annot_interior_color(_ctx: Handle, _annot: Handle, n: *mut i32, _color: *mut f32) {
-    if n.is_null() {
+pub extern "C" fn pdf_annot_interior_color(_ctx: Handle, annot: Handle, n: *mut i32, color: *mut f32) {
+    if n.is_null() || color.is_null() {
         return;
     }
 
-    // Interior color not yet implemented in Rust API
-    unsafe {
-        *n = 0;
+    if let Some(a) = ANNOTATIONS.get(annot) {
+        if let Ok(guard) = a.lock() {
+            let int_color = guard.interior_color();
+            unsafe {
+                *n = int_color.len() as i32;
+                for (i, &c) in int_color.iter().enumerate().take(4) {
+                    *color.add(i) = c;
+                }
+            }
+        }
     }
 }
 
@@ -349,8 +370,20 @@ pub extern "C" fn pdf_annot_interior_color(_ctx: Handle, _annot: Handle, n: *mut
 /// # Safety
 /// Caller must ensure color array points to valid memory with n floats
 #[unsafe(no_mangle)]
-pub extern "C" fn pdf_set_annot_interior_color(_ctx: Handle, _annot: Handle, _n: i32, _color: *const f32) {
-    // Interior color not yet implemented in Rust API
+pub extern "C" fn pdf_set_annot_interior_color(_ctx: Handle, annot: Handle, n: i32, color: *const f32) {
+    if color.is_null() || n < 0 || n > 4 {
+        return;
+    }
+
+    if let Some(a) = ANNOTATIONS.get(annot) {
+        if let Ok(mut guard) = a.lock() {
+            let mut new_color = Vec::new();
+            for i in 0..n as usize {
+                new_color.push(unsafe { *color.add(i) });
+            }
+            guard.set_interior_color(new_color);
+        }
+    }
 }
 
 // ============================================================================
@@ -361,11 +394,27 @@ pub extern "C" fn pdf_set_annot_interior_color(_ctx: Handle, _annot: Handle, _n:
 #[unsafe(no_mangle)]
 pub extern "C" fn pdf_annot_line(
     _ctx: Handle,
-    _annot: Handle,
-    _a: *mut super::geometry::fz_point,
-    _b: *mut super::geometry::fz_point,
+    annot: Handle,
+    a: *mut super::geometry::fz_point,
+    b: *mut super::geometry::fz_point,
 ) -> i32 {
-    // Line properties not yet implemented in Rust API
+    if a.is_null() || b.is_null() {
+        return 0;
+    }
+
+    if let Some(an) = ANNOTATIONS.get(annot) {
+        if let Ok(guard) = an.lock() {
+            if let (Some(start), Some(end)) = (guard.line_start(), guard.line_end()) {
+                unsafe {
+                    (*a).x = start.0;
+                    (*a).y = start.1;
+                    (*b).x = end.0;
+                    (*b).y = end.1;
+                }
+                return 1;
+            }
+        }
+    }
     0
 }
 
@@ -373,11 +422,16 @@ pub extern "C" fn pdf_annot_line(
 #[unsafe(no_mangle)]
 pub extern "C" fn pdf_set_annot_line(
     _ctx: Handle,
-    _annot: Handle,
-    _a: super::geometry::fz_point,
-    _b: super::geometry::fz_point,
+    annot: Handle,
+    a: super::geometry::fz_point,
+    b: super::geometry::fz_point,
 ) {
-    // Line properties not yet implemented in Rust API
+    if let Some(an) = ANNOTATIONS.get(annot) {
+        if let Ok(mut guard) = an.lock() {
+            guard.set_line_start(Some((a.x, a.y)));
+            guard.set_line_end(Some((b.x, b.y)));
+        }
+    }
 }
 
 // ============================================================================
@@ -413,22 +467,35 @@ pub extern "C" fn pdf_set_annot_border_width(_ctx: Handle, annot: Handle, width:
 
 /// Check if annotation has been modified
 #[unsafe(no_mangle)]
-pub extern "C" fn pdf_annot_has_dirty(_ctx: Handle, _annot: Handle) -> i32 {
-    // Dirty tracking not yet implemented in Rust API
+pub extern "C" fn pdf_annot_has_dirty(_ctx: Handle, annot: Handle) -> i32 {
+    if let Some(a) = ANNOTATIONS.get(annot) {
+        if let Ok(guard) = a.lock() {
+            return if guard.is_dirty() { 1 } else { 0 };
+        }
+    }
     0
 }
 
 /// Mark annotation as clean
 #[unsafe(no_mangle)]
-pub extern "C" fn pdf_annot_clear_dirty(_ctx: Handle, _annot: Handle) {
-    // Dirty tracking not yet implemented in Rust API
+pub extern "C" fn pdf_annot_clear_dirty(_ctx: Handle, annot: Handle) {
+    if let Some(a) = ANNOTATIONS.get(annot) {
+        if let Ok(mut guard) = a.lock() {
+            guard.clear_dirty();
+        }
+    }
 }
 
 /// Update annotation appearance
 #[unsafe(no_mangle)]
-pub extern "C" fn pdf_update_annot(_ctx: Handle, _annot: Handle) -> i32 {
-    // Appearance update not yet implemented in Rust API
-    1 // Return success
+pub extern "C" fn pdf_update_annot(_ctx: Handle, annot: Handle) -> i32 {
+    if let Some(a) = ANNOTATIONS.get(annot) {
+        if let Ok(mut guard) = a.lock() {
+            guard.update_appearance();
+            return 1;
+        }
+    }
+    0
 }
 
 /// Check if an annotation is valid

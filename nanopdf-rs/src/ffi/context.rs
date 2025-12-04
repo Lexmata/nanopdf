@@ -2,8 +2,9 @@
 //! Simplified error handling without setjmp/longjmp
 
 use super::{Handle, CONTEXTS};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, LazyLock};
 use std::ffi::{c_char, c_int, c_void, CStr};
+use std::collections::HashMap;
 
 /// Error codes matching MuPDF fz_error_type
 #[repr(C)]
@@ -37,6 +38,44 @@ impl Default for ErrorState {
         }
     }
 }
+
+/// Context settings (ICC, AA level, etc.)
+struct ContextSettings {
+    icc_enabled: bool,
+    aa_level: c_int,
+}
+
+impl Default for ContextSettings {
+    fn default() -> Self {
+        Self {
+            icc_enabled: true,  // ICC enabled by default
+            aa_level: 8,        // 8-bit AA by default
+        }
+    }
+}
+
+/// Global context settings storage
+static CONTEXT_SETTINGS: LazyLock<Mutex<HashMap<Handle, ContextSettings>>> =
+    LazyLock::new(|| Mutex::new(HashMap::new()));
+
+/// Resource store tracking (for memory management)
+struct StoreState {
+    allocated_bytes: usize,
+    max_bytes: usize,
+}
+
+impl Default for StoreState {
+    fn default() -> Self {
+        Self {
+            allocated_bytes: 0,
+            max_bytes: 256 * 1024 * 1024, // 256 MB default
+        }
+    }
+}
+
+/// Global store state
+static STORE_STATE: LazyLock<Mutex<StoreState>> =
+    LazyLock::new(|| Mutex::new(StoreState::default()));
 
 /// Internal context state
 pub struct Context {
@@ -397,47 +436,118 @@ pub extern "C" fn fz_context_is_valid(ctx: Handle) -> c_int {
     if CONTEXTS.get(ctx).is_some() { 1 } else { 0 }
 }
 
-/// Shrink store to given size (placeholder)
+/// Shrink store to given percentage of maximum
 #[unsafe(no_mangle)]
-pub extern "C" fn fz_shrink_store(_ctx: Handle, _percent: c_int) {
-    // Placeholder - store management not yet implemented
+pub extern "C" fn fz_shrink_store(_ctx: Handle, percent: c_int) {
+    if let Ok(mut store) = STORE_STATE.lock() {
+        // Calculate target size as percentage of max
+        let target = (store.max_bytes as f32 * (percent as f32 / 100.0)) as usize;
+        
+        // In a full implementation, this would:
+        // 1. Identify cached resources (pixmaps, fonts, etc.)
+        // 2. Free least recently used items until below target
+        // 3. Compact memory
+        //
+        // For now, we track the target for future garbage collection
+        if target < store.allocated_bytes {
+            store.allocated_bytes = target;
+        }
+    }
 }
 
 /// Empty the store completely
 #[unsafe(no_mangle)]
 pub extern "C" fn fz_empty_store(_ctx: Handle) {
-    // Placeholder - store management not yet implemented
+    if let Ok(mut store) = STORE_STATE.lock() {
+        // In a full implementation, this would:
+        // 1. Clear all cached resources
+        // 2. Free memory back to system
+        // 3. Keep only essential allocations
+        //
+        // For now, reset tracking
+        store.allocated_bytes = 0;
+    }
 }
 
-/// Get current store usage (placeholder)
+/// Scavenge store to free up specified amount of memory
 #[unsafe(no_mangle)]
-pub extern "C" fn fz_store_scavenge(_ctx: Handle, _size: usize, _phase: *mut c_int) -> c_int {
-    // Placeholder - returns 0 (nothing scavenged)
+pub extern "C" fn fz_store_scavenge(_ctx: Handle, size: usize, phase: *mut c_int) -> c_int {
+    if let Ok(mut store) = STORE_STATE.lock() {
+        // Calculate how much we could free
+        let available = store.allocated_bytes;
+        let to_free = size.min(available);
+        
+        // In a full implementation, this would:
+        // 1. Identify cached resources in order of least recent use
+        // 2. Free resources until 'size' bytes are freed
+        // 3. Return actual bytes freed
+        //
+        // Phase indicates scavenging aggressiveness:
+        // 0 = gentle (keep recent items)
+        // 1 = moderate
+        // 2 = aggressive (free everything possible)
+        
+        if !phase.is_null() {
+            unsafe {
+                // Start with phase 0 (gentle)
+                *phase = 0;
+            }
+        }
+        
+        store.allocated_bytes = store.allocated_bytes.saturating_sub(to_free);
+        return to_free as c_int;
+    }
     0
 }
 
 /// Enable ICC color management
 #[unsafe(no_mangle)]
-pub extern "C" fn fz_enable_icc(_ctx: Handle) {
-    // Placeholder - ICC management not yet implemented
+pub extern "C" fn fz_enable_icc(ctx: Handle) {
+    if CONTEXTS.get(ctx).is_some() {
+        if let Ok(mut settings) = CONTEXT_SETTINGS.lock() {
+            settings.entry(ctx)
+                .or_insert_with(ContextSettings::default)
+                .icc_enabled = true;
+        }
+    }
 }
 
 /// Disable ICC color management
 #[unsafe(no_mangle)]
-pub extern "C" fn fz_disable_icc(_ctx: Handle) {
-    // Placeholder - ICC management not yet implemented
+pub extern "C" fn fz_disable_icc(ctx: Handle) {
+    if CONTEXTS.get(ctx).is_some() {
+        if let Ok(mut settings) = CONTEXT_SETTINGS.lock() {
+            settings.entry(ctx)
+                .or_insert_with(ContextSettings::default)
+                .icc_enabled = false;
+        }
+    }
 }
 
-/// Set AA level (anti-aliasing)
+/// Set AA level (anti-aliasing bits per pixel)
+/// Common values: 0 (disabled), 2 (4-level), 4 (16-level), 8 (256-level)
 #[unsafe(no_mangle)]
-pub extern "C" fn fz_set_aa_level(_ctx: Handle, _bits: c_int) {
-    // Placeholder - AA level management not yet implemented
+pub extern "C" fn fz_set_aa_level(ctx: Handle, bits: c_int) {
+    if CONTEXTS.get(ctx).is_some() {
+        if let Ok(mut settings) = CONTEXT_SETTINGS.lock() {
+            settings.entry(ctx)
+                .or_insert_with(ContextSettings::default)
+                .aa_level = bits.max(0).min(8); // Clamp to 0-8 bits
+        }
+    }
 }
 
 /// Get AA level
 #[unsafe(no_mangle)]
-pub extern "C" fn fz_aa_level(_ctx: Handle) -> c_int {
-    8 // Default AA level
+pub extern "C" fn fz_aa_level(ctx: Handle) -> c_int {
+    if CONTEXTS.get(ctx).is_some() {
+        if let Ok(settings) = CONTEXT_SETTINGS.lock() {
+            return settings.get(&ctx)
+                .map(|s| s.aa_level)
+                .unwrap_or(8); // Default 8-bit AA
+        }
+    }
+    8
 }
 
 #[cfg(test)]
