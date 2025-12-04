@@ -590,10 +590,10 @@ mod tests {
     fn test_annot_flags() {
         let mut flags = AnnotFlags::default();
         assert!(flags.has(AnnotFlags::PRINT));
-        
+
         flags.set(AnnotFlags::HIDDEN);
         assert!(flags.has(AnnotFlags::HIDDEN));
-        
+
         flags.clear(AnnotFlags::HIDDEN);
         assert!(!flags.has(AnnotFlags::HIDDEN));
     }
@@ -610,7 +610,7 @@ mod tests {
     fn test_annotation_new() {
         let rect = Rect::new(10.0, 10.0, 100.0, 50.0);
         let annot = Annotation::new(AnnotType::Text, rect);
-        
+
         assert_eq!(annot.annot_type(), AnnotType::Text);
         assert_eq!(annot.rect(), rect);
         assert_eq!(annot.opacity(), 1.0);
@@ -620,7 +620,7 @@ mod tests {
     fn test_text_annotation() {
         let rect = Rect::new(10.0, 10.0, 50.0, 50.0);
         let annot = Annotation::text(rect, "Test note");
-        
+
         assert_eq!(annot.annot_type(), AnnotType::Text);
         assert_eq!(annot.contents(), "Test note");
     }
@@ -630,7 +630,7 @@ mod tests {
         let rect = Rect::new(10.0, 10.0, 100.0, 20.0);
         let color = [1.0, 1.0, 0.0]; // Yellow
         let annot = Annotation::highlight(rect, color);
-        
+
         assert_eq!(annot.annot_type(), AnnotType::Highlight);
         assert_eq!(annot.color(), Some(color));
         assert_eq!(annot.opacity(), 0.5);
@@ -639,13 +639,13 @@ mod tests {
     #[test]
     fn test_annotation_properties() {
         let mut annot = Annotation::new(AnnotType::Text, Rect::EMPTY);
-        
+
         annot.set_author("John Doe");
         assert_eq!(annot.author(), "John Doe");
-        
+
         annot.set_subject("Important");
         assert_eq!(annot.subject(), "Important");
-        
+
         annot.set_opacity(0.7);
         assert_eq!(annot.opacity(), 0.7);
     }
@@ -653,14 +653,14 @@ mod tests {
     #[test]
     fn test_annotation_flags_operations() {
         let mut annot = Annotation::new(AnnotType::Text, Rect::EMPTY);
-        
+
         assert!(annot.is_printable());
         assert!(!annot.is_hidden());
-        
+
         let mut flags = AnnotFlags::default();
         flags.set(AnnotFlags::HIDDEN);
         annot.set_flags(flags);
-        
+
         assert!(annot.is_hidden());
     }
 
@@ -668,10 +668,10 @@ mod tests {
     fn test_annotation_intersects() {
         let annot_rect = Rect::new(10.0, 10.0, 50.0, 50.0);
         let annot = Annotation::new(AnnotType::Square, annot_rect);
-        
+
         let overlapping = Rect::new(30.0, 30.0, 70.0, 70.0);
         assert!(annot.intersects(&overlapping));
-        
+
         let non_overlapping = Rect::new(100.0, 100.0, 150.0, 150.0);
         assert!(!annot.intersects(&non_overlapping));
     }
@@ -679,10 +679,10 @@ mod tests {
     #[test]
     fn test_annotation_transform() {
         let mut annot = Annotation::new(AnnotType::Text, Rect::new(0.0, 0.0, 100.0, 50.0));
-        
+
         let matrix = Matrix::translate(10.0, 20.0);
         annot.transform(&matrix);
-        
+
         let rect = annot.rect();
         assert_eq!(rect.x0, 10.0);
         assert_eq!(rect.y0, 20.0);
@@ -692,11 +692,11 @@ mod tests {
     fn test_annotation_popup() {
         let mut annot = Annotation::new(AnnotType::Text, Rect::EMPTY);
         assert!(annot.popup().is_none());
-        
+
         let popup = Annotation::new(AnnotType::Popup, Rect::new(0.0, 0.0, 100.0, 100.0));
         annot.set_popup(Some(popup));
         assert!(annot.popup().is_some());
-        
+
         annot.set_popup(None);
         assert!(annot.popup().is_none());
     }
@@ -704,7 +704,7 @@ mod tests {
     #[test]
     fn test_annotation_custom_properties() {
         let mut annot = Annotation::new(AnnotType::Text, Rect::EMPTY);
-        
+
         annot.set_property("CustomKey".to_string(), "CustomValue".to_string());
         assert_eq!(annot.get_property("CustomKey"), Some("CustomValue"));
         assert_eq!(annot.get_property("NonExistent"), None);
