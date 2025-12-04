@@ -744,6 +744,34 @@ pub extern "C" fn fz_end_group(_ctx: Handle, dev: Handle) {
     }
 }
 
+/// Check if device is valid
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_device_is_valid(_ctx: Handle, dev: Handle) -> i32 {
+    if DEVICES.get(dev).is_some() { 1 } else { 0 }
+}
+
+/// Get device name/type
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_device_type(_ctx: Handle, dev: Handle) -> *const std::ffi::c_char {
+    if DEVICES.get(dev).is_some() {
+        c"generic_device".as_ptr()
+    } else {
+        c"invalid".as_ptr()
+    }
+}
+
+/// Enable device hints
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_enable_device_hints(_ctx: Handle, _dev: Handle, _hints: i32) {
+    // Placeholder - device hints not yet implemented
+}
+
+/// Disable device hints
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_disable_device_hints(_ctx: Handle, _dev: Handle, _hints: i32) {
+    // Placeholder - device hints not yet implemented
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
