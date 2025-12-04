@@ -123,7 +123,7 @@ pub extern "C" fn pdf_resolve_indirect(_ctx: Handle, _doc: Handle, obj: PdfObjHa
     // In our simplified implementation, we don't have true indirect references
     // that point to other objects in the storage. Instead, we return the object itself.
     // A full implementation would look up the object number in the document's xref table.
-    
+
     if obj == 0 {
         return 0;
     }

@@ -271,13 +271,13 @@ pub extern "C" fn fz_text_walk(_ctx: Handle, text: Handle, callback: *const std:
         if let Ok(guard) = txt.lock() {
             // Cast callback pointer to function pointer
             let cb: TextWalkCallback = unsafe { std::mem::transmute(callback) };
-            
+
             // Walk through all spans
             for span in guard.spans() {
                 // Get or create a font handle for this span's font
                 // Clone the Arc contents to create a new Font
                 let font_handle = super::font::FONTS.insert((*span.font).clone());
-                
+
                 // Convert trm matrix to FFI format
                 let trm = super::geometry::fz_matrix {
                     a: span.trm.a,
@@ -287,7 +287,7 @@ pub extern "C" fn fz_text_walk(_ctx: Handle, text: Handle, callback: *const std:
                     e: span.trm.e,
                     f: span.trm.f,
                 };
-                
+
                 // Walk through all items in this span
                 for item in span.items() {
                     // Call the callback for this glyph

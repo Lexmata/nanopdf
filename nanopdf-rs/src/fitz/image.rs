@@ -320,23 +320,30 @@ impl Image {
                 decoded
             }
             ImageFormat::Jpeg => {
-                // Would use jpeg decoder here
-                return Err(Error::Unsupported("JPEG decoding not yet implemented".into()));
+                use crate::pdf::filter::decode_dct;
+                decode_dct(&self.data, None)?
             }
             ImageFormat::Jpeg2000 => {
-                return Err(Error::Unsupported("JPEG2000 decoding not yet implemented".into()));
+                use crate::pdf::filter::decode_jpx;
+                decode_jpx(&self.data)?
             }
             ImageFormat::Jbig2 => {
-                return Err(Error::Unsupported("JBIG2 decoding not yet implemented".into()));
+                use crate::pdf::filter::decode_jbig2;
+                decode_jbig2(&self.data, None)?
             }
             ImageFormat::Ccitt => {
-                return Err(Error::Unsupported("CCITT decoding not yet implemented".into()));
+                use crate::pdf::filter::{decode_ccitt_fax, CCITTFaxDecodeParams};
+                // Use default CCITT parameters - caller should provide proper params
+                let params = CCITTFaxDecodeParams::default();
+                decode_ccitt_fax(&self.data, &params)?
             }
             ImageFormat::Lzw => {
-                return Err(Error::Unsupported("LZW decoding not yet implemented".into()));
+                use crate::pdf::filter::decode_lzw;
+                decode_lzw(&self.data, None)?
             }
             ImageFormat::RunLength => {
-                return Err(Error::Unsupported("RunLength decoding not yet implemented".into()));
+                use crate::pdf::filter::decode_run_length;
+                decode_run_length(&self.data)?
             }
             ImageFormat::Raw => {
                 return Ok(());
@@ -459,9 +466,37 @@ impl Image {
             return Ok(base_pixmap);
         }
 
-        // For now, just return base pixmap (scaling would be implemented here)
-        // In a full implementation, we'd use image scaling algorithms
-        Ok(base_pixmap)
+        // Perform actual image scaling
+        use image::{ImageBuffer, RgbaImage, imageops::FilterType};
+        
+        // Convert pixmap to image buffer (assuming RGBA format)
+        let img: RgbaImage = ImageBuffer::from_raw(
+            width as u32,
+            height as u32,
+            base_pixmap.samples().to_vec(),
+        ).ok_or_else(|| Error::Generic("Failed to create image buffer".into()))?;
+
+        // Resize image
+        let scaled_img = image::imageops::resize(
+            &img,
+            target_width as u32,
+            target_height as u32,
+            FilterType::Lanczos3, // High-quality scaling
+        );
+
+        // Convert back to pixmap
+        let mut scaled_pixmap = Pixmap::new(
+            base_pixmap.colorspace().cloned(),
+            target_width,
+            target_height,
+            base_pixmap.has_alpha(),
+        )?;
+
+        // Copy scaled image data
+        let scaled_data = scaled_img.into_raw();
+        scaled_pixmap.samples_mut().copy_from_slice(&scaled_data);
+
+        Ok(scaled_pixmap)
     }
 
     /// Get memory usage
@@ -492,29 +527,34 @@ impl Image {
         self.mask_type != MaskType::None || self.n == 1 && self.bpc == 1
     }
 
-    /// Create image from compressed data (stub for now - needs proper image decoding)
+    /// Create image from image file data (auto-detects format)
     pub fn from_data(data: &[u8]) -> Result<Self> {
-        // Simple stub: assume it's raw data for a small image
-        // Real implementation would detect format and decode
         if data.is_empty() {
             return Err(Error::Argument("Empty image data".into()));
         }
 
-        // Try to infer basic properties (this is a placeholder)
-        let width = ((data.len() as f32).sqrt()) as i32;
-        let height = if width > 0 { data.len() as i32 / width } else { 0 };
+        // Use image crate to decode the image format
+        use image::ImageReader;
+        use std::io::Cursor;
 
-        if width <= 0 || height <= 0 {
-            return Err(Error::Argument("Cannot infer image dimensions".into()));
-        }
+        let reader = ImageReader::new(Cursor::new(data))
+            .with_guessed_format()
+            .map_err(|e| Error::Generic(format!("Failed to detect image format: {}", e)))?;
+
+        let img = reader.decode()
+            .map_err(|e| Error::Generic(format!("Failed to decode image: {}", e)))?;
+
+        // Convert to RGBA
+        let rgba = img.to_rgba8();
+        let (width, height) = rgba.dimensions();
 
         Ok(Self {
-            width,
-            height,
+            width: width as i32,
+            height: height as i32,
             bpc: 8,
-            n: 3,
+            n: 4, // RGBA
             colorspace: Some(Colorspace::device_rgb()),
-            data: data.to_vec(),
+            data: rgba.into_raw(),
             format: ImageFormat::Raw,
             mask_type: MaskType::None,
             mask: None,

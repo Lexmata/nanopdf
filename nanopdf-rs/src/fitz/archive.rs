@@ -97,11 +97,108 @@ impl ZipArchive {
     }
 
     fn parse(&mut self) -> Result<()> {
-        // Simplified ZIP parsing - look for central directory
-        // In a full implementation, we'd properly parse ZIP structure
-
-        // For now, just create a placeholder
-        // Real implementation would use zip crate or manual parsing
+        // Parse ZIP central directory
+        // ZIP file format: Local file headers → Central directory → End of central directory
+        
+        // Find End of Central Directory Record (EOCD)
+        // EOCD signature: 0x06054b50
+        let eocd_sig = [0x50, 0x4b, 0x05, 0x06];
+        let mut eocd_pos = None;
+        
+        // Search backwards for EOCD (usually at end, but can have comment)
+        for i in (0..self.data.len().saturating_sub(22)).rev() {
+            if self.data.get(i..i+4) == Some(&eocd_sig) {
+                eocd_pos = Some(i);
+                break;
+            }
+        }
+        
+        let eocd_offset = eocd_pos.ok_or_else(|| 
+            Error::Generic("Not a valid ZIP archive: EOCD not found".into()))?;
+        
+        // Read EOCD fields
+        if eocd_offset + 22 > self.data.len() {
+            return Err(Error::Generic("Truncated ZIP archive".into()));
+        }
+        
+        let eocd = &self.data[eocd_offset..];
+        
+        // Extract central directory info
+        let cd_entries = u16::from_le_bytes([eocd[10], eocd[11]]) as usize;
+        let cd_size = u32::from_le_bytes([eocd[12], eocd[13], eocd[14], eocd[15]]) as usize;
+        let cd_offset = u32::from_le_bytes([eocd[16], eocd[17], eocd[18], eocd[19]]) as usize;
+        
+        // Parse central directory entries
+        let mut pos = cd_offset;
+        for _ in 0..cd_entries {
+            if pos + 46 > self.data.len() {
+                break; // Truncated archive
+            }
+            
+            // Check central directory file header signature: 0x02014b50
+            let cd_sig = [0x50, 0x4b, 0x01, 0x02];
+            if self.data.get(pos..pos+4) != Some(&cd_sig) {
+                break;
+            }
+            
+            // Read filename length and extra field length
+            let filename_len = u16::from_le_bytes([
+                self.data[pos + 28],
+                self.data[pos + 29],
+            ]) as usize;
+            let extra_len = u16::from_le_bytes([
+                self.data[pos + 30],
+                self.data[pos + 31],
+            ]) as usize;
+            let comment_len = u16::from_le_bytes([
+                self.data[pos + 32],
+                self.data[pos + 33],
+            ]) as usize;
+            
+            // Read compressed and uncompressed sizes
+            let compressed_size = u32::from_le_bytes([
+                self.data[pos + 20],
+                self.data[pos + 21],
+                self.data[pos + 22],
+                self.data[pos + 23],
+            ]) as usize;
+            let uncompressed_size = u32::from_le_bytes([
+                self.data[pos + 24],
+                self.data[pos + 25],
+                self.data[pos + 26],
+                self.data[pos + 27],
+            ]) as usize;
+            
+            // Read local file header offset
+            let local_offset = u32::from_le_bytes([
+                self.data[pos + 42],
+                self.data[pos + 43],
+                self.data[pos + 44],
+                self.data[pos + 45],
+            ]) as usize;
+            
+            // Extract filename
+            if pos + 46 + filename_len > self.data.len() {
+                break;
+            }
+            
+            let filename_bytes = &self.data[pos + 46..pos + 46 + filename_len];
+            if let Ok(filename) = std::str::from_utf8(filename_bytes) {
+                let entry = ArchiveEntry {
+                    name: filename.to_string(),
+                    size: uncompressed_size as u64,
+                    offset: local_offset as u64,
+                    is_dir: filename.ends_with('/'),
+                };
+                
+                self.entry_order.push(filename.to_string());
+                self.entries.insert(filename.to_string(), entry);
+            }
+            
+            // Move to next entry
+            pos += 46 + filename_len + extra_len + comment_len;
+        }
+        
         Ok(())
     }
 }

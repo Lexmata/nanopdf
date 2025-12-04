@@ -442,7 +442,7 @@ pub extern "C" fn fz_shrink_store(_ctx: Handle, percent: c_int) {
     if let Ok(mut store) = STORE_STATE.lock() {
         // Calculate target size as percentage of max
         let target = (store.max_bytes as f32 * (percent as f32 / 100.0)) as usize;
-        
+
         // Reduce store allocation to target
         // Note: Advanced cache management with LRU eviction could be added here
         // for systems that need fine-grained memory control
@@ -469,7 +469,7 @@ pub extern "C" fn fz_store_scavenge(_ctx: Handle, size: usize, phase: *mut c_int
         // Calculate how much we can free
         let available = store.allocated_bytes;
         let to_free = size.min(available);
-        
+
         // Phase indicates scavenging aggressiveness (0=gentle, 1=moderate, 2=aggressive)
         // Advanced cache implementations could use this to prioritize what to free
         if !phase.is_null() {
@@ -477,7 +477,7 @@ pub extern "C" fn fz_store_scavenge(_ctx: Handle, size: usize, phase: *mut c_int
                 *phase = 0; // Gentle phase
             }
         }
-        
+
         store.allocated_bytes = store.allocated_bytes.saturating_sub(to_free);
         return to_free as c_int;
     }
