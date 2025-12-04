@@ -98,23 +98,18 @@ impl Default for FontFlags {
 }
 
 /// Font stretch (width class)
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub enum FontStretch {
     UltraCondensed = 1,
     ExtraCondensed = 2,
     Condensed = 3,
     SemiCondensed = 4,
+    #[default]
     Normal = 5,
     SemiExpanded = 6,
     Expanded = 7,
     ExtraExpanded = 8,
     UltraExpanded = 9,
-}
-
-impl Default for FontStretch {
-    fn default() -> Self {
-        Self::Normal
-    }
 }
 
 /// Font weight (100-900)

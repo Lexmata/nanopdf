@@ -42,20 +42,15 @@ pub enum MaskType {
 }
 
 /// Image interpolation mode
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Interpolation {
     /// Nearest neighbor (fast, pixelated)
     Nearest,
     /// Linear interpolation (balanced)
+    #[default]
     Linear,
     /// Bicubic interpolation (smooth, slow)
     Bicubic,
-}
-
-impl Default for Interpolation {
-    fn default() -> Self {
-        Self::Linear
-    }
 }
 
 /// Complete image representation

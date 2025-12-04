@@ -9,10 +9,11 @@ use crate::fitz::path::{Path, StrokeState};
 use crate::fitz::text::Text;
 
 /// Blend modes for transparency groups
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[repr(u8)]
 pub enum BlendMode {
     // PDF 1.4 - standard separable
+    #[default]
     Normal = 0,
     Multiply = 1,
     Screen = 2,
@@ -77,12 +78,6 @@ impl BlendMode {
             Self::Color => "Color",
             Self::Luminosity => "Luminosity",
         }
-    }
-}
-
-impl Default for BlendMode {
-    fn default() -> Self {
-        Self::Normal
     }
 }
 

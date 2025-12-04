@@ -703,15 +703,19 @@ pub extern "C" fn fz_begin_mask(
             };
 
             // Read color if provided
-            let color_vec = if !color.is_null() && cs.is_some() {
-                let n = cs.as_ref().unwrap().n() as usize;
-                let mut vec = vec![0.0; n];
-                unsafe {
-                    for (i, item) in vec.iter_mut().enumerate() {
-                        *item = *color.add(i);
+            let color_vec = if !color.is_null() {
+                if let Some(ref cs_ref) = cs {
+                    let n = cs_ref.n() as usize;
+                    let mut vec = vec![0.0; n];
+                    unsafe {
+                        for (i, item) in vec.iter_mut().enumerate() {
+                            *item = *color.add(i);
+                        }
                     }
+                    Some(vec)
+                } else {
+                    None
                 }
-                Some(vec)
             } else {
                 None
             };
