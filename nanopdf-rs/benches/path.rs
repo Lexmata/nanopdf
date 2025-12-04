@@ -6,7 +6,7 @@ fn bench_path_creation(c: &mut Criterion) {
     let mut group = c.benchmark_group("path/creation");
 
     group.bench_function("new", |b| {
-        b.iter(|| Path::new())
+        b.iter(Path::new)
     });
 
     group.bench_function("with_capacity", |b| {

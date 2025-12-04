@@ -8,7 +8,7 @@ fn bench_text_creation(c: &mut Criterion) {
     let mut group = c.benchmark_group("text/creation");
 
     group.bench_function("new", |b| {
-        b.iter(|| Text::new())
+        b.iter(Text::new)
     });
 
     group.finish();

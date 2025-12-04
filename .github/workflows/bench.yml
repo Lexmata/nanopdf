@@ -108,11 +108,11 @@ jobs:
         run: |
           # Create directory for criterion reports
           mkdir -p gh-pages-criterion
-          
+
           # Copy criterion HTML reports
           if [ -d "nanopdf-rs/target/criterion" ]; then
             cp -r nanopdf-rs/target/criterion gh-pages-criterion/
-            
+
             # Create index page for criterion reports
             cat > gh-pages-criterion/index.html << 'EOF'
           <!DOCTYPE html>
@@ -165,14 +165,14 @@ jobs:
           </head>
           <body>
             <h1>🚀 NanoPDF Performance Benchmarks</h1>
-            
+
             <div class="nav">
               <h2>📊 Quick Links</h2>
               <a href="../dev/bench/">Historical Trends</a>
               <a href="criterion/report/index.html">Full Criterion Report</a>
               <a href="https://github.com/Lexmata/nanopdf">GitHub Repository</a>
             </div>
-            
+
             <h2>📦 Benchmark Suites</h2>
             <div class="benchmarks">
               <div class="benchmark">
@@ -184,7 +184,7 @@ jobs:
                   <li><a href="criterion/pixmap/report/index.html">Pixmap</a> - Pixel operations</li>
                 </ul>
               </div>
-              
+
               <div class="benchmark">
                 <h3>📝 Text & Fonts</h3>
                 <ul>
@@ -192,7 +192,7 @@ jobs:
                   <li><a href="criterion/text/report/index.html">Text</a> - Text layout & rendering</li>
                 </ul>
               </div>
-              
+
               <div class="benchmark">
                 <h3>🖼️ Images & Colors</h3>
                 <ul>
@@ -200,7 +200,7 @@ jobs:
                   <li><a href="criterion/colorspace/report/index.html">Colorspace</a> - Color conversions</li>
                 </ul>
               </div>
-              
+
               <div class="benchmark">
                 <h3>💾 I/O & Streams</h3>
                 <ul>
@@ -209,7 +209,7 @@ jobs:
                   <li><a href="criterion/output/report/index.html">Output</a> - Output streams</li>
                 </ul>
               </div>
-              
+
               <div class="benchmark">
                 <h3>📄 PDF Features</h3>
                 <ul>
@@ -219,7 +219,7 @@ jobs:
                 </ul>
               </div>
             </div>
-            
+
             <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666;">
               <p>Last updated: $(date)</p>
               <p>Commit: ${{ github.sha }}</p>

@@ -8,11 +8,11 @@ fn bench_device_creation(c: &mut Criterion) {
     let mut group = c.benchmark_group("device/creation");
 
     group.bench_function("bbox", |b| {
-        b.iter(|| BBoxDevice::new())
+        b.iter(BBoxDevice::new)
     });
 
     group.bench_function("trace", |b| {
-        b.iter(|| TraceDevice::new())
+        b.iter(TraceDevice::new)
     });
 
     group.finish();

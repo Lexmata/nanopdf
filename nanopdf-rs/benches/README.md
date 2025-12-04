@@ -167,14 +167,14 @@ use nanopdf::fitz::my_feature::MyFeature;
 
 fn bench_my_feature(c: &mut Criterion) {
     let mut group = c.benchmark_group("my_feature");
-    
+
     group.bench_function("operation", |b| {
         let feature = MyFeature::new();
         b.iter(|| {
             black_box(&feature).do_something(black_box(42))
         })
     });
-    
+
     group.finish();
 }
 

@@ -5,15 +5,15 @@ fn bench_colorspace_creation(c: &mut Criterion) {
     let mut group = c.benchmark_group("colorspace/creation");
 
     group.bench_function("device_gray", |b| {
-        b.iter(|| Colorspace::device_gray())
+        b.iter(Colorspace::device_gray)
     });
 
     group.bench_function("device_rgb", |b| {
-        b.iter(|| Colorspace::device_rgb())
+        b.iter(Colorspace::device_rgb)
     });
 
     group.bench_function("device_cmyk", |b| {
-        b.iter(|| Colorspace::device_cmyk())
+        b.iter(Colorspace::device_cmyk)
     });
 
     group.finish();

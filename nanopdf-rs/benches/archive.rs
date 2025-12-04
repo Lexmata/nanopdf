@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use nanopdf::fitz::archive::{Archive, ArchiveFormat};
+use nanopdf::fitz::archive::Archive;
 use std::path::PathBuf;
 
 fn bench_archive_creation(c: &mut Criterion) {
