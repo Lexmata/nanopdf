@@ -221,10 +221,10 @@ impl DirectoryArchive {
             path,
             entries: HashMap::new(),
         };
-        
+
         // Scan directory on creation
         archive.scan_entries()?;
-        
+
         Ok(archive)
     }
 
