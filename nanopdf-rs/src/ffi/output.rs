@@ -487,7 +487,7 @@ pub extern "C" fn fz_write_bits(
     if let Some(output_arc) = OUTPUTS.get(out) {
         if let Ok(mut guard) = output_arc.lock() {
             // Write bits most significant first
-            let mut val = value;
+            let val = value;
             let mut bits_left = count;
             
             while bits_left >= 8 {

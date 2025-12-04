@@ -637,15 +637,125 @@ pub extern "C" fn fz_append_base64(
     }
 }
 
+/// Append an integer formatted as string
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_append_int(_ctx: Handle, buf: Handle, value: i64) {
+    if let Some(buffer) = BUFFERS.get(buf) {
+        if let Ok(mut guard) = buffer.lock() {
+            let s = format!("{}", value);
+            guard.append(s.as_bytes());
+        }
+    }
+}
+
+/// Append float formatted as string
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_append_float(_ctx: Handle, buf: Handle, value: f32, digits: i32) {
+    if let Some(buffer) = BUFFERS.get(buf) {
+        if let Ok(mut guard) = buffer.lock() {
+            let s = if digits > 0 {
+                format!("{:.prec$}", value, prec = digits as usize)
+            } else {
+                format!("{}", value)
+            };
+            guard.append(s.as_bytes());
+        }
+    }
+}
+
+/// Append hexadecimal encoded data
+///
+/// # Safety
+/// Caller must ensure `data` points to valid memory of at least `size` bytes.
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_append_hex(
+    _ctx: Handle,
+    buf: Handle,
+    data: *const u8,
+    size: usize,
+) {
+    if data.is_null() || size == 0 {
+        return;
+    }
+
+    if let Some(buffer) = BUFFERS.get(buf) {
+        if let Ok(mut guard) = buffer.lock() {
+            // SAFETY: Caller guarantees data points to valid memory of size bytes
+            let data_slice = unsafe { std::slice::from_raw_parts(data, size) };
+            
+            const HEX_CHARS: &[u8] = b"0123456789abcdef";
+            for &byte in data_slice {
+                guard.append_byte(HEX_CHARS[(byte >> 4) as usize]);
+                guard.append_byte(HEX_CHARS[(byte & 0x0F) as usize]);
+            }
+        }
+    }
+}
+
+/// Compare two buffers for equality
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_buffer_eq(_ctx: Handle, buf1: Handle, buf2: Handle) -> i32 {
+    if buf1 == buf2 {
+        return 1;
+    }
+
+    let data1 = if let Some(b) = BUFFERS.get(buf1) {
+        if let Ok(guard) = b.lock() {
+            Some(guard.data().to_vec())
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    let data2 = if let Some(b) = BUFFERS.get(buf2) {
+        if let Ok(guard) = b.lock() {
+            Some(guard.data().to_vec())
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    match (data1, data2) {
+        (Some(d1), Some(d2)) => if d1 == d2 { 1 } else { 0 },
+        _ => 0,
+    }
+}
+
+/// Get buffer storage capacity
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_buffer_capacity(_ctx: Handle, buf: Handle) -> usize {
+    if let Some(buffer) = BUFFERS.get(buf) {
+        if let Ok(mut guard) = buffer.lock() {
+            return guard.data_mut().capacity();
+        }
+    }
+    0
+}
+
+/// Extract data from buffer as new buffer (move semantics)
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_buffer_extract(_ctx: Handle, buf: Handle) -> Handle {
+    if let Some(buffer) = BUFFERS.get(buf) {
+        if let Ok(mut guard) = buffer.lock() {
+            let data = guard.data().to_vec();
+            guard.clear();
+            return BUFFERS.insert(Buffer::from_data(&data));
+        }
+    }
+    0
+}
+
 // Note: fz_append_printf is not implemented due to variadic function complexity
 // in Rust FFI. Users should format strings in their own code and use fz_append_string.
 //
-// Other functions that return raw pointers to internal data cannot be implemented
-// safely without additional infrastructure. They would require:
-// 1. A stable buffer address (Box::leak or similar)
-// 2. Unsafe blocks to convert to raw pointers
-//
-// For a fully safe API, consider returning handles or using callback-based APIs instead.
+// Note: Functions returning raw pointers to internal mutable data (like fz_buffer_data)
+// cannot be safely implemented without additional infrastructure due to Rust's
+// borrowing rules and the handle-based architecture. Use fz_string_from_buffer for
+// read-only access, or work with buffer copies via fz_buffer_extract.
 
 #[cfg(test)]
 mod tests {
