@@ -12,7 +12,7 @@ pub fn c_str_to_str<'a>(ptr: *const c_char) -> Option<&'a str> {
     if ptr.is_null() {
         return None;
     }
-    
+
     unsafe {
         CStr::from_ptr(ptr).to_str().ok()
     }
@@ -26,10 +26,10 @@ pub fn str_to_c_buffer(src: &str, dst: *mut c_char, size: i32) -> i32 {
     if dst.is_null() || size <= 0 {
         return -1;
     }
-    
+
     let src_bytes = src.as_bytes();
     let copy_len = src_bytes.len().min((size - 1) as usize);
-    
+
     unsafe {
         std::ptr::copy_nonoverlapping(
             src_bytes.as_ptr(),
@@ -38,7 +38,7 @@ pub fn str_to_c_buffer(src: &str, dst: *mut c_char, size: i32) -> i32 {
         );
         *dst.add(copy_len) = 0; // Null terminate
     }
-    
+
     copy_len as i32
 }
 
@@ -56,7 +56,7 @@ pub fn copy_from_ptr<T: Copy>(ptr: *const T, len: usize) -> Option<Vec<T>> {
     if ptr.is_null() || len == 0 {
         return None;
     }
-    
+
     let mut vec = Vec::with_capacity(len);
     unsafe {
         std::ptr::copy_nonoverlapping(ptr, vec.as_mut_ptr(), len);
@@ -72,7 +72,7 @@ pub fn copy_to_ptr<T: Copy>(src: &[T], dst: *mut T) -> bool {
     if dst.is_null() || src.is_empty() {
         return false;
     }
-    
+
     unsafe {
         std::ptr::copy_nonoverlapping(src.as_ptr(), dst, src.len());
     }
@@ -86,7 +86,7 @@ pub fn write_ptr<T>(value: T, dst: *mut T) -> bool {
     if dst.is_null() {
         return false;
     }
-    
+
     unsafe {
         *dst = value;
     }
@@ -110,7 +110,7 @@ mod tests {
     #[test]
     fn test_c_str_to_str() {
         assert_eq!(c_str_to_str(std::ptr::null()), None);
-        
+
         let c_string = CString::new("Hello").unwrap();
         assert_eq!(c_str_to_str(c_string.as_ptr()), Some("Hello"));
     }
@@ -120,7 +120,7 @@ mod tests {
         let mut buf = [0i8; 10];
         let written = str_to_c_buffer("Hi", buf.as_mut_ptr(), 10);
         assert_eq!(written, 2);
-        
+
         let result = unsafe { CStr::from_ptr(buf.as_ptr()) };
         assert_eq!(result.to_str().unwrap(), "Hi");
     }
@@ -137,7 +137,7 @@ mod tests {
         let data = vec![1u8, 2, 3, 4, 5];
         let result = copy_from_ptr(data.as_ptr(), data.len());
         assert_eq!(result, Some(vec![1, 2, 3, 4, 5]));
-        
+
         assert_eq!(copy_from_ptr::<u8>(std::ptr::null(), 5), None);
     }
 
@@ -145,10 +145,10 @@ mod tests {
     fn test_copy_to_ptr() {
         let src = vec![1u8, 2, 3];
         let mut dst = vec![0u8; 3];
-        
+
         assert!(copy_to_ptr(&src, dst.as_mut_ptr()));
         assert_eq!(dst, vec![1, 2, 3]);
-        
+
         assert!(!copy_to_ptr(&src, std::ptr::null_mut()));
     }
 
@@ -157,7 +157,7 @@ mod tests {
         let mut value = 0i32;
         assert!(write_ptr(42, &mut value as *mut i32));
         assert_eq!(value, 42);
-        
+
         assert!(!write_ptr(42, std::ptr::null_mut()));
     }
 
