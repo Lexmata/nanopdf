@@ -15,10 +15,10 @@ This document describes how to build and install NanoPDF from source.
   ```bash
   # Debian/Ubuntu
   sudo apt install build-essential
-  
+
   # Fedora/RHEL
   sudo dnf install gcc make
-  
+
   # macOS
   xcode-select --install
   ```
