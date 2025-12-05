@@ -5,7 +5,7 @@
  * Handles text layout, glyph rendering, and text extraction.
  */
 
-import { Rect, Matrix, Point, type MatrixLike, type PointLike } from './geometry.js';
+import { Rect, Matrix, type MatrixLike } from './geometry.js';
 
 /**
  * Text span - a run of text with consistent formatting
@@ -391,7 +391,7 @@ export class Text {
     if (index < 0 || index >= this._spans.length) {
       return undefined;
     }
-    const span = this._spans[index];
+    const span = this._spans[index]!;
     return {
       ...span,
       items: [...span.items],

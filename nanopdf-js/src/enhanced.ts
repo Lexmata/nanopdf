@@ -33,10 +33,10 @@ export class Enhanced {
   /**
    * Add a blank page to a document
    */
-  addBlankPage(doc: Document, width: number, height: number): number {
+  addBlankPage(doc: Document, _width: number, _height: number): number {
     // Simplified: would call FFI to add page
     // Returns page index
-    return doc.countPages();
+    return doc.pageCount;
   }
 
   // ============================================================================
@@ -47,17 +47,17 @@ export class Enhanced {
    * Draw a line on a page
    */
   drawLine(
-    page: any,
-    x0: number,
-    y0: number,
-    x1: number,
-    y1: number,
+    _page: any,
+    _x0: number,
+    _y0: number,
+    _x1: number,
+    _y1: number,
     color: ColorLike,
-    alpha: number = 1.0,
-    lineWidth: number = 1.0
+    _alpha: number = 1.0,
+    _lineWidth: number = 1.0
   ): void {
     // Simplified: would create path and stroke
-    const c = Color.from(color);
+    const _c = Color.from(color);
     // In real implementation, would use Path and Device to draw
   }
 
@@ -65,17 +65,17 @@ export class Enhanced {
    * Draw a rectangle on a page
    */
   drawRectangle(
-    page: any,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
+    _page: any,
+    _x: number,
+    _y: number,
+    _width: number,
+    _height: number,
     color: ColorLike,
-    alpha: number = 1.0,
-    fill: boolean = false
+    _alpha: number = 1.0,
+    _fill: boolean = false
   ): void {
     // Simplified: would create path and fill/stroke
-    const c = Color.from(color);
+    const _c = Color.from(color);
     // In real implementation, would use Path and Device
   }
 
@@ -83,16 +83,16 @@ export class Enhanced {
    * Draw a circle on a page
    */
   drawCircle(
-    page: any,
-    x: number,
-    y: number,
-    radius: number,
+    _page: any,
+    _x: number,
+    _y: number,
+    _radius: number,
     color: ColorLike,
-    alpha: number = 1.0,
-    fill: boolean = false
+    _alpha: number = 1.0,
+    _fill: boolean = false
   ): void {
     // Simplified: would create circular path
-    const c = Color.from(color);
+    const _c = Color.from(color);
     // In real implementation, would use Path with curves
   }
 
@@ -104,13 +104,13 @@ export class Enhanced {
    * Add watermark to PDF
    */
   async addWatermark(
-    inputPath: string,
-    outputPath: string,
-    text: string,
-    x: number = 100,
-    y: number = 100,
-    fontSize: number = 48,
-    opacity: number = 0.3
+    _inputPath: string,
+    _outputPath: string,
+    _text: string,
+    _x: number = 100,
+    _y: number = 100,
+    _fontSize: number = 48,
+    _opacity: number = 0.3
   ): Promise<void> {
     // Simplified: would open PDF, add text to each page, save
     // In real implementation:
@@ -126,7 +126,7 @@ export class Enhanced {
   /**
    * Merge multiple PDFs into one
    */
-  async mergePDFs(inputPaths: string[], outputPath: string): Promise<void> {
+  async mergePDFs(_inputPaths: string[], _outputPath: string): Promise<void> {
     // Simplified: would open each PDF and append pages
     // In real implementation:
     // 1. Create new document
@@ -140,7 +140,7 @@ export class Enhanced {
   /**
    * Split PDF into separate files
    */
-  async splitPDF(inputPath: string, outputDir: string): Promise<string[]> {
+  async splitPDF(_inputPath: string, _outputDir: string): Promise<string[]> {
     // Simplified: would create one file per page
     // In real implementation:
     // 1. Open input PDF

@@ -493,9 +493,9 @@ export class TraceDevice extends Device {
   }
 
   protected onFillPath(
-    path: Path,
+    _path: Path,
     evenOdd: boolean,
-    ctm: Matrix,
+    _ctm: Matrix,
     colorspace: Colorspace,
     color: number[],
     alpha: number
@@ -504,9 +504,9 @@ export class TraceDevice extends Device {
   }
 
   protected onStrokePath(
-    path: Path,
+    _path: Path,
     stroke: StrokeState,
-    ctm: Matrix,
+    _ctm: Matrix,
     colorspace: Colorspace,
     color: number[],
     alpha: number
@@ -514,9 +514,9 @@ export class TraceDevice extends Device {
     this._log.push(`strokePath(width=${stroke.lineWidth}, colorspace=${colorspace.type}, color=[${color}], alpha=${alpha})`);
   }
 
-  protected onFillText(
+  protected override onFillText(
     text: string,
-    ctm: Matrix,
+    _ctm: Matrix,
     colorspace: Colorspace,
     color: number[],
     alpha: number
@@ -524,13 +524,13 @@ export class TraceDevice extends Device {
     this._log.push(`fillText("${text}", colorspace=${colorspace.type}, color=[${color}], alpha=${alpha})`);
   }
 
-  protected onFillImage(image: Pixmap, ctm: Matrix, alpha: number): void {
+  protected override onFillImage(image: Pixmap, _ctm: Matrix, alpha: number): void {
     this._log.push(`fillImage(${image.width}x${image.height}, alpha=${alpha})`);
   }
 
-  protected onBeginGroup(
+  protected override onBeginGroup(
     area: Rect,
-    colorspace: Colorspace,
+    _colorspace: Colorspace,
     isolated: boolean,
     knockout: boolean,
     blendMode: BlendMode,
@@ -539,7 +539,7 @@ export class TraceDevice extends Device {
     this._log.push(`beginGroup(area=${area}, isolated=${isolated}, knockout=${knockout}, blend=${blendMode}, alpha=${alpha})`);
   }
 
-  protected onEndGroup(): void {
+  protected override onEndGroup(): void {
     this._log.push('endGroup()');
   }
 }

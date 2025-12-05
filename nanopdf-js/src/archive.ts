@@ -109,7 +109,7 @@ export class Archive {
    * Clone this archive
    */
   clone(): Archive {
-    const cloned = new Archive(this._format, this._path);
+    const cloned = new Archive(this._format, this._path ?? undefined);
     cloned._entries = new Map(this._entries);
     return cloned;
   }

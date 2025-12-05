@@ -142,11 +142,9 @@ export class Page {
   /**
    * Render the page to PNG
    */
-  toPNG(dpi: number = 72): Uint8Array {
-    const scale = dpi / 72;
-    const matrix = Matrix.scale(scale, scale);
-    const pixmap = this.toPixmap(matrix, Colorspace.deviceRGB(), true);
-    return pixmap.toPNG();
+  toPNG(_dpi: number = 72): Uint8Array {
+    // TODO: Implement PNG encoding once Pixmap.toPNG() is available
+    throw new Error('PNG encoding not yet implemented');
   }
 
   /**
@@ -326,7 +324,7 @@ export class Document {
    * Check if the document has a specific permission
    * @param permission The permission to check (print, edit, copy, annotate)
    */
-  hasPermission(permission: string): boolean {
+  hasPermission(_permission: string): boolean {
     // For unencrypted documents, all permissions are granted
     if (!this._needsPassword) {
       return true;
@@ -377,7 +375,7 @@ export class Document {
    * @param name Named destination (e.g., "section1", "chapter2")
    * @returns Page number (0-based) or undefined if not found
    */
-  resolveNamedDest(name: string): number | undefined {
+  resolveNamedDest(_name: string): number | undefined {
     // TODO: Implement named destination lookup
     // This requires parsing the PDF /Dests or /Names dictionary
     return undefined;
@@ -421,7 +419,7 @@ export class Document {
    * @param height Target height
    * @param em Font size in points
    */
-  layout(width: number, height: number, em: number = 12): void {
+  layout(_width: number, _height: number, _em: number = 12): void {
     // No-op for non-reflowable PDFs
     // This is used for EPUB and other reflowable formats
   }

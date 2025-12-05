@@ -516,8 +516,8 @@ export class PdfDict extends PdfObject {
   /**
    * Get all entries as [key, value] pairs
    */
-  entries(): [string, PdfObject][] {
-    return Array.from(this.entries.entries());
+  getEntries(): [string, PdfObject][] {
+    return Array.from(this._entries.entries());
   }
 
   *[Symbol.iterator](): Generator<[string, PdfObject]> {
@@ -1156,7 +1156,7 @@ export function pdfResolveIndirect(obj: PdfObject): PdfObject {
  * @param genNum Generation number
  * @returns undefined (actual loading requires document)
  */
-export function pdfLoadObject(objNum: number, genNum: number): PdfObject | undefined {
+export function pdfLoadObject(_objNum: number, _genNum: number): PdfObject | undefined {
   // This is a placeholder - actual implementation would load from document
   // The real implementation will be in the Document class
   return undefined;

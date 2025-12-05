@@ -336,7 +336,7 @@ export class Annotation {
 
   isValid(): boolean {
     // Check if annotation has valid properties
-    if (!this._rect || this._rect.isEmpty()) {
+    if (!this._rect || this._rect.isEmpty) {
       return false;
     }
     if (this._opacity < 0 || this._opacity > 1) {

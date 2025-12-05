@@ -252,19 +252,6 @@ export class Context {
     return before - this._storeUsed;
   }
 
-  /**
-   * Add to store usage
-   */
-  private addStoreUsage(bytes: number): void {
-    this._storeUsed += bytes;
-  }
-
-  /**
-   * Remove from store usage
-   */
-  private removeStoreUsage(bytes: number): void {
-    this._storeUsed = Math.max(0, this._storeUsed - bytes);
-  }
 
   // ============================================================================
   // ICC Color Management

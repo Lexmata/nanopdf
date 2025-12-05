@@ -1,11 +1,11 @@
 /**
  * Pixmap - Raster image handling
- * 
+ *
  * This module provides 100% API compatibility with MuPDF's pixmap operations.
  * Handles pixel-based images, conversions, and manipulations.
  */
 
-import { Rect, IRect, type RectLike, type IRectLike } from './geometry.js';
+import { Rect, IRect, type IRectLike } from './geometry.js';
 import { Colorspace } from './colorspace.js';
 
 /**
@@ -62,7 +62,7 @@ export class Pixmap {
     alpha: boolean = true
   ): Pixmap {
     const b = IRect.from(bbox);
-    return new Pixmap(colorspace, b.width(), b.height(), alpha, b.x0, b.y0);
+    return new Pixmap(colorspace, b.width, b.height, alpha, b.x0, b.y0);
   }
 
   // ============================================================================

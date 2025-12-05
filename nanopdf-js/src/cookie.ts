@@ -291,8 +291,12 @@ export class CookieOperation<T> {
   ) {
     this._cookie = Cookie.create();
     this._operation = operation;
-    this._onProgress = options?.onProgress;
-    this._onError = options?.onError;
+    if (options?.onProgress) {
+      this._onProgress = options.onProgress;
+    }
+    if (options?.onError) {
+      this._onError = options.onError;
+    }
   }
 
   /**
