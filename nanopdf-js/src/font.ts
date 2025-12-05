@@ -5,7 +5,7 @@
  * Handles font loading, glyph encoding, metrics, and rendering.
  */
 
-import { Rect, Point, type RectLike } from './geometry.js';
+import { Rect, type RectLike } from './geometry.js';
 import { Path } from './path.js';
 
 /**

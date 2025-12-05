@@ -23,7 +23,6 @@ export {
   type QuadLike,
 
   // Colorspace types
-  ColorspaceType,
   type ColorspaceLike,
 
   // Pixmap types
@@ -41,7 +40,6 @@ export {
   DocumentPermission,
   type PageLocation,
   LinkDestType,
-  type Link,
   type OutlineItem as OutlineItemType,
 
   // PDF object types
@@ -61,7 +59,6 @@ export {
   type TextExtractionOptions,
 
   // Annotation types
-  AnnotationType,
   type AnnotationLike,
 
   // Form types
@@ -88,16 +85,9 @@ export { Buffer, BufferReader, BufferWriter } from './buffer.js';
 export { Stream, AsyncStream } from './stream.js';
 
 // ============================================================================
-// Colorspace
+// Colorspace and Pixmap (basic exports)
 // ============================================================================
-
-export { Colorspace, convertColor } from './colorspace.js';
-
-// ============================================================================
-// Pixmap
-// ============================================================================
-
-export { Pixmap } from './pixmap.js';
+// Note: Full implementations exported later in this file
 
 // ============================================================================
 // Document

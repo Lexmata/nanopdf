@@ -6,7 +6,6 @@
  */
 
 import { Rect, type RectLike } from './geometry.js';
-import { PdfDict, PdfObject } from './pdf/object.js';
 
 /**
  * PDF form field types

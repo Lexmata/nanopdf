@@ -517,7 +517,7 @@ export class PdfDict extends PdfObject {
    * Get all entries as [key, value] pairs
    */
   getEntries(): [string, PdfObject][] {
-    return Array.from(this._entries.entries());
+    return Array.from(this.entries.entries());
   }
 
   *[Symbol.iterator](): Generator<[string, PdfObject]> {

@@ -58,12 +58,12 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "dependencies": {},
   "optionalDependencies": {
     "node-addon-api": "^8.3.0",
     "node-gyp-build": "^4.8.4"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@types/node": "^22.10.1",
     "@typescript-eslint/eslint-plugin": "^8.18.1",
     "@typescript-eslint/parser": "^8.18.1",
@@ -95,4 +95,3 @@
     "onlyBuiltDependencies": []
   }
 }
-

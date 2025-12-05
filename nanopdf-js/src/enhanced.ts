@@ -7,7 +7,7 @@
 
 import { Context, getDefaultContext } from './context.js';
 import { Document } from './document.js';
-import { Color, type ColorLike } from './geometry.js';
+import { type ColorLike } from './geometry.js';
 
 /**
  * Enhanced NanoPDF API
@@ -49,17 +49,17 @@ export class Enhanced {
    * @note Requires FFI bindings to create paths and render to page
    */
   drawLine(
-    _page: any,
+    _page: unknown,
     _x0: number,
     _y0: number,
     _x1: number,
     _y1: number,
-    color: ColorLike,
+    _color: ColorLike,
     _alpha: number = 1.0,
     _lineWidth: number = 1.0
   ): void {
     // Drawing operations require FFI connection to Path and Device APIs
-    const _c = Color.from(color);
+    // @note When FFI is connected, will create Path, set color, and render to page
   }
 
   /**
@@ -67,17 +67,17 @@ export class Enhanced {
    * @note Requires FFI bindings to create paths and render to page
    */
   drawRectangle(
-    _page: any,
+    _page: unknown,
     _x: number,
     _y: number,
     _width: number,
     _height: number,
-    color: ColorLike,
+    _color: ColorLike,
     _alpha: number = 1.0,
     _fill: boolean = false
   ): void {
     // Drawing operations require FFI connection to Path and Device APIs
-    const _c = Color.from(color);
+    // @note When FFI is connected, will create Path, set color, and render to page
   }
 
   /**
@@ -85,16 +85,16 @@ export class Enhanced {
    * @note Requires FFI bindings to create paths and render to page
    */
   drawCircle(
-    _page: any,
+    _page: unknown,
     _x: number,
     _y: number,
     _radius: number,
-    color: ColorLike,
+    _color: ColorLike,
     _alpha: number = 1.0,
     _fill: boolean = false
   ): void {
     // Drawing operations require FFI connection to Path and Device APIs
-    const _c = Color.from(color);
+    // @note When FFI is connected, will create Path, set color, and render to page
   }
 
   // ============================================================================
@@ -175,16 +175,16 @@ export class Enhanced {
    */
   static createBlankDocument(_width: number = 595, _height: number = 842): Document {
     // Document creation with blank page requires FFI connection
-    return Document.create();
+    throw new Error('Document creation requires FFI bindings');
   }
 
   /**
    * Quick create PDF with text
    */
   static async createTextPDF(
-    text: string,
-    outputPath: string,
-    options?: {
+    _text: string,
+    _outputPath: string,
+    _options?: {
       fontSize?: number;
       fontName?: string;
       pageWidth?: number;
@@ -192,6 +192,7 @@ export class Enhanced {
     }
   ): Promise<void> {
     // PDF creation from text requires FFI connection to document and text APIs
+    throw new Error('PDF text creation requires FFI bindings');
   }
 }
 

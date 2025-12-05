@@ -545,10 +545,24 @@ export class TraceDevice extends Device {
 }
 
 /**
+ * Recorded device command
+ */
+interface DeviceCommand {
+  type: string;
+  path?: Path;
+  stroke?: StrokeState;
+  evenOdd?: boolean;
+  ctm?: Matrix;
+  colorspace?: Colorspace;
+  color?: number[];
+  alpha?: number;
+}
+
+/**
  * List device - records display list
  */
 export class ListDevice extends Device {
-  private _commands: any[] = [];
+  private _commands: DeviceCommand[] = [];
 
   constructor() {
     super(DeviceType.List);
@@ -558,7 +572,7 @@ export class ListDevice extends Device {
     return new ListDevice();
   }
 
-  get commands(): any[] {
+  get commands(): DeviceCommand[] {
     return [...this._commands];
   }
 

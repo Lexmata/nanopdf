@@ -7,6 +7,12 @@
 
 import { Rect, Matrix, type RectLike, type MatrixLike } from './geometry.js';
 import { Device } from './device.js';
+import { Path } from './path.js';
+import { StrokeState } from './path.js';
+import { Text } from './text.js';
+import { Image } from './image.js';
+import { Colorspace } from './colorspace.js';
+import { Pixmap } from './pixmap.js';
 
 /**
  * Display list command types
@@ -35,11 +41,48 @@ enum CommandType {
 }
 
 /**
+ * Command data for display list operations
+ * Using a flexible interface since commands can have various properties
+ */
+interface CommandData {
+  // Path operations
+  path?: Path;
+  evenOdd?: boolean;
+  stroke?: StrokeState;
+  
+  // Text operations
+  text?: Text;
+  
+  // Image operations
+  image?: Image;
+  
+  // Transformation and color
+  ctm?: Matrix;
+  colorspace?: Colorspace | null;
+  color?: number[];
+  alpha?: number;
+  
+  // Masks and groups
+  area?: Rect;
+  luminosity?: boolean;
+  isolated?: boolean;
+  knockout?: boolean;
+  blendMode?: number;
+  
+  // Tiles
+  view?: Rect;
+  scale?: number;
+  id?: number;
+  xStep?: number;
+  yStep?: number;
+}
+
+/**
  * A single display list command
  */
 interface DisplayCommand {
   type: CommandType;
-  data: any;
+  data: CommandData;
 }
 
 /**
@@ -118,12 +161,12 @@ export class DisplayList {
   /**
    * Add a command to the display list
    */
-  private addCommand(type: CommandType, data: any): void {
+  private addCommand(type: CommandType, data: CommandData): void {
     this._commands.push({ type, data });
 
     // Update bounds if command has a rect
-    if (data.rect) {
-      this.updateBounds(Rect.from(data.rect));
+    if ('rect' in data && data.rect) {
+      this.updateBounds(Rect.from(data.rect as RectLike));
     }
   }
 
@@ -168,10 +211,10 @@ export class DisplayList {
    * Record a fill path command
    */
   recordFillPath(
-    path: any,
+    path: Path,
     evenOdd: boolean,
     ctm: MatrixLike,
-    colorspace: any,
+    colorspace: Colorspace,
     color: number[],
     alpha: number
   ): void {
@@ -182,7 +225,6 @@ export class DisplayList {
       colorspace,
       color: [...color],
       alpha,
-      rect: path.getBounds ? path.getBounds() : undefined,
     });
   }
 
@@ -190,10 +232,10 @@ export class DisplayList {
    * Record a stroke path command
    */
   recordStrokePath(
-    path: any,
-    stroke: any,
+    path: Path,
+    stroke: StrokeState,
     ctm: MatrixLike,
-    colorspace: any,
+    colorspace: Colorspace,
     color: number[],
     alpha: number
   ): void {
@@ -204,31 +246,28 @@ export class DisplayList {
       colorspace,
       color: [...color],
       alpha,
-      rect: path.getBounds ? path.getBounds() : undefined,
     });
   }
 
   /**
    * Record a clip path command
    */
-  recordClipPath(path: any, evenOdd: boolean, ctm: MatrixLike): void {
+  recordClipPath(path: Path, evenOdd: boolean, ctm: MatrixLike): void {
     this.addCommand(CommandType.ClipPath, {
       path,
       evenOdd,
       ctm: Matrix.from(ctm),
-      rect: path.getBounds ? path.getBounds() : undefined,
     });
   }
 
   /**
    * Record a clip stroke path command
    */
-  recordClipStrokePath(path: any, stroke: any, ctm: MatrixLike): void {
+  recordClipStrokePath(path: Path, stroke: StrokeState, ctm: MatrixLike): void {
     this.addCommand(CommandType.ClipStrokePath, {
       path,
       stroke,
       ctm: Matrix.from(ctm),
-      rect: path.getBounds ? path.getBounds() : undefined,
     });
   }
 
@@ -236,9 +275,9 @@ export class DisplayList {
    * Record a fill text command
    */
   recordFillText(
-    text: any,
+    text: Text,
     ctm: MatrixLike,
-    colorspace: any,
+    colorspace: Colorspace,
     color: number[],
     alpha: number
   ): void {
@@ -248,7 +287,6 @@ export class DisplayList {
       colorspace,
       color: [...color],
       alpha,
-      rect: text.getBounds ? text.getBounds() : undefined,
     });
   }
 
@@ -256,10 +294,10 @@ export class DisplayList {
    * Record a stroke text command
    */
   recordStrokeText(
-    text: any,
-    stroke: any,
+    text: Text,
+    stroke: StrokeState,
     ctm: MatrixLike,
-    colorspace: any,
+    colorspace: Colorspace,
     color: number[],
     alpha: number
   ): void {
@@ -270,37 +308,34 @@ export class DisplayList {
       colorspace,
       color: [...color],
       alpha,
-      rect: text.getBounds ? text.getBounds() : undefined,
     });
   }
 
   /**
    * Record a clip text command
    */
-  recordClipText(text: any, ctm: MatrixLike): void {
+  recordClipText(text: Text, ctm: MatrixLike): void {
     this.addCommand(CommandType.ClipText, {
       text,
       ctm: Matrix.from(ctm),
-      rect: text.getBounds ? text.getBounds() : undefined,
     });
   }
 
   /**
    * Record a clip stroke text command
    */
-  recordClipStrokeText(text: any, stroke: any, ctm: MatrixLike): void {
+  recordClipStrokeText(text: Text, stroke: StrokeState, ctm: MatrixLike): void {
     this.addCommand(CommandType.ClipStrokeText, {
       text,
       stroke,
       ctm: Matrix.from(ctm),
-      rect: text.getBounds ? text.getBounds() : undefined,
     });
   }
 
   /**
    * Record an ignore text command
    */
-  recordIgnoreText(text: any, ctm: MatrixLike): void {
+  recordIgnoreText(text: Text, ctm: MatrixLike): void {
     this.addCommand(CommandType.IgnoreText, {
       text,
       ctm: Matrix.from(ctm),
@@ -310,12 +345,11 @@ export class DisplayList {
   /**
    * Record a fill image command
    */
-  recordFillImage(image: any, ctm: MatrixLike, alpha: number): void {
+  recordFillImage(image: Image, ctm: MatrixLike, alpha: number): void {
     this.addCommand(CommandType.FillImage, {
       image,
       ctm: Matrix.from(ctm),
       alpha,
-      rect: image.getBounds ? image.getBounds() : undefined,
     });
   }
 
@@ -323,30 +357,27 @@ export class DisplayList {
    * Record a fill image mask command
    */
   recordFillImageMask(
-    image: any,
+    image: Image,
     ctm: MatrixLike,
-    colorspace: any,
+    colorspace: Colorspace,
     color: number[],
-    alpha: number
+    _alpha: number
   ): void {
     this.addCommand(CommandType.FillImageMask, {
       image,
       ctm: Matrix.from(ctm),
       colorspace,
       color: [...color],
-      alpha,
-      rect: image.getBounds ? image.getBounds() : undefined,
     });
   }
 
   /**
    * Record a clip image mask command
    */
-  recordClipImageMask(image: any, ctm: MatrixLike): void {
+  recordClipImageMask(image: Image, ctm: MatrixLike): void {
     this.addCommand(CommandType.ClipImageMask, {
       image,
       ctm: Matrix.from(ctm),
-      rect: image.getBounds ? image.getBounds() : undefined,
     });
   }
 
@@ -360,13 +391,17 @@ export class DisplayList {
   /**
    * Record a begin mask command
    */
-  recordBeginMask(area: RectLike, luminosity: boolean, colorspace: any, color: number[]): void {
+  recordBeginMask(
+    area: RectLike,
+    luminosity: boolean,
+    colorspace: Colorspace | null,
+    color: number[]
+  ): void {
     this.addCommand(CommandType.BeginMask, {
       area: Rect.from(area),
       luminosity,
       colorspace,
       color: [...color],
-      rect: area,
     });
   }
 
@@ -382,7 +417,7 @@ export class DisplayList {
    */
   recordBeginGroup(
     area: RectLike,
-    colorspace: any,
+    colorspace: Colorspace | null,
     isolated: boolean,
     knockout: boolean,
     blendMode: number,
@@ -395,7 +430,6 @@ export class DisplayList {
       knockout,
       blendMode,
       alpha,
-      rect: area,
     });
   }
 
@@ -422,7 +456,6 @@ export class DisplayList {
       xStep,
       yStep,
       ctm: Matrix.from(ctm),
-      rect: area,
     });
   }
 
@@ -451,83 +484,83 @@ export class DisplayList {
       switch (cmd.type) {
         case CommandType.FillPath:
           device.fillPath(
-            cmd.data.path,
-            cmd.data.evenOdd,
+            cmd.data.path!,
+            cmd.data.evenOdd!,
             combinedCtm,
-            cmd.data.colorspace,
-            cmd.data.color,
-            cmd.data.alpha
+            cmd.data.colorspace!,
+            cmd.data.color!,
+            cmd.data.alpha!
           );
           break;
 
         case CommandType.StrokePath:
           device.strokePath(
-            cmd.data.path,
-            cmd.data.stroke,
+            cmd.data.path!,
+            cmd.data.stroke!,
             combinedCtm,
-            cmd.data.colorspace,
-            cmd.data.color,
-            cmd.data.alpha
+            cmd.data.colorspace!,
+            cmd.data.color!,
+            cmd.data.alpha!
           );
           break;
 
         case CommandType.ClipPath:
-          device.clipPath(cmd.data.path, cmd.data.evenOdd, combinedCtm);
+          device.clipPath(cmd.data.path!, cmd.data.evenOdd!, combinedCtm);
           break;
 
         case CommandType.ClipStrokePath:
-          device.clipStrokePath(cmd.data.path, cmd.data.stroke, combinedCtm);
+          device.clipStrokePath(cmd.data.path!, cmd.data.stroke!, combinedCtm);
           break;
 
         case CommandType.FillText:
           device.fillText(
-            cmd.data.text,
+            cmd.data.text as unknown as string,
             combinedCtm,
-            cmd.data.colorspace,
-            cmd.data.color,
-            cmd.data.alpha
+            cmd.data.colorspace!,
+            cmd.data.color!,
+            cmd.data.alpha!
           );
           break;
 
         case CommandType.StrokeText:
           device.strokeText(
-            cmd.data.text,
-            cmd.data.stroke,
+            cmd.data.text as unknown as string,
+            cmd.data.stroke!,
             combinedCtm,
-            cmd.data.colorspace,
-            cmd.data.color,
-            cmd.data.alpha
+            cmd.data.colorspace!,
+            cmd.data.color!,
+            cmd.data.alpha!
           );
           break;
 
         case CommandType.ClipText:
-          device.clipText(cmd.data.text, combinedCtm);
+          device.clipText(cmd.data.text as unknown as string, combinedCtm);
           break;
 
         case CommandType.ClipStrokeText:
-          device.clipStrokeText(cmd.data.text, cmd.data.stroke, combinedCtm);
+          device.clipStrokeText(cmd.data.text as unknown as string, cmd.data.stroke!, combinedCtm);
           break;
 
         case CommandType.IgnoreText:
-          device.ignoreText(cmd.data.text, combinedCtm);
+          device.ignoreText(cmd.data.text as unknown as string, combinedCtm);
           break;
 
         case CommandType.FillImage:
-          device.fillImage(cmd.data.image, combinedCtm, cmd.data.alpha);
+          device.fillImage(cmd.data.image as unknown as Pixmap, combinedCtm, cmd.data.alpha!);
           break;
 
         case CommandType.FillImageMask:
           device.fillImageMask(
-            cmd.data.image,
+            cmd.data.image as unknown as Pixmap,
             combinedCtm,
-            cmd.data.colorspace,
-            cmd.data.color,
-            cmd.data.alpha
+            cmd.data.colorspace!,
+            cmd.data.color!,
+            cmd.data.alpha!
           );
           break;
 
         case CommandType.ClipImageMask:
-          device.clipImageMask(cmd.data.image, combinedCtm);
+          device.clipImageMask(cmd.data.image as unknown as Pixmap, combinedCtm);
           break;
 
         case CommandType.PopClip:
@@ -536,10 +569,10 @@ export class DisplayList {
 
         case CommandType.BeginMask:
           device.beginMask(
-            cmd.data.area,
-            cmd.data.luminosity,
-            cmd.data.colorspace,
-            cmd.data.color
+            cmd.data.area!,
+            cmd.data.luminosity!,
+            cmd.data.colorspace!,
+            cmd.data.color!
           );
           break;
 
@@ -549,12 +582,12 @@ export class DisplayList {
 
         case CommandType.BeginGroup:
           device.beginGroup(
-            cmd.data.area,
-            cmd.data.colorspace,
-            cmd.data.isolated,
-            cmd.data.knockout,
-            cmd.data.blendMode,
-            cmd.data.alpha
+            cmd.data.area!,
+            cmd.data.colorspace!,
+            cmd.data.isolated!,
+            cmd.data.knockout!,
+            cmd.data.blendMode!,
+            cmd.data.alpha!
           );
           break;
 
@@ -564,10 +597,10 @@ export class DisplayList {
 
         case CommandType.BeginTile:
           device.beginTile(
-            cmd.data.area,
-            cmd.data.view,
-            cmd.data.xStep,
-            cmd.data.yStep,
+            cmd.data.area!,
+            cmd.data.view!,
+            cmd.data.xStep!,
+            cmd.data.yStep!,
             combinedCtm
           );
           break;

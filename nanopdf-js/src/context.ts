@@ -19,7 +19,7 @@ export type WarningCallback = (message: string) => void;
  * Context for MuPDF operations
  */
 export class Context {
-  private _userData: any = null;
+  private _userData: unknown = null;
   private _errorCallback: ErrorCallback | null = null;
   private _warningCallback: WarningCallback | null = null;
   private _warnings: string[] = [];
@@ -83,15 +83,15 @@ export class Context {
   /**
    * Set user context data
    */
-  setUserContext(data: any): void {
+  setUserContext(data: unknown): void {
     this._userData = data;
   }
 
   /**
    * Get user context data
    */
-  getUserContext<T = any>(): T | null {
-    return this._userData;
+  getUserContext<T = unknown>(): T | null {
+    return this._userData as T | null;
   }
 
   // ============================================================================

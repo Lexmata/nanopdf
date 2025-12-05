@@ -144,7 +144,7 @@ export class Link {
    * Check if link is valid
    */
   isValid(): boolean {
-    if (this._rect.isEmpty()) {
+    if (this._rect.isEmpty) {
       return false;
     }
     if (this._destType === LinkDestinationType.URI && this._uri.length === 0) {
@@ -263,7 +263,7 @@ export class LinkList {
   findAtPoint(point: PointLike): Link | undefined {
     const p = Point.from(point);
     for (const link of this._links) {
-      if (link.rect.contains(p)) {
+      if (link.rect.containsPoint(p)) {
         return link;
       }
     }
@@ -277,7 +277,7 @@ export class LinkList {
     const p = Point.from(point);
     const results: Link[] = [];
     for (const link of this._links) {
-      if (link.rect.contains(p)) {
+      if (link.rect.containsPoint(p)) {
         results.push(link);
       }
     }
@@ -291,7 +291,9 @@ export class LinkList {
     const r = Rect.from(rect);
     const results: Link[] = [];
     for (const link of this._links) {
-      if (link.rect.intersects(r)) {
+      // Check if rectangles intersect by seeing if they don't *not* intersect
+      const intersection = link.rect.intersect(r);
+      if (!intersection.isEmpty) {
         results.push(link);
       }
     }
