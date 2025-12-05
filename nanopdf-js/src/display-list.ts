@@ -1,6 +1,6 @@
 /**
  * DisplayList - Cached rendering commands
- * 
+ *
  * This module provides 100% API compatibility with MuPDF's display list operations.
  * Display lists cache drawing commands for efficient re-rendering.
  */
