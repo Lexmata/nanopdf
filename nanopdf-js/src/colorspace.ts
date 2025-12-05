@@ -1,6 +1,6 @@
 /**
  * Colorspace - PDF color space handling
- * 
+ *
  * Stub module for Device dependencies. Full implementation coming in Phase 3.
  */
 

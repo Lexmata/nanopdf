@@ -1,6 +1,6 @@
 /**
  * Device - PDF rendering device abstraction
- * 
+ *
  * This module provides 100% API compatibility with MuPDF's device operations.
  * Devices receive drawing commands and render them to various outputs.
  */

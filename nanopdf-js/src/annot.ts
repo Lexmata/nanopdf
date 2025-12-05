@@ -1,6 +1,6 @@
 /**
  * Annot - PDF annotation handling
- * 
+ *
  * This module provides 100% API compatibility with MuPDF's annotation operations.
  * Supports text notes, highlights, stamps, ink, shapes, and more.
  */

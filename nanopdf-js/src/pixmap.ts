@@ -1,6 +1,6 @@
 /**
  * Pixmap - Raster image handling
- * 
+ *
  * Stub module for Device dependencies. Full implementation coming in Phase 3.
  */
 
