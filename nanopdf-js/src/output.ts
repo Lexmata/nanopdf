@@ -1,6 +1,6 @@
 /**
  * Output - Binary output stream
- * 
+ *
  * This module provides 100% API compatibility with MuPDF's output operations.
  * Handles binary writing with various data types and endianness.
  */
