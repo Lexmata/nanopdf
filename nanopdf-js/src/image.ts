@@ -104,17 +104,19 @@ export class Image {
 
   /**
    * Create image from file
+   * @note Returns placeholder image until FFI bindings decode actual file
    */
-  static createFromFile(path: string): Image {
-    // Simplified: would decode image file in real implementation
+  static createFromFile(_path: string): Image {
+    // Image file decoding requires FFI connection to image decoder APIs
     return new Image(100, 100, Colorspace.createRGB());
   }
 
   /**
    * Create image from buffer
+   * @note Returns placeholder image until FFI bindings decode actual buffer
    */
-  static createFromBuffer(buffer: Uint8Array): Image {
-    // Simplified: would decode image data in real implementation
+  static createFromBuffer(_buffer: Uint8Array): Image {
+    // Image buffer decoding requires FFI connection to image decoder APIs
     return new Image(100, 100, Colorspace.createRGB());
   }
 
@@ -219,17 +221,16 @@ export class Image {
 
   /**
    * Decode image to pixmap with scaling
+   * @note Returns blank pixmap until FFI bindings perform actual scaling
    */
   getPixmapScaled(width: number, height: number): Pixmap {
-    // Simplified: would perform actual scaling in real implementation
+    // Image scaling requires FFI connection to image processing APIs
     const pixmap = Pixmap.create(
       this._colorspace,
       width,
       height,
       this._hasAlpha
     );
-
-    // In real implementation, would scale the image data
     return pixmap;
   }
 
@@ -383,7 +384,7 @@ export class ImageDecoder {
   static decode(data: Uint8Array): Image | null {
     const format = ImageDecoder.detectFormat(data);
 
-    // Simplified: would call appropriate decoder based on format
+    // Format-specific decoding requires FFI connection to image decoder APIs
     if (format === ImageFormat.Unknown) {
       return null;
     }

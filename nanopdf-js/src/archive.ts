@@ -40,9 +40,10 @@ export class Archive {
 
   /**
    * Open archive from file path
+   * @note Archive parsing requires FFI bindings to libarchive or similar
    */
   static open(path: string): Archive {
-    // Simplified: would detect format and parse archive in real implementation
+    // Archive format detection and parsing requires FFI connection
     const format = path.endsWith('.zip')
       ? ArchiveFormat.Zip
       : path.endsWith('.tar')
@@ -53,12 +54,12 @@ export class Archive {
 
   /**
    * Open archive from buffer
+   * @note Archive parsing requires FFI bindings to libarchive or similar
    */
   static openWithBuffer(buffer: Uint8Array): Archive {
-    // Simplified: would detect format from magic bytes
+    // Archive format detection and parsing requires FFI connection
     const format = Archive.detectFormat(buffer);
     const archive = new Archive(format);
-    // Would parse archive entries here
     return archive;
   }
 

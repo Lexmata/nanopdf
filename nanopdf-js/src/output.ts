@@ -72,7 +72,7 @@ export class Output {
    */
   flush(): void {
     this.syncBits();
-    // In real implementation, would write buffer to file
+    // Actual file writing requires FFI connection to file system APIs
   }
 
   /**

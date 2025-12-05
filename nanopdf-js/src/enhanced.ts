@@ -32,10 +32,11 @@ export class Enhanced {
 
   /**
    * Add a blank page to a document
+   * @returns Current page count (page not added until FFI bindings connected)
+   * @note Requires FFI bindings to modify PDF structure
    */
   addBlankPage(doc: Document, _width: number, _height: number): number {
-    // Simplified: would call FFI to add page
-    // Returns page index
+    // Page addition requires FFI connection to native library
     return doc.pageCount;
   }
 
@@ -45,6 +46,7 @@ export class Enhanced {
 
   /**
    * Draw a line on a page
+   * @note Requires FFI bindings to create paths and render to page
    */
   drawLine(
     _page: any,
@@ -56,13 +58,13 @@ export class Enhanced {
     _alpha: number = 1.0,
     _lineWidth: number = 1.0
   ): void {
-    // Simplified: would create path and stroke
+    // Drawing operations require FFI connection to Path and Device APIs
     const _c = Color.from(color);
-    // In real implementation, would use Path and Device to draw
   }
 
   /**
    * Draw a rectangle on a page
+   * @note Requires FFI bindings to create paths and render to page
    */
   drawRectangle(
     _page: any,
@@ -74,13 +76,13 @@ export class Enhanced {
     _alpha: number = 1.0,
     _fill: boolean = false
   ): void {
-    // Simplified: would create path and fill/stroke
+    // Drawing operations require FFI connection to Path and Device APIs
     const _c = Color.from(color);
-    // In real implementation, would use Path and Device
   }
 
   /**
    * Draw a circle on a page
+   * @note Requires FFI bindings to create paths and render to page
    */
   drawCircle(
     _page: any,
@@ -91,9 +93,8 @@ export class Enhanced {
     _alpha: number = 1.0,
     _fill: boolean = false
   ): void {
-    // Simplified: would create circular path
+    // Drawing operations require FFI connection to Path and Device APIs
     const _c = Color.from(color);
-    // In real implementation, would use Path with curves
   }
 
   // ============================================================================
@@ -102,6 +103,7 @@ export class Enhanced {
 
   /**
    * Add watermark to PDF
+   * @note Requires FFI bindings to open PDF, add text to pages, and save
    */
   async addWatermark(
     _inputPath: string,
@@ -112,11 +114,7 @@ export class Enhanced {
     _fontSize: number = 48,
     _opacity: number = 0.3
   ): Promise<void> {
-    // Simplified: would open PDF, add text to each page, save
-    // In real implementation:
-    // 1. Open input PDF
-    // 2. For each page, add watermark text
-    // 3. Save to output path
+    // Watermark operations require FFI connection to document and text APIs
   }
 
   // ============================================================================
@@ -125,64 +123,44 @@ export class Enhanced {
 
   /**
    * Merge multiple PDFs into one
+   * @note Requires FFI bindings to open PDFs, copy pages, and save
    */
   async mergePDFs(_inputPaths: string[], _outputPath: string): Promise<void> {
-    // Simplified: would open each PDF and append pages
-    // In real implementation:
-    // 1. Create new document
-    // 2. For each input PDF:
-    //    - Open document
-    //    - Copy all pages
-    //    - Append to output
-    // 3. Save merged document
+    // PDF merging requires FFI connection to document and page APIs
   }
 
   /**
    * Split PDF into separate files
+   * @returns Empty array until FFI bindings connected
+   * @note Requires FFI bindings to open PDF, extract pages, and save
    */
   async splitPDF(_inputPath: string, _outputDir: string): Promise<string[]> {
-    // Simplified: would create one file per page
-    // In real implementation:
-    // 1. Open input PDF
-    // 2. For each page:
-    //    - Create new single-page document
-    //    - Copy page
-    //    - Save to outputDir/page-N.pdf
-    // 3. Return list of created files
+    // PDF splitting requires FFI connection to document and page APIs
     return [];
   }
 
   /**
    * Optimize PDF (compress, remove unused objects)
+   * @note Requires FFI bindings to compress streams and clean objects
    */
-  async optimizePDF(path: string): Promise<void> {
-    // Simplified: would compress streams, remove unused objects
-    // In real implementation:
-    // 1. Open PDF
-    // 2. Compress all streams
-    // 3. Remove unused objects
-    // 4. Remove duplicate resources
-    // 5. Save optimized PDF
+  async optimizePDF(_path: string): Promise<void> {
+    // PDF optimization requires FFI connection to document structure APIs
   }
 
   /**
    * Linearize PDF for fast web viewing
+   * @note Requires FFI bindings to reorganize PDF structure
    */
-  async linearizePDF(inputPath: string, outputPath: string): Promise<void> {
-    // Simplified: would reorganize PDF for linear access
-    // In real implementation:
-    // 1. Open input PDF
-    // 2. Reorganize object order for sequential access
-    // 3. Place page content before other objects
-    // 4. Save linearized PDF
+  async linearizePDF(_inputPath: string, _outputPath: string): Promise<void> {
+    // PDF linearization requires FFI connection to document structure APIs
   }
 
   /**
    * Write document to PDF file
+   * @note Requires FFI bindings to serialize document to file
    */
-  async writePDF(doc: Document, path: string): Promise<void> {
-    // Simplified: would save document
-    // In real implementation, would call doc.save(path)
+  async writePDF(_doc: Document, _path: string): Promise<void> {
+    // Document writing requires FFI connection to save API
   }
 
   // ============================================================================
@@ -191,10 +169,12 @@ export class Enhanced {
 
   /**
    * Create a new blank PDF document
+   * @param width Page width in points (default A4 width: 595)
+   * @param height Page height in points (default A4 height: 842)
+   * @note Requires FFI bindings to create document with blank page
    */
-  static createBlankDocument(width: number = 595, height: number = 842): Document {
-    // Simplified: would create new document with one blank page
-    // Default to A4 size (595x842 points)
+  static createBlankDocument(_width: number = 595, _height: number = 842): Document {
+    // Document creation with blank page requires FFI connection
     return Document.create();
   }
 
@@ -211,12 +191,7 @@ export class Enhanced {
       pageHeight?: number;
     }
   ): Promise<void> {
-    // Simplified: would create PDF with text content
-    // In real implementation:
-    // 1. Create document
-    // 2. Add page
-    // 3. Add text content
-    // 4. Save to path
+    // PDF creation from text requires FFI connection to document and text APIs
   }
 }
 

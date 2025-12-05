@@ -195,12 +195,12 @@ export class Text {
       this._currentSpan!.items.push({
         x: pos.x,
         y: pos.y,
-        glyph: unicode, // Simplified: use unicode as glyph
+        glyph: unicode, // Use unicode as glyph ID (FFI would provide actual glyph ID)
         unicode,
       });
 
-      // Advance x by approximate character width
-      x += size * 0.5; // Simplified spacing
+      // Advance x by approximate character width (FFI would use actual glyph metrics)
+      x += size * 0.5;
     }
   }
 

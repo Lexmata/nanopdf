@@ -496,7 +496,7 @@ function createMockAddon(): NativeAddon {
       srcValues: number[],
       dstCs: NativeColorspace
     ): number[] => {
-      // Simplified conversion through RGB
+      // Basic color conversion via RGB intermediate (FFI would use ICC profiles)
       let rgb: [number, number, number];
 
       switch (srcCs.type) {

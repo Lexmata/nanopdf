@@ -48,17 +48,19 @@ export class Font {
 
   /**
    * Create font from memory buffer
+   * @note Font parsing requires FFI bindings to native font library
    */
-  static createFromMemory(name: string, data: Uint8Array): Font {
-    // Simplified: would parse font data in real implementation
+  static createFromMemory(name: string, _data: Uint8Array): Font {
+    // Font data parsing requires FFI connection to native library
     return new Font(name);
   }
 
   /**
    * Create font from file
+   * @note Font loading requires FFI bindings to native font library
    */
   static createFromFile(path: string): Font {
-    // Simplified: would load font file in real implementation
+    // Font file loading requires FFI connection to native library
     const name = path.split('/').pop()?.replace(/\.[^.]+$/, '') || 'Unknown';
     return new Font(name);
   }

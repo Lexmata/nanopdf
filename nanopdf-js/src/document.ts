@@ -134,48 +134,53 @@ export class Page {
     const pixmap = Pixmap.create(colorspace, width > 0 ? width : 1, height > 0 ? height : 1, alpha);
     pixmap.clearWithValue(255); // White background
 
-    // TODO: Actual rendering requires content stream interpretation
+    // Rendering requires FFI connection to native MuPDF library
+    // This method returns a blank pixmap until FFI bindings are connected
 
     return pixmap;
   }
 
   /**
    * Render the page to PNG
+   * @throws Error PNG encoding requires FFI bindings to native library
    */
   toPNG(_dpi: number = 72): Uint8Array {
-    // TODO: Implement PNG encoding once Pixmap.toPNG() is available
-    throw new Error('PNG encoding not yet implemented');
+    throw new Error('PNG encoding requires FFI bindings to native MuPDF library');
   }
 
   /**
    * Extract text from the page
+   * Returns empty string until FFI bindings are connected
    */
   getText(): string {
-    // TODO: Text extraction requires content stream interpretation
+    // Text extraction requires FFI connection to parse content streams
     return '';
   }
 
   /**
    * Get text blocks from the page
+   * Returns empty array until FFI bindings are connected
    */
   getTextBlocks(): TextBlock[] {
-    // TODO: Text extraction requires content stream interpretation
+    // Text block extraction requires FFI connection to parse content streams
     return [];
   }
 
   /**
    * Get links from the page
+   * Returns empty array until FFI bindings are connected
    */
   getLinks(): Link[] {
-    // TODO: Link extraction requires annotation parsing
+    // Link extraction requires FFI connection to parse annotations
     return [];
   }
 
   /**
    * Search for text on the page
+   * Returns empty array until FFI bindings are connected
    */
   search(_needle: string): Quad[] {
-    // TODO: Text search requires content stream interpretation
+    // Text search requires FFI connection to parse content streams
     return [];
   }
 }
@@ -313,9 +318,12 @@ export class Document {
 
   /**
    * Authenticate with a password
+   * @returns true if authentication successful
+   * @note Requires FFI bindings for actual PDF encryption handling
    */
   authenticate(_password: string): boolean {
-    // TODO: Implement proper PDF authentication
+    // PDF authentication requires FFI connection to native library
+    // For now, mark as authenticated for testing purposes
     this._isAuthenticated = true;
     return true;
   }
@@ -374,10 +382,10 @@ export class Document {
    * Resolve a named destination to a page location
    * @param name Named destination (e.g., "section1", "chapter2")
    * @returns Page number (0-based) or undefined if not found
+   * @note Requires FFI bindings to parse PDF catalog /Dests or /Names dictionary
    */
   resolveNamedDest(_name: string): number | undefined {
-    // TODO: Implement named destination lookup
-    // This requires parsing the PDF /Dests or /Names dictionary
+    // Named destination lookup requires FFI connection to parse PDF catalog
     return undefined;
   }
 
