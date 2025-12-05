@@ -6,8 +6,6 @@
       "cflags_cc!": ["-fno-exceptions"],
       "sources": [
         "native/nanopdf.cc",
-        "native/buffer.cc",
-        "native/geometry.cc",
         "native/context.cc",
         "native/document.cc",
         "native/page.cc"

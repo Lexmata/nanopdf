@@ -5,7 +5,7 @@
  */
 
 #include <napi.h>
-#include "include/mupdf.h"
+#include "include/mupdf_minimal.h"
 #include <cstring>
 
 /**

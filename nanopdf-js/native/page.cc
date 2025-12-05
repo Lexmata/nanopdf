@@ -5,7 +5,7 @@
  */
 
 #include <napi.h>
-#include "include/mupdf.h"
+#include "include/mupdf_minimal.h"
 #include <vector>
 
 /**
@@ -183,7 +183,7 @@ Napi::Value RenderPageToPNG(const Napi::CallbackInfo& info) {
     }
 
     // Encode to PNG
-    fz_buffer buf = fz_new_buffer_from_pixmap_as_png(ctx, pix, fz_default_color_params);
+    fz_buffer buf = fz_new_buffer_from_pixmap_as_png(ctx, pix, 0);
     fz_drop_pixmap(ctx, pix);
 
     if (buf == 0) {
