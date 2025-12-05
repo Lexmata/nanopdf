@@ -1,6 +1,6 @@
 /**
  * Link - PDF hyperlink and navigation
- * 
+ *
  * This module provides 100% API compatibility with MuPDF's link operations.
  * Handles hyperlinks, page navigation, and external URIs.
  */
