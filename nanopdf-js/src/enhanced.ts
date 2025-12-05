@@ -41,11 +41,11 @@ export class Enhanced {
     // Get native handles (will be available when Document exposes them)
     const ctx = (this._ctx as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
     const nativeDoc = (_doc as unknown as { _doc?: NativeDocument })?._doc;
-    
+
     if (!ctx || !nativeDoc) {
       throw new Error('Adding blank page requires native FFI bindings (np_add_blank_page)');
     }
-    
+
     return native.npAddBlankPage(ctx, nativeDoc, width, height);
   }
 
@@ -69,11 +69,11 @@ export class Enhanced {
   ): void {
     const ctx = (this._ctx as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
     const nativePage = (page as unknown as { _page?: NativePage })?._page;
-    
+
     if (!ctx || !nativePage) {
       throw new Error('Drawing line requires native FFI bindings (np_draw_line)');
     }
-    
+
     const c = Color.from(color);
     const colorArray = [c.r, c.g, c.b];
     native.npDrawLine(ctx, nativePage, x0, y0, x1, y1, colorArray, alpha, lineWidth);
@@ -95,11 +95,11 @@ export class Enhanced {
   ): void {
     const ctx = (this._ctx as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
     const nativePage = (page as unknown as { _page?: NativePage })?._page;
-    
+
     if (!ctx || !nativePage) {
       throw new Error('Drawing rectangle requires native FFI bindings (np_draw_rectangle)');
     }
-    
+
     const c = Color.from(color);
     const colorArray = [c.r, c.g, c.b];
     native.npDrawRectangle(ctx, nativePage, x, y, width, height, colorArray, alpha, fill);
@@ -120,11 +120,11 @@ export class Enhanced {
   ): void {
     const ctx = (this._ctx as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
     const nativePage = (page as unknown as { _page?: NativePage })?._page;
-    
+
     if (!ctx || !nativePage) {
       throw new Error('Drawing circle requires native FFI bindings (np_draw_circle)');
     }
-    
+
     const c = Color.from(color);
     const colorArray = [c.r, c.g, c.b];
     native.npDrawCircle(ctx, nativePage, x, y, radius, colorArray, alpha, fill);
@@ -148,11 +148,11 @@ export class Enhanced {
     opacity: number = 0.3
   ): Promise<void> {
     const ctx = (this._ctx as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
-    
+
     if (!ctx) {
       throw new Error('Watermark requires native FFI bindings (np_add_watermark)');
     }
-    
+
     // Open document
     const doc = native.openDocumentFromPath(ctx, inputPath);
     native.npAddWatermark(ctx, doc, text, fontSize, opacity);
@@ -169,11 +169,11 @@ export class Enhanced {
    */
   async mergePDFs(inputPaths: string[], outputPath: string): Promise<void> {
     const ctx = (this._ctx as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
-    
+
     if (!ctx) {
       throw new Error('PDF merging requires native FFI bindings (np_merge_pdfs)');
     }
-    
+
     native.npMergePDFs(ctx, inputPaths, outputPath);
   }
 
@@ -184,11 +184,11 @@ export class Enhanced {
    */
   async splitPDF(inputPath: string, outputDir: string): Promise<string[]> {
     const ctx = (this._ctx as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
-    
+
     if (!ctx) {
       throw new Error('PDF splitting requires native FFI bindings (np_split_pdf)');
     }
-    
+
     return native.npSplitPDF(ctx, inputPath, outputDir);
   }
 
@@ -198,11 +198,11 @@ export class Enhanced {
    */
   async optimizePDF(path: string): Promise<void> {
     const ctx = (this._ctx as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
-    
+
     if (!ctx) {
       throw new Error('PDF optimization requires native FFI bindings (np_optimize_pdf)');
     }
-    
+
     native.npOptimizePDF(ctx, path);
   }
 
@@ -212,11 +212,11 @@ export class Enhanced {
    */
   async linearizePDF(inputPath: string, outputPath: string): Promise<void> {
     const ctx = (this._ctx as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
-    
+
     if (!ctx) {
       throw new Error('PDF linearization requires native FFI bindings (np_linearize_pdf)');
     }
-    
+
     native.npLinearizePDF(ctx, inputPath, outputPath);
   }
 
@@ -227,11 +227,11 @@ export class Enhanced {
   async writePDF(doc: Document, path: string): Promise<void> {
     const ctx = (this._ctx as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
     const nativeDoc = (doc as unknown as { _doc?: NativeDocument })?._doc;
-    
+
     if (!ctx || !nativeDoc) {
       throw new Error('Writing PDF requires native FFI bindings (pdf_save_document)');
     }
-    
+
     native.saveDocument(ctx, nativeDoc, path);
   }
 

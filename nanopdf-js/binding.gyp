@@ -7,7 +7,10 @@
       "sources": [
         "native/nanopdf.cc",
         "native/buffer.cc",
-        "native/geometry.cc"
+        "native/geometry.cc",
+        "native/context.cc",
+        "native/document.cc",
+        "native/page.cc"
       ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",

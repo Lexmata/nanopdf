@@ -66,11 +66,11 @@ export class Font {
    */
   static createFromMemory(name: string, data: Uint8Array): Font {
     const ctx = (getDefaultContext() as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
-    
+
     if (!ctx) {
       throw new Error('Font creation from memory requires native FFI bindings (fz_new_font_from_memory)');
     }
-    
+
     const font = new Font(name);
     font._ctx = ctx;
     font._font = native.loadFontFromMemory(ctx, Buffer.from(data), 0);
@@ -83,17 +83,17 @@ export class Font {
    */
   static createFromFile(path: string): Font {
     const ctx = (getDefaultContext() as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
-    
+
     if (!ctx) {
       throw new Error('Font loading from file requires native FFI bindings (fz_new_font_from_file)');
     }
-    
+
     const name =
       path
         .split('/')
         .pop()
         ?.replace(/\.[^.]+$/, '') || 'Unknown';
-    
+
     const font = new Font(name);
     font._ctx = ctx;
     font._font = native.loadFontFromFile(ctx, path, 0);

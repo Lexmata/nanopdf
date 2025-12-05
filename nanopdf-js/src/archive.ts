@@ -59,17 +59,17 @@ export class Archive {
    */
   static open(path: string): Archive {
     const ctx = (getDefaultContext() as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
-    
+
     if (!ctx) {
       throw new Error('Archive opening from file requires native FFI bindings (fz_open_archive)');
     }
-    
+
     const format = path.endsWith('.zip')
       ? ArchiveFormat.Zip
       : path.endsWith('.tar')
         ? ArchiveFormat.Tar
         : ArchiveFormat.Unknown;
-    
+
     const archive = new Archive(format, path);
     archive._ctx = ctx;
     archive._archive = native.openArchive(ctx, path);
@@ -82,11 +82,11 @@ export class Archive {
    */
   static openWithBuffer(buffer: Uint8Array): Archive {
     const ctx = (getDefaultContext() as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
-    
+
     if (!ctx) {
       throw new Error('Archive opening from buffer requires native FFI bindings (fz_open_archive_with_buffer)');
     }
-    
+
     const format = Archive.detectFormat(buffer);
     const archive = new Archive(format);
     archive._ctx = ctx;

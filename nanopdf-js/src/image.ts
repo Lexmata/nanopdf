@@ -122,11 +122,11 @@ export class Image {
    */
   static createFromFile(path: string): Image {
     const ctx = (getDefaultContext() as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
-    
+
     if (!ctx) {
       throw new Error('Image loading from file requires native FFI bindings (fz_new_image_from_file)');
     }
-    
+
     const nativeImage = native.loadImageFromFile(ctx, path);
     const width = native.getImageWidth(ctx, nativeImage);
     const height = native.getImageHeight(ctx, nativeImage);
@@ -142,11 +142,11 @@ export class Image {
    */
   static createFromBuffer(buffer: Uint8Array): Image {
     const ctx = (getDefaultContext() as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
-    
+
     if (!ctx) {
       throw new Error('Image loading from buffer requires native FFI bindings (fz_new_image_from_buffer)');
     }
-    
+
     const nativeImage = native.loadImageFromMemory(ctx, Buffer.from(buffer));
     const width = native.getImageWidth(ctx, nativeImage);
     const height = native.getImageHeight(ctx, nativeImage);
