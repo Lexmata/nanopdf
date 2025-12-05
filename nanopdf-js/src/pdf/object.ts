@@ -10,6 +10,10 @@ import { PdfObjectType } from '../types.js';
  * Base class for all PDF objects
  */
 export abstract class PdfObject {
+  private _refCount: number = 1;
+  private _marked: boolean = false;
+  private _parentNum: number = 0;
+
   abstract get type(): PdfObjectType;
 
   get isNull(): boolean { return this.type === PdfObjectType.Null; }
@@ -23,6 +27,77 @@ export abstract class PdfObject {
   get isDict(): boolean { return this.type === PdfObjectType.Dict; }
   get isStream(): boolean { return this.type === PdfObjectType.Stream; }
   get isIndirect(): boolean { return this.type === PdfObjectType.Indirect; }
+
+  // ============================================================================
+  // Reference Counting
+  // ============================================================================
+
+  /**
+   * Increment reference count (keep object alive)
+   */
+  keep(): this {
+    this._refCount++;
+    return this;
+  }
+
+  /**
+   * Decrement reference count (may allow garbage collection)
+   */
+  drop(): void {
+    if (this._refCount > 0) {
+      this._refCount--;
+    }
+  }
+
+  /**
+   * Get current reference count
+   */
+  getRefs(): number {
+    return this._refCount;
+  }
+
+  // ============================================================================
+  // Object Marking (for traversal algorithms)
+  // ============================================================================
+
+  /**
+   * Check if object is marked
+   */
+  isMarked(): boolean {
+    return this._marked;
+  }
+
+  /**
+   * Mark this object
+   */
+  mark(): void {
+    this._marked = true;
+  }
+
+  /**
+   * Unmark this object
+   */
+  unmark(): void {
+    this._marked = false;
+  }
+
+  // ============================================================================
+  // Parent Tracking
+  // ============================================================================
+
+  /**
+   * Set parent object number (for indirect objects)
+   */
+  setParent(objNum: number): void {
+    this._parentNum = objNum;
+  }
+
+  /**
+   * Get parent object number
+   */
+  getParentNum(): number {
+    return this._parentNum;
+  }
 
   toBool(): boolean {
     if (this instanceof PdfBool) return this.value;
@@ -895,5 +970,195 @@ export function toGenNum(obj: PdfObject): number {
     return obj.genNum;
   }
   return 0;
+}
+
+// ============================================================================
+// Reference Counting Functions
+// ============================================================================
+
+/**
+ * Increment reference count on object
+ */
+export function pdfKeepObj(obj: PdfObject): PdfObject {
+  return obj.keep();
+}
+
+/**
+ * Decrement reference count on object
+ */
+export function pdfDropObj(obj: PdfObject): void {
+  obj.drop();
+}
+
+/**
+ * Get reference count for object
+ */
+export function pdfObjRefs(obj: PdfObject): number {
+  return obj.getRefs();
+}
+
+// ============================================================================
+// Object Marking Functions
+// ============================================================================
+
+/**
+ * Check if object is marked
+ */
+export function pdfObjMarked(obj: PdfObject): boolean {
+  return obj.isMarked();
+}
+
+/**
+ * Mark an object
+ */
+export function pdfMarkObj(obj: PdfObject): void {
+  obj.mark();
+}
+
+/**
+ * Unmark an object
+ */
+export function pdfUnmarkObj(obj: PdfObject): void {
+  obj.unmark();
+}
+
+/**
+ * Set parent object number
+ */
+export function pdfSetObjParent(obj: PdfObject, parentNum: number): void {
+  obj.setParent(parentNum);
+}
+
+/**
+ * Get parent object number
+ */
+export function pdfObjParentNum(obj: PdfObject): number {
+  return obj.getParentNum();
+}
+
+// ============================================================================
+// Geometry Creation Utilities
+// ============================================================================
+
+/**
+ * Create a point dictionary (for use in PDF objects)
+ */
+export function pdfNewPoint(x: number, y: number): PdfArray {
+  return pdfArray([pdfReal(x), pdfReal(y)]);
+}
+
+/**
+ * Create a rectangle dictionary (for use in PDF objects)
+ */
+export function pdfNewRect(x0: number, y0: number, x1: number, y1: number): PdfArray {
+  return pdfArray([pdfReal(x0), pdfReal(y0), pdfReal(x1), pdfReal(y1)]);
+}
+
+/**
+ * Create a matrix dictionary (for use in PDF objects)
+ */
+export function pdfNewMatrix(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  e: number,
+  f: number
+): PdfArray {
+  return pdfArray([
+    pdfReal(a),
+    pdfReal(b),
+    pdfReal(c),
+    pdfReal(d),
+    pdfReal(e),
+    pdfReal(f),
+  ]);
+}
+
+/**
+ * Create a date string in PDF format
+ * Format: D:YYYYMMDDHHmmSSOHH'mm
+ */
+export function pdfNewDate(date: Date = new Date()): PdfObject {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  
+  // Get timezone offset
+  const offset = -date.getTimezoneOffset();
+  const offsetSign = offset >= 0 ? '+' : '-';
+  const offsetHours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
+  const offsetMinutes = String(Math.abs(offset) % 60).padStart(2, '0');
+  
+  const dateStr = `D:${year}${month}${day}${hours}${minutes}${seconds}${offsetSign}${offsetHours}'${offsetMinutes}`;
+  return pdfString(dateStr);
+}
+
+// ============================================================================
+// Dictionary Utility Functions
+// ============================================================================
+
+/**
+ * Get key at index from dictionary (for iteration)
+ */
+export function pdfDictGetKey(dict: PdfDict, index: number): string | undefined {
+  const keys = dict.keys();
+  return keys[index];
+}
+
+/**
+ * Get value at index from dictionary (for iteration)
+ */
+export function pdfDictGetVal(dict: PdfDict, index: number): PdfObject | undefined {
+  const key = pdfDictGetKey(dict, index);
+  return key ? dict.get(key) : undefined;
+}
+
+// ============================================================================
+// Indirect Reference Resolution
+// ============================================================================
+
+// Note: These functions require document context for actual resolution
+// Here we provide type-level support; actual resolution happens in Document class
+
+/**
+ * Check if an indirect reference is resolved
+ * @param obj The object to check
+ * @returns Always true for direct objects, requires document context for indirect refs
+ */
+export function pdfObjIsResolved(obj: PdfObject): boolean {
+  // Direct objects are always "resolved"
+  if (!(obj instanceof PdfIndirectRef)) {
+    return true;
+  }
+  // Indirect references need document context to resolve
+  // This is a placeholder - actual resolution requires document
+  return false;
+}
+
+/**
+ * Resolve an indirect reference (stub - requires document context)
+ * @param obj The object to resolve
+ * @returns The same object (actual resolution requires document)
+ */
+export function pdfResolveIndirect(obj: PdfObject): PdfObject {
+  // In actual implementation, this would look up the object in the document
+  // For now, return as-is
+  return obj;
+}
+
+/**
+ * Load an object from document (stub - requires document context)
+ * @param objNum Object number
+ * @param genNum Generation number
+ * @returns undefined (actual loading requires document)
+ */
+export function pdfLoadObject(objNum: number, genNum: number): PdfObject | undefined {
+  // This is a placeholder - actual implementation would load from document
+  // The real implementation will be in the Document class
+  return undefined;
 }
 

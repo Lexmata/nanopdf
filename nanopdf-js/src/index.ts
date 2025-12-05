@@ -148,6 +148,28 @@ export {
   toRealDefault,
   toObjNum,
   toGenNum,
+  // Reference counting
+  pdfKeepObj,
+  pdfDropObj,
+  pdfObjRefs,
+  // Object marking
+  pdfObjMarked,
+  pdfMarkObj,
+  pdfUnmarkObj,
+  pdfSetObjParent,
+  pdfObjParentNum,
+  // Geometry utilities
+  pdfNewPoint,
+  pdfNewRect,
+  pdfNewMatrix,
+  pdfNewDate,
+  // Dictionary utilities
+  pdfDictGetKey,
+  pdfDictGetVal,
+  // Indirect reference utilities
+  pdfObjIsResolved,
+  pdfResolveIndirect,
+  pdfLoadObject,
 } from './pdf/object.js';
 
 // ============================================================================

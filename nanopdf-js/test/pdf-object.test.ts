@@ -27,6 +27,12 @@ import {
   toBoolDefault,
   toIntDefault,
   toRealDefault,
+  pdfNewPoint,
+  pdfNewRect,
+  pdfNewMatrix,
+  pdfNewDate,
+  pdfDictGetKey,
+  pdfDictGetVal,
 } from '../src/index.js';
 
 describe('PDF Object - Basic Types', () => {
@@ -40,7 +46,7 @@ describe('PDF Object - Basic Types', () => {
   it('creates boolean objects', () => {
     const trueObj = pdfBool(true);
     const falseObj = pdfBool(false);
-    
+
     expect(isBool(trueObj)).toBe(true);
     expect(trueObj.toBool()).toBe(true);
     expect(falseObj.toBool()).toBe(false);
@@ -100,7 +106,7 @@ describe('PDF Object - Arrays', () => {
     arr.pushBool(true);
     arr.pushName('Test');
     arr.pushString('hello');
-    
+
     expect(arr.length).toBe(6);
     expect(arr.get(0)?.toInt()).toBe(1);
     expect(arr.get(1)?.toInt()).toBe(2);
@@ -113,7 +119,7 @@ describe('PDF Object - Arrays', () => {
   it('inserts items into array', () => {
     const arr = pdfArray([pdfInt(1), pdfInt(3)]);
     arr.insert(1, pdfInt(2));
-    
+
     expect(arr.length).toBe(3);
     expect(arr.get(0)?.toInt()).toBe(1);
     expect(arr.get(1)?.toInt()).toBe(2);
@@ -123,7 +129,7 @@ describe('PDF Object - Arrays', () => {
   it('deletes items from array', () => {
     const arr = pdfArray([pdfInt(1), pdfInt(2), pdfInt(3)]);
     arr.delete(1);
-    
+
     expect(arr.length).toBe(2);
     expect(arr.get(0)?.toInt()).toBe(1);
     expect(arr.get(1)?.toInt()).toBe(3);
@@ -132,17 +138,17 @@ describe('PDF Object - Arrays', () => {
   it('puts items at index', () => {
     const arr = pdfArray([pdfInt(1), pdfInt(2), pdfInt(3)]);
     arr.put(1, pdfInt(42));
-    
+
     expect(arr.get(1)?.toInt()).toBe(42);
   });
 
   it('tracks dirty state', () => {
     const arr = pdfArray();
     expect(arr.isDirty()).toBe(false);
-    
+
     arr.push(pdfInt(1));
     expect(arr.isDirty()).toBe(true);
-    
+
     arr.markClean();
     expect(arr.isDirty()).toBe(false);
   });
@@ -150,7 +156,7 @@ describe('PDF Object - Arrays', () => {
   it('creates shallow copy', () => {
     const original = pdfArray([pdfInt(1), pdfInt(2)]);
     const copy = pdfCopyArray(original);
-    
+
     expect(copy.length).toBe(2);
     expect(copy.get(0)?.toInt()).toBe(1);
     expect(pdfObjectCompare(original, copy)).toBe(true);
@@ -160,10 +166,10 @@ describe('PDF Object - Arrays', () => {
     const nested = pdfArray([pdfInt(1)]);
     const original = pdfArray([nested]);
     const copy = pdfDeepCopy(original) as PdfArray;
-    
+
     // Modify original nested array
     nested.push(pdfInt(2));
-    
+
     // Copy should not be affected
     const copiedNested = copy.get(0) as PdfArray;
     expect(copiedNested.length).toBe(1);
@@ -182,7 +188,7 @@ describe('PDF Object - Dictionaries', () => {
       'Type': pdfName('Page'),
       'Count': pdfInt(10),
     });
-    
+
     expect(dict.length).toBe(2);
     expect(dict.getName('Type')).toBe('Page');
     expect(dict.getInt('Count')).toBe(10);
@@ -196,7 +202,7 @@ describe('PDF Object - Dictionaries', () => {
     dict.putBool('Key4', true);
     dict.putName('Key5', 'Name');
     dict.putString('Key6', 'string');
-    
+
     expect(dict.length).toBe(6);
     expect(dict.getString('Key1')).toBe('value1');
     expect(dict.getInt('Key2')).toBe(42);
@@ -211,7 +217,7 @@ describe('PDF Object - Dictionaries', () => {
       'Key1': pdfInt(1),
       'Key2': pdfInt(2),
     });
-    
+
     dict.del('Key1');
     expect(dict.length).toBe(1);
     expect(dict.has('Key1')).toBe(false);
@@ -220,7 +226,7 @@ describe('PDF Object - Dictionaries', () => {
 
   it('gets entries with defaults', () => {
     const dict = pdfDict();
-    
+
     expect(dict.getInt('Missing', 42)).toBe(42);
     expect(dict.getReal('Missing', 3.14)).toBe(3.14);
     expect(dict.getBool('Missing', true)).toBe(true);
@@ -229,10 +235,10 @@ describe('PDF Object - Dictionaries', () => {
   it('tracks dirty state', () => {
     const dict = pdfDict();
     expect(dict.isDirty()).toBe(false);
-    
+
     dict.putInt('Key', 1);
     expect(dict.isDirty()).toBe(true);
-    
+
     dict.markClean();
     expect(dict.isDirty()).toBe(false);
   });
@@ -243,7 +249,7 @@ describe('PDF Object - Dictionaries', () => {
       'Key2': pdfString('value'),
     });
     const copy = pdfCopyDict(original);
-    
+
     expect(copy.length).toBe(2);
     expect(copy.getInt('Key1')).toBe(1);
     expect(pdfObjectCompare(original, copy)).toBe(true);
@@ -253,10 +259,10 @@ describe('PDF Object - Dictionaries', () => {
     const nested = pdfDict({ 'Nested': pdfInt(1) });
     const original = pdfDict({ 'Dict': nested });
     const copy = pdfDeepCopy(original) as PdfDict;
-    
+
     // Modify original nested dict
     nested.putInt('Nested', 2);
-    
+
     // Copy should not be affected
     const copiedNested = copy.getDict('Dict')!;
     expect(copiedNested.getInt('Nested')).toBe(1);
@@ -268,13 +274,13 @@ describe('PDF Object - Dictionaries', () => {
       'B': pdfInt(2),
       'C': pdfInt(3),
     });
-    
+
     const keys = dict.keys();
     expect(keys).toHaveLength(3);
     expect(keys).toContain('A');
     expect(keys).toContain('B');
     expect(keys).toContain('C');
-    
+
     const values = dict.values();
     expect(values).toHaveLength(3);
   });
@@ -297,5 +303,134 @@ describe('PDF Object - Utility Functions', () => {
     
     expect(toRealDefault(pdfReal(3.14), 0)).toBe(3.14);
     expect(toRealDefault(undefined, 2.71)).toBe(2.71);
+  });
+});
+
+describe('PDF Object - Reference Counting', () => {
+  it('increments reference count', () => {
+    const obj = pdfInt(42);
+    expect(obj.getRefs()).toBe(1);
+    
+    obj.keep();
+    expect(obj.getRefs()).toBe(2);
+    
+    obj.keep();
+    expect(obj.getRefs()).toBe(3);
+  });
+
+  it('decrements reference count', () => {
+    const obj = pdfInt(42);
+    obj.keep();
+    obj.keep();
+    expect(obj.getRefs()).toBe(3);
+    
+    obj.drop();
+    expect(obj.getRefs()).toBe(2);
+    
+    obj.drop();
+    expect(obj.getRefs()).toBe(1);
+  });
+
+  it('does not go below zero', () => {
+    const obj = pdfInt(42);
+    expect(obj.getRefs()).toBe(1);
+    
+    obj.drop();
+    expect(obj.getRefs()).toBe(0);
+    
+    obj.drop();
+    expect(obj.getRefs()).toBe(0);
+  });
+});
+
+describe('PDF Object - Marking', () => {
+  it('marks and unmarks objects', () => {
+    const obj = pdfInt(42);
+    expect(obj.isMarked()).toBe(false);
+    
+    obj.mark();
+    expect(obj.isMarked()).toBe(true);
+    
+    obj.unmark();
+    expect(obj.isMarked()).toBe(false);
+  });
+
+  it('tracks parent object numbers', () => {
+    const obj = pdfDict();
+    expect(obj.getParentNum()).toBe(0);
+    
+    obj.setParent(123);
+    expect(obj.getParentNum()).toBe(123);
+    
+    obj.setParent(456);
+    expect(obj.getParentNum()).toBe(456);
+  });
+});
+
+describe('PDF Object - Geometry Utilities', () => {
+  it('creates point arrays', () => {
+    const point = pdfNewPoint(100, 200);
+    expect(isArray(point)).toBe(true);
+    expect(point.length).toBe(2);
+    expect(point.get(0)?.toReal()).toBe(100);
+    expect(point.get(1)?.toReal()).toBe(200);
+  });
+
+  it('creates rectangle arrays', () => {
+    const rect = pdfNewRect(0, 0, 100, 200);
+    expect(isArray(rect)).toBe(true);
+    expect(rect.length).toBe(4);
+    expect(rect.get(0)?.toReal()).toBe(0);
+    expect(rect.get(1)?.toReal()).toBe(0);
+    expect(rect.get(2)?.toReal()).toBe(100);
+    expect(rect.get(3)?.toReal()).toBe(200);
+  });
+
+  it('creates matrix arrays', () => {
+    const matrix = pdfNewMatrix(1, 0, 0, 1, 0, 0);
+    expect(isArray(matrix)).toBe(true);
+    expect(matrix.length).toBe(6);
+    expect(matrix.get(0)?.toReal()).toBe(1);
+    expect(matrix.get(1)?.toReal()).toBe(0);
+  });
+
+  it('creates date strings', () => {
+    const date = new Date('2025-12-05T12:30:45Z');
+    const dateObj = pdfNewDate(date);
+    expect(isString(dateObj)).toBe(true);
+    
+    const dateStr = dateObj.toString();
+    expect(dateStr).toMatch(/^D:\d{14}/);
+    expect(dateStr).toContain('20251205');
+  });
+});
+
+describe('PDF Object - Dictionary Utilities', () => {
+  it('gets keys by index', () => {
+    const dict = pdfDict({
+      'A': pdfInt(1),
+      'B': pdfInt(2),
+      'C': pdfInt(3),
+    });
+    
+    const key0 = pdfDictGetKey(dict, 0);
+    expect(key0).toBeDefined();
+    expect(['A', 'B', 'C']).toContain(key0);
+  });
+
+  it('gets values by index', () => {
+    const dict = pdfDict({
+      'Key1': pdfInt(42),
+      'Key2': pdfString('hello'),
+    });
+    
+    const val0 = pdfDictGetVal(dict, 0);
+    expect(val0).toBeDefined();
+  });
+
+  it('returns undefined for out of bounds', () => {
+    const dict = pdfDict({ 'A': pdfInt(1) });
+    expect(pdfDictGetKey(dict, 999)).toBeUndefined();
+    expect(pdfDictGetVal(dict, 999)).toBeUndefined();
   });
 });
