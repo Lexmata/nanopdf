@@ -1086,13 +1086,13 @@ export function pdfNewDate(date: Date = new Date()): PdfObject {
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const seconds = String(date.getSeconds()).padStart(2, '0');
-  
+
   // Get timezone offset
   const offset = -date.getTimezoneOffset();
   const offsetSign = offset >= 0 ? '+' : '-';
   const offsetHours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
   const offsetMinutes = String(Math.abs(offset) % 60).padStart(2, '0');
-  
+
   const dateStr = `D:${year}${month}${day}${hours}${minutes}${seconds}${offsetSign}${offsetHours}'${offsetMinutes}`;
   return pdfString(dateStr);
 }

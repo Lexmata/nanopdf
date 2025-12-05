@@ -323,6 +323,125 @@ export class Document {
   }
 
   /**
+   * Check if the document has a specific permission
+   * @param permission The permission to check (print, edit, copy, annotate)
+   */
+  hasPermission(permission: string): boolean {
+    // For unencrypted documents, all permissions are granted
+    if (!this._needsPassword) {
+      return true;
+    }
+
+    // For authenticated documents, assume all permissions
+    if (this._isAuthenticated) {
+      return true;
+    }
+
+    // For encrypted but not authenticated documents, no permissions
+    return false;
+  }
+
+  /**
+   * Get page label for a given page number
+   * @param pageNum Page number (0-based)
+   * @returns Page label (e.g., "i", "ii", "1", "2", "A-1")
+   */
+  getPageLabel(pageNum: number): string {
+    // Default to simple page numbering if no label scheme defined
+    return String(pageNum + 1);
+  }
+
+  /**
+   * Get page number from a page label
+   * @param label Page label to look up
+   * @returns Page number (0-based) or -1 if not found
+   */
+  getPageFromLabel(label: string): number {
+    // Simple implementation: try to parse as number
+    const num = parseInt(label, 10);
+    if (!isNaN(num) && num > 0 && num <= this.pageCount) {
+      return num - 1;
+    }
+    return -1;
+  }
+
+  /**
+   * Check if the document is valid (not corrupted)
+   */
+  isValid(): boolean {
+    return this._pages.length > 0;
+  }
+
+  /**
+   * Resolve a named destination to a page location
+   * @param name Named destination (e.g., "section1", "chapter2")
+   * @returns Page number (0-based) or undefined if not found
+   */
+  resolveNamedDest(name: string): number | undefined {
+    // TODO: Implement named destination lookup
+    // This requires parsing the PDF /Dests or /Names dictionary
+    return undefined;
+  }
+
+  /**
+   * Count chapters in the document (for structured documents)
+   */
+  countChapters(): number {
+    // For PDFs without chapter structure, treat as single chapter
+    return 1;
+  }
+
+  /**
+   * Count pages in a specific chapter
+   * @param chapterIndex Chapter index (0-based)
+   */
+  countChapterPages(chapterIndex: number): number {
+    if (chapterIndex === 0) {
+      return this.pageCount;
+    }
+    return 0;
+  }
+
+  /**
+   * Get page number from a chapter and page location
+   * @param chapter Chapter index (0-based)
+   * @param page Page within chapter (0-based)
+   */
+  pageNumberFromLocation(chapter: number, page: number): number {
+    // Simple implementation: just return page for single chapter
+    if (chapter === 0) {
+      return page;
+    }
+    return -1;
+  }
+
+  /**
+   * Layout the document with specific width and height (for reflowable documents)
+   * @param width Target width
+   * @param height Target height
+   * @param em Font size in points
+   */
+  layout(width: number, height: number, em: number = 12): void {
+    // No-op for non-reflowable PDFs
+    // This is used for EPUB and other reflowable formats
+  }
+
+  /**
+   * Clone the document (create a copy)
+   * Note: This creates a shallow copy sharing the same data
+   */
+  clone(): Document {
+    const cloned = Object.create(Document.prototype);
+    cloned._pages = this._pages;
+    cloned._format = this._format;
+    cloned._needsPassword = this._needsPassword;
+    cloned._isAuthenticated = this._isAuthenticated;
+    cloned._metadata = new Map(this._metadata);
+    cloned._outline = [...this._outline];
+    return cloned;
+  }
+
+  /**
    * Get a page by index
    */
   getPage(index: number): Page {

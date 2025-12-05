@@ -297,10 +297,10 @@ describe('PDF Object - Utility Functions', () => {
   it('extracts values with defaults', () => {
     expect(toBoolDefault(pdfBool(true), false)).toBe(true);
     expect(toBoolDefault(undefined, true)).toBe(true);
-    
+
     expect(toIntDefault(pdfInt(42), 0)).toBe(42);
     expect(toIntDefault(undefined, 100)).toBe(100);
-    
+
     expect(toRealDefault(pdfReal(3.14), 0)).toBe(3.14);
     expect(toRealDefault(undefined, 2.71)).toBe(2.71);
   });
@@ -310,10 +310,10 @@ describe('PDF Object - Reference Counting', () => {
   it('increments reference count', () => {
     const obj = pdfInt(42);
     expect(obj.getRefs()).toBe(1);
-    
+
     obj.keep();
     expect(obj.getRefs()).toBe(2);
-    
+
     obj.keep();
     expect(obj.getRefs()).toBe(3);
   });
@@ -323,10 +323,10 @@ describe('PDF Object - Reference Counting', () => {
     obj.keep();
     obj.keep();
     expect(obj.getRefs()).toBe(3);
-    
+
     obj.drop();
     expect(obj.getRefs()).toBe(2);
-    
+
     obj.drop();
     expect(obj.getRefs()).toBe(1);
   });
@@ -334,10 +334,10 @@ describe('PDF Object - Reference Counting', () => {
   it('does not go below zero', () => {
     const obj = pdfInt(42);
     expect(obj.getRefs()).toBe(1);
-    
+
     obj.drop();
     expect(obj.getRefs()).toBe(0);
-    
+
     obj.drop();
     expect(obj.getRefs()).toBe(0);
   });
@@ -347,10 +347,10 @@ describe('PDF Object - Marking', () => {
   it('marks and unmarks objects', () => {
     const obj = pdfInt(42);
     expect(obj.isMarked()).toBe(false);
-    
+
     obj.mark();
     expect(obj.isMarked()).toBe(true);
-    
+
     obj.unmark();
     expect(obj.isMarked()).toBe(false);
   });
@@ -358,10 +358,10 @@ describe('PDF Object - Marking', () => {
   it('tracks parent object numbers', () => {
     const obj = pdfDict();
     expect(obj.getParentNum()).toBe(0);
-    
+
     obj.setParent(123);
     expect(obj.getParentNum()).toBe(123);
-    
+
     obj.setParent(456);
     expect(obj.getParentNum()).toBe(456);
   });
@@ -398,7 +398,7 @@ describe('PDF Object - Geometry Utilities', () => {
     const date = new Date('2025-12-05T12:30:45Z');
     const dateObj = pdfNewDate(date);
     expect(isString(dateObj)).toBe(true);
-    
+
     const dateStr = dateObj.toString();
     expect(dateStr).toMatch(/^D:\d{14}/);
     expect(dateStr).toContain('20251205');
@@ -412,7 +412,7 @@ describe('PDF Object - Dictionary Utilities', () => {
       'B': pdfInt(2),
       'C': pdfInt(3),
     });
-    
+
     const key0 = pdfDictGetKey(dict, 0);
     expect(key0).toBeDefined();
     expect(['A', 'B', 'C']).toContain(key0);
@@ -423,7 +423,7 @@ describe('PDF Object - Dictionary Utilities', () => {
       'Key1': pdfInt(42),
       'Key2': pdfString('hello'),
     });
-    
+
     const val0 = pdfDictGetVal(dict, 0);
     expect(val0).toBeDefined();
   });
