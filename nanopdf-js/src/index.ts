@@ -115,6 +115,7 @@ export {
   PdfDict,
   PdfStream,
   PdfIndirectRef,
+  // Factory functions
   pdfNull,
   pdfBool,
   pdfInt,
@@ -123,6 +124,30 @@ export {
   pdfName,
   pdfArray,
   pdfDict,
+  // Utility functions
+  pdfObjectCompare,
+  pdfNameEquals,
+  pdfDeepCopy,
+  pdfCopyArray,
+  pdfCopyDict,
+  // Type checking
+  isNull,
+  isBool,
+  isInt,
+  isReal,
+  isNumber,
+  isName,
+  isString,
+  isArray,
+  isDict,
+  isStream,
+  isIndirect,
+  // Value extraction with defaults
+  toBoolDefault,
+  toIntDefault,
+  toRealDefault,
+  toObjNum,
+  toGenNum,
 } from './pdf/object.js';
 
 // ============================================================================

@@ -169,6 +169,7 @@ class PdfName extends PdfObject {
  */
 export class PdfArray extends PdfObject {
   private readonly items: PdfObject[];
+  private dirty: boolean = false;
 
   constructor(items: PdfObject[] = []) {
     super();
@@ -177,28 +178,144 @@ export class PdfArray extends PdfObject {
 
   get type(): PdfObjectType { return PdfObjectType.Array; }
 
+  /**
+   * Get the number of elements in the array
+   */
   get length(): number {
     return this.items.length;
   }
 
+  /**
+   * Get element at the specified index
+   */
   get(index: number): PdfObject | undefined {
     return this.items[index];
   }
 
+  /**
+   * Set element at the specified index (alias for put)
+   */
+  put(index: number, obj: PdfObject): void {
+    if (index >= 0 && index < this.items.length) {
+      this.items[index] = obj;
+      this.dirty = true;
+    }
+  }
+
+  /**
+   * Push a PDF object to the end of the array
+   */
   push(obj: PdfObject): void {
     this.items.push(obj);
+    this.dirty = true;
   }
 
+  /**
+   * Push an integer value to the end of the array
+   */
+  pushInt(value: number): void {
+    this.items.push(new PdfInt(value));
+    this.dirty = true;
+  }
+
+  /**
+   * Push a real (float) value to the end of the array
+   */
+  pushReal(value: number): void {
+    this.items.push(new PdfReal(value));
+    this.dirty = true;
+  }
+
+  /**
+   * Push a boolean value to the end of the array
+   */
+  pushBool(value: boolean): void {
+    this.items.push(new PdfBool(value));
+    this.dirty = true;
+  }
+
+  /**
+   * Push a name to the end of the array
+   */
+  pushName(value: string): void {
+    this.items.push(new PdfName(value));
+    this.dirty = true;
+  }
+
+  /**
+   * Push a string to the end of the array
+   */
+  pushString(value: string): void {
+    this.items.push(new PdfString(value));
+    this.dirty = true;
+  }
+
+  /**
+   * Insert element at the specified index
+   */
   insert(index: number, obj: PdfObject): void {
-    this.items.splice(index, 0, obj);
+    if (index >= 0 && index <= this.items.length) {
+      this.items.splice(index, 0, obj);
+      this.dirty = true;
+    }
   }
 
+  /**
+   * Delete element at the specified index
+   */
   delete(index: number): void {
-    this.items.splice(index, 1);
+    if (index >= 0 && index < this.items.length) {
+      this.items.splice(index, 1);
+      this.dirty = true;
+    }
   }
 
+  /**
+   * Convert to a JavaScript array
+   */
   toArray(): PdfObject[] {
     return [...this.items];
+  }
+
+  /**
+   * Check if this array has been modified
+   */
+  isDirty(): boolean {
+    return this.dirty;
+  }
+
+  /**
+   * Mark this array as dirty (modified)
+   */
+  markDirty(): void {
+    this.dirty = true;
+  }
+
+  /**
+   * Mark this array as clean (not modified)
+   */
+  markClean(): void {
+    this.dirty = false;
+  }
+
+  /**
+   * Create a shallow copy of this array
+   */
+  copy(): PdfArray {
+    return new PdfArray([...this.items]);
+  }
+
+  /**
+   * Create a deep copy of this array
+   */
+  deepCopy(): PdfArray {
+    const copied = this.items.map(item => {
+      if (item instanceof PdfArray) return item.deepCopy();
+      if (item instanceof PdfDict) return item.deepCopy();
+      if (item instanceof PdfStream) return item.deepCopy();
+      return item; // Primitive types are immutable
+    });
+    return new PdfArray(copied);
   }
 
   [Symbol.iterator](): Iterator<PdfObject> {
@@ -220,6 +337,7 @@ export class PdfArray extends PdfObject {
  */
 export class PdfDict extends PdfObject {
   private readonly entries: Map<string, PdfObject>;
+  private dirty: boolean = false;
 
   constructor(entries: Record<string, PdfObject> = {}) {
     super();
@@ -228,28 +346,103 @@ export class PdfDict extends PdfObject {
 
   get type(): PdfObjectType { return PdfObjectType.Dict; }
 
+  /**
+   * Get the number of entries in the dictionary
+   */
   get length(): number {
     return this.entries.size;
   }
 
+  /**
+   * Get value for a key
+   */
   get(key: string): PdfObject | undefined {
     return this.entries.get(key);
   }
 
+  /**
+   * Put a PDF object value for a key
+   */
   put(key: string, value: PdfObject): void {
     this.entries.set(key, value);
+    this.dirty = true;
   }
 
+  /**
+   * Put an integer value for a key
+   */
+  putInt(key: string, value: number): void {
+    this.entries.set(key, new PdfInt(value));
+    this.dirty = true;
+  }
+
+  /**
+   * Put a real (float) value for a key
+   */
+  putReal(key: string, value: number): void {
+    this.entries.set(key, new PdfReal(value));
+    this.dirty = true;
+  }
+
+  /**
+   * Put a boolean value for a key
+   */
+  putBool(key: string, value: boolean): void {
+    this.entries.set(key, new PdfBool(value));
+    this.dirty = true;
+  }
+
+  /**
+   * Put a name for a key
+   */
+  putName(key: string, value: string): void {
+    this.entries.set(key, new PdfName(value));
+    this.dirty = true;
+  }
+
+  /**
+   * Put a string for a key
+   */
+  putString(key: string, value: string): void {
+    this.entries.set(key, new PdfString(value));
+    this.dirty = true;
+  }
+
+  /**
+   * Delete a key from the dictionary
+   */
   del(key: string): void {
-    this.entries.delete(key);
+    if (this.entries.delete(key)) {
+      this.dirty = true;
+    }
   }
 
+  /**
+   * Check if a key exists in the dictionary
+   */
   has(key: string): boolean {
     return this.entries.has(key);
   }
 
+  /**
+   * Get all keys in the dictionary
+   */
   keys(): string[] {
     return Array.from(this.entries.keys());
+  }
+
+  /**
+   * Get all values in the dictionary
+   */
+  values(): PdfObject[] {
+    return Array.from(this.entries.values());
+  }
+
+  /**
+   * Get all entries as [key, value] pairs
+   */
+  entries(): [string, PdfObject][] {
+    return Array.from(this.entries.entries());
   }
 
   *[Symbol.iterator](): Generator<[string, PdfObject]> {
@@ -258,35 +451,129 @@ export class PdfDict extends PdfObject {
     }
   }
 
-  // Typed getters
+  // ============================================================================
+  // Typed getters with defaults
+  // ============================================================================
+
+  /**
+   * Get name value for a key
+   */
   getName(key: string): string {
     return this.get(key)?.toName() ?? '';
   }
 
+  /**
+   * Get string value for a key
+   */
   getString(key: string): string {
     return this.get(key)?.toString() ?? '';
   }
 
-  getInt(key: string): number {
-    return this.get(key)?.toInt() ?? 0;
+  /**
+   * Get integer value for a key
+   */
+  getInt(key: string, defaultValue: number = 0): number {
+    const obj = this.get(key);
+    return obj ? obj.toInt() : defaultValue;
   }
 
-  getReal(key: string): number {
-    return this.get(key)?.toReal() ?? 0;
+  /**
+   * Get real (float) value for a key
+   */
+  getReal(key: string, defaultValue: number = 0): number {
+    const obj = this.get(key);
+    return obj ? obj.toReal() : defaultValue;
   }
 
-  getBool(key: string): boolean {
-    return this.get(key)?.toBool() ?? false;
+  /**
+   * Get boolean value for a key
+   */
+  getBool(key: string, defaultValue: boolean = false): boolean {
+    const obj = this.get(key);
+    return obj ? obj.toBool() : defaultValue;
   }
 
+  /**
+   * Get array for a key
+   */
   getArray(key: string): PdfArray | undefined {
     const obj = this.get(key);
     return obj instanceof PdfArray ? obj : undefined;
   }
 
+  /**
+   * Get dictionary for a key
+   */
   getDict(key: string): PdfDict | undefined {
     const obj = this.get(key);
     return obj instanceof PdfDict ? obj : undefined;
+  }
+
+  /**
+   * Get stream for a key
+   */
+  getStream(key: string): PdfStream | undefined {
+    const obj = this.get(key);
+    return obj instanceof PdfStream ? obj : undefined;
+  }
+
+  // ============================================================================
+  // Dirty tracking
+  // ============================================================================
+
+  /**
+   * Check if this dictionary has been modified
+   */
+  isDirty(): boolean {
+    return this.dirty;
+  }
+
+  /**
+   * Mark this dictionary as dirty (modified)
+   */
+  markDirty(): void {
+    this.dirty = true;
+  }
+
+  /**
+   * Mark this dictionary as clean (not modified)
+   */
+  markClean(): void {
+    this.dirty = false;
+  }
+
+  // ============================================================================
+  // Copying
+  // ============================================================================
+
+  /**
+   * Create a shallow copy of this dictionary
+   */
+  copy(): PdfDict {
+    const entries: Record<string, PdfObject> = {};
+    for (const [key, value] of this.entries) {
+      entries[key] = value;
+    }
+    return new PdfDict(entries);
+  }
+
+  /**
+   * Create a deep copy of this dictionary
+   */
+  deepCopy(): PdfDict {
+    const entries: Record<string, PdfObject> = {};
+    for (const [key, value] of this.entries) {
+      if (value instanceof PdfArray) {
+        entries[key] = value.deepCopy();
+      } else if (value instanceof PdfDict) {
+        entries[key] = value.deepCopy();
+      } else if (value instanceof PdfStream) {
+        entries[key] = value.deepCopy();
+      } else {
+        entries[key] = value; // Primitive types are immutable
+      }
+    }
+    return new PdfDict(entries);
   }
 
   equals(other: PdfObject): boolean {
@@ -315,12 +602,35 @@ export class PdfStream extends PdfObject {
 
   get type(): PdfObjectType { return PdfObjectType.Stream; }
 
+  /**
+   * Get the stream data
+   */
   getData(): Uint8Array {
     return this._data;
   }
 
+  /**
+   * Set the stream data
+   */
   setData(data: Uint8Array): void {
     this._data = data;
+    this.dict.markDirty();
+  }
+
+  /**
+   * Get the stream dictionary
+   */
+  getDict(): PdfDict {
+    return this.dict;
+  }
+
+  /**
+   * Create a deep copy of this stream
+   */
+  deepCopy(): PdfStream {
+    const dictCopy = this.dict.deepCopy();
+    const dataCopy = new Uint8Array(this._data);
+    return new PdfStream(dictCopy, dataCopy);
   }
 
   equals(other: PdfObject): boolean {
@@ -416,5 +726,174 @@ export function pdfArray(items: PdfObject[] = []): PdfArray {
  */
 export function pdfDict(entries: Record<string, PdfObject> = {}): PdfDict {
   return new PdfDict(entries);
+}
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+/**
+ * Compare two PDF objects for equality
+ */
+export function pdfObjectCompare(a: PdfObject, b: PdfObject): boolean {
+  return a.equals(b);
+}
+
+/**
+ * Check if a PDF name equals a string value
+ */
+export function pdfNameEquals(obj: PdfObject, name: string): boolean {
+  return obj.nameEquals(name);
+}
+
+/**
+ * Create a deep copy of a PDF object
+ */
+export function pdfDeepCopy(obj: PdfObject): PdfObject {
+  if (obj instanceof PdfArray) return obj.deepCopy();
+  if (obj instanceof PdfDict) return obj.deepCopy();
+  if (obj instanceof PdfStream) return obj.deepCopy();
+  // Primitive types are immutable, so return as-is
+  return obj;
+}
+
+/**
+ * Create a shallow copy of an array
+ */
+export function pdfCopyArray(array: PdfArray): PdfArray {
+  return array.copy();
+}
+
+/**
+ * Create a shallow copy of a dictionary
+ */
+export function pdfCopyDict(dict: PdfDict): PdfDict {
+  return dict.copy();
+}
+
+// ============================================================================
+// Type Checking Functions
+// ============================================================================
+
+/**
+ * Check if object is null
+ */
+export function isNull(obj: PdfObject): boolean {
+  return obj.isNull;
+}
+
+/**
+ * Check if object is a boolean
+ */
+export function isBool(obj: PdfObject): boolean {
+  return obj.isBool;
+}
+
+/**
+ * Check if object is an integer
+ */
+export function isInt(obj: PdfObject): boolean {
+  return obj.isInt;
+}
+
+/**
+ * Check if object is a real number
+ */
+export function isReal(obj: PdfObject): boolean {
+  return obj.isReal;
+}
+
+/**
+ * Check if object is a number (int or real)
+ */
+export function isNumber(obj: PdfObject): boolean {
+  return obj.isNumber;
+}
+
+/**
+ * Check if object is a name
+ */
+export function isName(obj: PdfObject): boolean {
+  return obj.isName;
+}
+
+/**
+ * Check if object is a string
+ */
+export function isString(obj: PdfObject): boolean {
+  return obj.isString;
+}
+
+/**
+ * Check if object is an array
+ */
+export function isArray(obj: PdfObject): boolean {
+  return obj.isArray;
+}
+
+/**
+ * Check if object is a dictionary
+ */
+export function isDict(obj: PdfObject): boolean {
+  return obj.isDict;
+}
+
+/**
+ * Check if object is a stream
+ */
+export function isStream(obj: PdfObject): boolean {
+  return obj.isStream;
+}
+
+/**
+ * Check if object is an indirect reference
+ */
+export function isIndirect(obj: PdfObject): boolean {
+  return obj.isIndirect;
+}
+
+// ============================================================================
+// Value Extraction Functions (with defaults)
+// ============================================================================
+
+/**
+ * Convert object to boolean with default value
+ */
+export function toBoolDefault(obj: PdfObject | undefined, defaultValue: boolean): boolean {
+  return obj ? obj.toBool() : defaultValue;
+}
+
+/**
+ * Convert object to integer with default value
+ */
+export function toIntDefault(obj: PdfObject | undefined, defaultValue: number): number {
+  return obj ? obj.toInt() : defaultValue;
+}
+
+/**
+ * Convert object to real with default value
+ */
+export function toRealDefault(obj: PdfObject | undefined, defaultValue: number): number {
+  return obj ? obj.toReal() : defaultValue;
+}
+
+/**
+ * Get object number from indirect reference
+ */
+export function toObjNum(obj: PdfObject): number {
+  if (obj instanceof PdfIndirectRef) {
+    return obj.objNum;
+  }
+  return 0;
+}
+
+/**
+ * Get generation number from indirect reference
+ */
+export function toGenNum(obj: PdfObject): number {
+  if (obj instanceof PdfIndirectRef) {
+    return obj.genNum;
+  }
+  return 0;
 }
 

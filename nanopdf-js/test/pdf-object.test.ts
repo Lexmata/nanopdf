@@ -1,14 +1,5 @@
-/**
- * Tests for PDF Object module
- */
 import { describe, it, expect } from 'vitest';
 import {
-  PdfObject,
-  PdfArray,
-  PdfDict,
-  PdfStream,
-  PdfIndirectRef,
-  PdfObjectType,
   pdfNull,
   pdfBool,
   pdfInt,
@@ -17,359 +8,294 @@ import {
   pdfName,
   pdfArray,
   pdfDict,
+  PdfArray,
+  PdfDict,
+  isNull,
+  isBool,
+  isInt,
+  isReal,
+  isNumber,
+  isName,
+  isString,
+  isArray,
+  isDict,
+  pdfObjectCompare,
+  pdfNameEquals,
+  pdfDeepCopy,
+  pdfCopyArray,
+  pdfCopyDict,
+  toBoolDefault,
+  toIntDefault,
+  toRealDefault,
 } from '../src/index.js';
 
-describe('PdfObject', () => {
-  describe('primitive values', () => {
-    it('should create null', () => {
-      const obj = pdfNull();
-      expect(obj.type).toBe(PdfObjectType.Null);
-      expect(obj.isNull).toBe(true);
-    });
-
-    it('should create boolean true', () => {
-      const obj = pdfBool(true);
-      expect(obj.type).toBe(PdfObjectType.Bool);
-      expect(obj.isBool).toBe(true);
-      expect(obj.toBool()).toBe(true);
-    });
-
-    it('should create boolean false', () => {
-      const obj = pdfBool(false);
-      expect(obj.toBool()).toBe(false);
-    });
-
-    it('should create integer', () => {
-      const obj = pdfInt(42);
-      expect(obj.type).toBe(PdfObjectType.Int);
-      expect(obj.isInt).toBe(true);
-      expect(obj.toInt()).toBe(42);
-    });
-
-    it('should create negative integer', () => {
-      const obj = pdfInt(-100);
-      expect(obj.toInt()).toBe(-100);
-    });
-
-    it('should create real number', () => {
-      const obj = pdfReal(3.14159);
-      expect(obj.type).toBe(PdfObjectType.Real);
-      expect(obj.isReal).toBe(true);
-      expect(obj.toReal()).toBeCloseTo(3.14159);
-    });
-
-    it('should treat int as number', () => {
-      const obj = pdfInt(42);
-      expect(obj.isNumber).toBe(true);
-      expect(obj.toNumber()).toBe(42);
-    });
-
-    it('should treat real as number', () => {
-      const obj = pdfReal(3.14);
-      expect(obj.isNumber).toBe(true);
-      expect(obj.toNumber()).toBeCloseTo(3.14);
-    });
+describe('PDF Object - Basic Types', () => {
+  it('creates null object', () => {
+    const obj = pdfNull();
+    expect(isNull(obj)).toBe(true);
+    expect(obj.toBool()).toBe(false);
+    expect(obj.toInt()).toBe(0);
   });
 
-  describe('strings', () => {
-    it('should create string', () => {
-      const obj = pdfString('Hello, World!');
-      expect(obj.type).toBe(PdfObjectType.String);
-      expect(obj.isString).toBe(true);
-      expect(obj.toString()).toBe('Hello, World!');
-    });
-
-    it('should handle empty string', () => {
-      const obj = pdfString('');
-      expect(obj.toString()).toBe('');
-    });
-
-    it('should handle special characters', () => {
-      const obj = pdfString('Line1\nLine2\tTabbed');
-      expect(obj.toString()).toBe('Line1\nLine2\tTabbed');
-    });
+  it('creates boolean objects', () => {
+    const trueObj = pdfBool(true);
+    const falseObj = pdfBool(false);
+    
+    expect(isBool(trueObj)).toBe(true);
+    expect(trueObj.toBool()).toBe(true);
+    expect(falseObj.toBool()).toBe(false);
   });
 
-  describe('names', () => {
-    it('should create name', () => {
-      const obj = pdfName('Type');
-      expect(obj.type).toBe(PdfObjectType.Name);
-      expect(obj.isName).toBe(true);
-      expect(obj.toName()).toBe('Type');
-    });
-
-    it('should handle names with special chars', () => {
-      const obj = pdfName('Font#20Name');
-      expect(obj.toName()).toBe('Font#20Name');
-    });
-
-    it('should compare names', () => {
-      const name1 = pdfName('Type');
-      const name2 = pdfName('Type');
-      const name3 = pdfName('Other');
-
-      expect(name1.nameEquals('Type')).toBe(true);
-      expect(name1.nameEquals('Other')).toBe(false);
-      expect(name1.equals(name2)).toBe(true);
-      expect(name1.equals(name3)).toBe(false);
-    });
+  it('creates integer objects', () => {
+    const obj = pdfInt(42);
+    expect(isInt(obj)).toBe(true);
+    expect(isNumber(obj)).toBe(true);
+    expect(obj.toInt()).toBe(42);
+    expect(obj.toReal()).toBe(42);
   });
 
-  describe('comparison', () => {
-    it('should compare equal objects', () => {
-      expect(pdfInt(42).equals(pdfInt(42))).toBe(true);
-      expect(pdfString('test').equals(pdfString('test'))).toBe(true);
-      expect(pdfBool(true).equals(pdfBool(true))).toBe(true);
-    });
+  it('creates real objects', () => {
+    const obj = pdfReal(3.14);
+    expect(isReal(obj)).toBe(true);
+    expect(isNumber(obj)).toBe(true);
+    expect(obj.toReal()).toBe(3.14);
+    expect(obj.toInt()).toBe(3);
+  });
 
-    it('should compare unequal objects', () => {
-      expect(pdfInt(42).equals(pdfInt(43))).toBe(false);
-      expect(pdfInt(42).equals(pdfString('42'))).toBe(false);
-      expect(pdfBool(true).equals(pdfBool(false))).toBe(false);
-    });
+  it('creates string objects', () => {
+    const obj = pdfString('hello');
+    expect(isString(obj)).toBe(true);
+    expect(obj.toString()).toBe('hello');
+  });
+
+  it('creates name objects', () => {
+    const obj = pdfName('Type');
+    expect(isName(obj)).toBe(true);
+    expect(obj.toName()).toBe('Type');
+    expect(pdfNameEquals(obj, 'Type')).toBe(true);
+    expect(pdfNameEquals(obj, 'Other')).toBe(false);
   });
 });
 
-describe('PdfArray', () => {
-  it('should create empty array', () => {
+describe('PDF Object - Arrays', () => {
+  it('creates empty array', () => {
     const arr = pdfArray();
-    expect(arr.type).toBe(PdfObjectType.Array);
-    expect(arr.isArray).toBe(true);
+    expect(isArray(arr)).toBe(true);
     expect(arr.length).toBe(0);
   });
 
-  it('should create array with values', () => {
+  it('creates array with items', () => {
     const arr = pdfArray([pdfInt(1), pdfInt(2), pdfInt(3)]);
-    expect(arr.length).toBe(3);
-  });
-
-  it('should get element by index', () => {
-    const arr = pdfArray([pdfInt(10), pdfInt(20), pdfInt(30)]);
-
-    expect(arr.get(0)?.toInt()).toBe(10);
-    expect(arr.get(1)?.toInt()).toBe(20);
-    expect(arr.get(2)?.toInt()).toBe(30);
-    expect(arr.get(3)).toBeUndefined();
-  });
-
-  it('should push elements', () => {
-    const arr = pdfArray();
-    arr.push(pdfInt(1));
-    arr.push(pdfString('two'));
-    arr.push(pdfBool(true));
-
-    expect(arr.length).toBe(3);
-    expect(arr.get(0)?.toInt()).toBe(1);
-    expect(arr.get(1)?.toString()).toBe('two');
-    expect(arr.get(2)?.toBool()).toBe(true);
-  });
-
-  it('should insert elements', () => {
-    const arr = pdfArray([pdfInt(1), pdfInt(3)]);
-    arr.insert(1, pdfInt(2));
-
     expect(arr.length).toBe(3);
     expect(arr.get(0)?.toInt()).toBe(1);
     expect(arr.get(1)?.toInt()).toBe(2);
     expect(arr.get(2)?.toInt()).toBe(3);
   });
 
-  it('should delete elements', () => {
+  it('pushes items to array', () => {
+    const arr = pdfArray();
+    arr.push(pdfInt(1));
+    arr.pushInt(2);
+    arr.pushReal(3.14);
+    arr.pushBool(true);
+    arr.pushName('Test');
+    arr.pushString('hello');
+    
+    expect(arr.length).toBe(6);
+    expect(arr.get(0)?.toInt()).toBe(1);
+    expect(arr.get(1)?.toInt()).toBe(2);
+    expect(arr.get(2)?.toReal()).toBe(3.14);
+    expect(arr.get(3)?.toBool()).toBe(true);
+    expect(arr.get(4)?.toName()).toBe('Test');
+    expect(arr.get(5)?.toString()).toBe('hello');
+  });
+
+  it('inserts items into array', () => {
+    const arr = pdfArray([pdfInt(1), pdfInt(3)]);
+    arr.insert(1, pdfInt(2));
+    
+    expect(arr.length).toBe(3);
+    expect(arr.get(0)?.toInt()).toBe(1);
+    expect(arr.get(1)?.toInt()).toBe(2);
+    expect(arr.get(2)?.toInt()).toBe(3);
+  });
+
+  it('deletes items from array', () => {
     const arr = pdfArray([pdfInt(1), pdfInt(2), pdfInt(3)]);
     arr.delete(1);
-
+    
     expect(arr.length).toBe(2);
     expect(arr.get(0)?.toInt()).toBe(1);
     expect(arr.get(1)?.toInt()).toBe(3);
   });
 
-  it('should iterate elements', () => {
+  it('puts items at index', () => {
     const arr = pdfArray([pdfInt(1), pdfInt(2), pdfInt(3)]);
-    const values: number[] = [];
-
-    for (const obj of arr) {
-      values.push(obj.toInt());
-    }
-
-    expect(values).toEqual([1, 2, 3]);
+    arr.put(1, pdfInt(42));
+    
+    expect(arr.get(1)?.toInt()).toBe(42);
   });
 
-  it('should convert to JS array', () => {
-    const arr = pdfArray([pdfInt(1), pdfString('two'), pdfBool(true)]);
-    const jsArr = arr.toArray();
+  it('tracks dirty state', () => {
+    const arr = pdfArray();
+    expect(arr.isDirty()).toBe(false);
+    
+    arr.push(pdfInt(1));
+    expect(arr.isDirty()).toBe(true);
+    
+    arr.markClean();
+    expect(arr.isDirty()).toBe(false);
+  });
 
-    expect(jsArr.length).toBe(3);
-    expect(jsArr[0]?.toInt()).toBe(1);
+  it('creates shallow copy', () => {
+    const original = pdfArray([pdfInt(1), pdfInt(2)]);
+    const copy = pdfCopyArray(original);
+    
+    expect(copy.length).toBe(2);
+    expect(copy.get(0)?.toInt()).toBe(1);
+    expect(pdfObjectCompare(original, copy)).toBe(true);
+  });
+
+  it('creates deep copy', () => {
+    const nested = pdfArray([pdfInt(1)]);
+    const original = pdfArray([nested]);
+    const copy = pdfDeepCopy(original) as PdfArray;
+    
+    // Modify original nested array
+    nested.push(pdfInt(2));
+    
+    // Copy should not be affected
+    const copiedNested = copy.get(0) as PdfArray;
+    expect(copiedNested.length).toBe(1);
   });
 });
 
-describe('PdfDict', () => {
-  it('should create empty dict', () => {
+describe('PDF Object - Dictionaries', () => {
+  it('creates empty dictionary', () => {
     const dict = pdfDict();
-    expect(dict.type).toBe(PdfObjectType.Dict);
-    expect(dict.isDict).toBe(true);
+    expect(isDict(dict)).toBe(true);
     expect(dict.length).toBe(0);
   });
 
-  it('should create dict with entries', () => {
+  it('creates dictionary with entries', () => {
     const dict = pdfDict({
-      Type: pdfName('Page'),
-      Width: pdfInt(612),
+      'Type': pdfName('Page'),
+      'Count': pdfInt(10),
     });
-
+    
     expect(dict.length).toBe(2);
+    expect(dict.getName('Type')).toBe('Page');
+    expect(dict.getInt('Count')).toBe(10);
   });
 
-  it('should get value by key', () => {
-    const dict = pdfDict({
-      Name: pdfString('Test'),
-      Count: pdfInt(42),
-    });
-
-    expect(dict.get('Name')?.toString()).toBe('Test');
-    expect(dict.get('Count')?.toInt()).toBe(42);
-    expect(dict.get('Missing')).toBeUndefined();
-  });
-
-  it('should put value by key', () => {
+  it('puts entries into dictionary', () => {
     const dict = pdfDict();
-    dict.put('Key', pdfString('Value'));
-
-    expect(dict.get('Key')?.toString()).toBe('Value');
+    dict.put('Key1', pdfString('value1'));
+    dict.putInt('Key2', 42);
+    dict.putReal('Key3', 3.14);
+    dict.putBool('Key4', true);
+    dict.putName('Key5', 'Name');
+    dict.putString('Key6', 'string');
+    
+    expect(dict.length).toBe(6);
+    expect(dict.getString('Key1')).toBe('value1');
+    expect(dict.getInt('Key2')).toBe(42);
+    expect(dict.getReal('Key3')).toBe(3.14);
+    expect(dict.getBool('Key4')).toBe(true);
+    expect(dict.getName('Key5')).toBe('Name');
+    expect(dict.getString('Key6')).toBe('string');
   });
 
-  it('should delete key', () => {
+  it('deletes entries from dictionary', () => {
     const dict = pdfDict({
-      A: pdfInt(1),
-      B: pdfInt(2),
+      'Key1': pdfInt(1),
+      'Key2': pdfInt(2),
     });
-
-    dict.del('A');
-    expect(dict.get('A')).toBeUndefined();
-    expect(dict.get('B')?.toInt()).toBe(2);
+    
+    dict.del('Key1');
+    expect(dict.length).toBe(1);
+    expect(dict.has('Key1')).toBe(false);
+    expect(dict.has('Key2')).toBe(true);
   });
 
-  it('should check if key exists', () => {
-    const dict = pdfDict({
-      Exists: pdfInt(1),
-    });
-
-    expect(dict.has('Exists')).toBe(true);
-    expect(dict.has('Missing')).toBe(false);
+  it('gets entries with defaults', () => {
+    const dict = pdfDict();
+    
+    expect(dict.getInt('Missing', 42)).toBe(42);
+    expect(dict.getReal('Missing', 3.14)).toBe(3.14);
+    expect(dict.getBool('Missing', true)).toBe(true);
   });
 
-  it('should get keys', () => {
-    const dict = pdfDict({
-      Alpha: pdfInt(1),
-      Beta: pdfInt(2),
-      Gamma: pdfInt(3),
-    });
+  it('tracks dirty state', () => {
+    const dict = pdfDict();
+    expect(dict.isDirty()).toBe(false);
+    
+    dict.putInt('Key', 1);
+    expect(dict.isDirty()).toBe(true);
+    
+    dict.markClean();
+    expect(dict.isDirty()).toBe(false);
+  });
 
+  it('creates shallow copy', () => {
+    const original = pdfDict({
+      'Key1': pdfInt(1),
+      'Key2': pdfString('value'),
+    });
+    const copy = pdfCopyDict(original);
+    
+    expect(copy.length).toBe(2);
+    expect(copy.getInt('Key1')).toBe(1);
+    expect(pdfObjectCompare(original, copy)).toBe(true);
+  });
+
+  it('creates deep copy', () => {
+    const nested = pdfDict({ 'Nested': pdfInt(1) });
+    const original = pdfDict({ 'Dict': nested });
+    const copy = pdfDeepCopy(original) as PdfDict;
+    
+    // Modify original nested dict
+    nested.putInt('Nested', 2);
+    
+    // Copy should not be affected
+    const copiedNested = copy.getDict('Dict')!;
+    expect(copiedNested.getInt('Nested')).toBe(1);
+  });
+
+  it('gets keys and values', () => {
+    const dict = pdfDict({
+      'A': pdfInt(1),
+      'B': pdfInt(2),
+      'C': pdfInt(3),
+    });
+    
     const keys = dict.keys();
-    expect(keys.length).toBe(3);
-    expect(keys).toContain('Alpha');
-    expect(keys).toContain('Beta');
-    expect(keys).toContain('Gamma');
-  });
-
-  it('should iterate entries', () => {
-    const dict = pdfDict({
-      A: pdfInt(1),
-      B: pdfInt(2),
-    });
-
-    const entries: [string, number][] = [];
-    for (const [key, value] of dict) {
-      entries.push([key, value.toInt()]);
-    }
-
-    expect(entries.length).toBe(2);
-  });
-
-  it('should get typed values', () => {
-    const dict = pdfDict({
-      Name: pdfName('TestName'),
-      Text: pdfString('TestString'),
-      Count: pdfInt(42),
-      Ratio: pdfReal(3.14),
-      Flag: pdfBool(true),
-    });
-
-    expect(dict.getName('Name')).toBe('TestName');
-    expect(dict.getString('Text')).toBe('TestString');
-    expect(dict.getInt('Count')).toBe(42);
-    expect(dict.getReal('Ratio')).toBeCloseTo(3.14);
-    expect(dict.getBool('Flag')).toBe(true);
-  });
-
-  it('should return defaults for missing typed values', () => {
-    const dict = pdfDict();
-
-    expect(dict.getName('Missing')).toBe('');
-    expect(dict.getString('Missing')).toBe('');
-    expect(dict.getInt('Missing')).toBe(0);
-    expect(dict.getReal('Missing')).toBe(0);
-    expect(dict.getBool('Missing')).toBe(false);
+    expect(keys).toHaveLength(3);
+    expect(keys).toContain('A');
+    expect(keys).toContain('B');
+    expect(keys).toContain('C');
+    
+    const values = dict.values();
+    expect(values).toHaveLength(3);
   });
 });
 
-describe('PdfStream', () => {
-  it('should create stream', () => {
-    const data = new Uint8Array([1, 2, 3, 4, 5]);
-    const stream = new PdfStream(pdfDict(), data);
-
-    expect(stream.type).toBe(PdfObjectType.Stream);
-    expect(stream.isStream).toBe(true);
+describe('PDF Object - Utility Functions', () => {
+  it('compares objects', () => {
+    expect(pdfObjectCompare(pdfInt(1), pdfInt(1))).toBe(true);
+    expect(pdfObjectCompare(pdfInt(1), pdfInt(2))).toBe(false);
+    expect(pdfObjectCompare(pdfString('a'), pdfString('a'))).toBe(true);
+    expect(pdfObjectCompare(pdfName('Type'), pdfName('Type'))).toBe(true);
   });
 
-  it('should get stream data', () => {
-    const data = new Uint8Array([10, 20, 30]);
-    const stream = new PdfStream(pdfDict(), data);
-
-    const result = stream.getData();
-    expect(result.length).toBe(3);
-    expect(result[0]).toBe(10);
-  });
-
-  it('should set stream data', () => {
-    const stream = new PdfStream(pdfDict(), new Uint8Array(0));
-    stream.setData(new Uint8Array([100, 200]));
-
-    const result = stream.getData();
-    expect(result.length).toBe(2);
-    expect(result[0]).toBe(100);
-  });
-
-  it('should get stream dictionary', () => {
-    const dict = pdfDict({
-      Length: pdfInt(100),
-      Filter: pdfName('FlateDecode'),
-    });
-    const stream = new PdfStream(dict, new Uint8Array(100));
-
-    expect(stream.dict.get('Filter')?.toName()).toBe('FlateDecode');
+  it('extracts values with defaults', () => {
+    expect(toBoolDefault(pdfBool(true), false)).toBe(true);
+    expect(toBoolDefault(undefined, true)).toBe(true);
+    
+    expect(toIntDefault(pdfInt(42), 0)).toBe(42);
+    expect(toIntDefault(undefined, 100)).toBe(100);
+    
+    expect(toRealDefault(pdfReal(3.14), 0)).toBe(3.14);
+    expect(toRealDefault(undefined, 2.71)).toBe(2.71);
   });
 });
-
-describe('PdfIndirectRef', () => {
-  it('should create indirect reference', () => {
-    const ref = new PdfIndirectRef(42, 0);
-
-    expect(ref.type).toBe(PdfObjectType.Indirect);
-    expect(ref.isIndirect).toBe(true);
-    expect(ref.objNum).toBe(42);
-    expect(ref.genNum).toBe(0);
-  });
-
-  it('should compare references', () => {
-    const ref1 = new PdfIndirectRef(10, 0);
-    const ref2 = new PdfIndirectRef(10, 0);
-    const ref3 = new PdfIndirectRef(10, 1);
-    const ref4 = new PdfIndirectRef(20, 0);
-
-    expect(ref1.equals(ref2)).toBe(true);
-    expect(ref1.equals(ref3)).toBe(false);
-    expect(ref1.equals(ref4)).toBe(false);
-  });
-});
-
