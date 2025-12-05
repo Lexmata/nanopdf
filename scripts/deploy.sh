@@ -223,7 +223,7 @@ echo -e "${GREEN}✓ Git status clean${NC}"
 # Step 3: Run tests
 if [[ "$RUN_TESTS" == "true" ]]; then
     print_step "Step 3: Running Tests"
-    
+
     # Rust tests
     echo -e "${BLUE}==> Testing nanopdf-rs${NC}"
     if [[ "$DRY_RUN" == "true" ]]; then
@@ -234,7 +234,7 @@ if [[ "$RUN_TESTS" == "true" ]]; then
         echo -e "${GREEN}✓ Rust tests passed${NC}"
     fi
     echo ""
-    
+
     # Go tests
     echo -e "${BLUE}==> Testing go-nanopdf${NC}"
     if [[ "$DRY_RUN" == "true" ]]; then
@@ -245,7 +245,7 @@ if [[ "$RUN_TESTS" == "true" ]]; then
         echo -e "${GREEN}✓ Go tests passed${NC}"
     fi
     echo ""
-    
+
     # Node.js tests
     echo -e "${BLUE}==> Testing nanopdf-js${NC}"
     if [[ "$DRY_RUN" == "true" ]]; then
@@ -259,7 +259,7 @@ if [[ "$RUN_TESTS" == "true" ]]; then
         fi
         echo -e "${GREEN}✓ Node.js tests completed${NC}"
     fi
-    
+
     cd "$PROJECT_ROOT"
 else
     echo -e "${YELLOW}==> Skipping tests (--skip-tests)${NC}"
@@ -283,7 +283,7 @@ fi
 # Step 5: Build packages
 if [[ "$BUILD_PACKAGES" == "true" ]]; then
     print_step "Step 5: Building Packages"
-    
+
     # Build Rust library
     echo -e "${BLUE}==> Building nanopdf-rs (release)${NC}"
     if [[ "$DRY_RUN" == "true" ]]; then
@@ -294,7 +294,7 @@ if [[ "$BUILD_PACKAGES" == "true" ]]; then
         echo -e "${GREEN}✓ Rust library built${NC}"
     fi
     echo ""
-    
+
     # Build Node.js addon
     echo -e "${BLUE}==> Building nanopdf-js (native addon)${NC}"
     if [[ "$DRY_RUN" == "true" ]]; then
@@ -308,7 +308,7 @@ if [[ "$BUILD_PACKAGES" == "true" ]]; then
             echo -e "${YELLOW}No build script found, skipping${NC}"
         fi
     fi
-    
+
     cd "$PROJECT_ROOT"
 else
     echo -e "${YELLOW}==> Skipping build (--skip-build)${NC}"
@@ -322,7 +322,7 @@ if [[ "$DRY_RUN" == "true" ]]; then
 else
     # Stage version files
     git add VERSION nanopdf-rs/Cargo.toml nanopdf-js/package.json
-    
+
     # Create commit
     git commit -m "chore: bump version to $VERSION
 
@@ -330,9 +330,9 @@ else
 - Update nanopdf-js to $VERSION
 - Update go-nanopdf to $VERSION
 - Update VERSION file to $VERSION"
-    
+
     echo -e "${GREEN}✓ Commit created${NC}"
-    
+
     # Create tag
     TAG_NAME="v$VERSION"
     git tag -a "$TAG_NAME" -m "Release $VERSION
@@ -345,14 +345,14 @@ Projects:
 - go-nanopdf: $VERSION
 
 See CHANGELOG.md for details."
-    
+
     echo -e "${GREEN}✓ Tag created: $TAG_NAME${NC}"
 fi
 
 # Step 7: Push to remote
 if [[ "$PUSH_TO_REMOTE" == "true" ]]; then
     print_step "Step 7: Pushing to Remote"
-    
+
     if [[ "$DRY_RUN" == "true" ]]; then
         echo -e "${YELLOW}[DRY RUN] Would push:${NC}"
         echo "  - Branch: $CURRENT_BRANCH"
@@ -361,7 +361,7 @@ if [[ "$PUSH_TO_REMOTE" == "true" ]]; then
         echo "Pushing branch..."
         git push origin "$CURRENT_BRANCH"
         echo -e "${GREEN}✓ Branch pushed${NC}"
-        
+
         echo "Pushing tag..."
         git push origin "v$VERSION"
         echo -e "${GREEN}✓ Tag pushed${NC}"
@@ -385,7 +385,7 @@ else
     echo "  ✓ Packages built"
     echo "  ✓ Git commit created"
     echo "  ✓ Git tag created: v$VERSION"
-    
+
     if [[ "$PUSH_TO_REMOTE" == "true" ]]; then
         echo "  ✓ Changes pushed to remote"
         echo ""

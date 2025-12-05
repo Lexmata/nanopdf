@@ -132,12 +132,12 @@ echo ""
 # Function to update Cargo.toml
 update_cargo_toml() {
     echo -e "${BLUE}==> Updating $CARGO_TOML${NC}"
-    
+
     # Get current version
     CURRENT_VERSION=$(grep '^version = ' "$CARGO_TOML" | head -1 | sed 's/version = "\(.*\)"/\1/')
     echo "  Current version: $CURRENT_VERSION"
     echo "  New version:     $VERSION"
-    
+
     if [[ "$DRY_RUN" == "true" ]]; then
         echo -e "  ${YELLOW}[DRY RUN] Would update version${NC}"
     else
@@ -156,12 +156,12 @@ update_cargo_toml() {
 # Function to update package.json
 update_package_json() {
     echo -e "${BLUE}==> Updating $PACKAGE_JSON${NC}"
-    
+
     # Get current version
     CURRENT_VERSION=$(grep '"version":' "$PACKAGE_JSON" | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
     echo "  Current version: $CURRENT_VERSION"
     echo "  New version:     $VERSION"
-    
+
     if [[ "$DRY_RUN" == "true" ]]; then
         echo -e "  ${YELLOW}[DRY RUN] Would update version${NC}"
     else
@@ -180,7 +180,7 @@ update_package_json() {
 # Function to update VERSION file
 update_version_file() {
     echo -e "${BLUE}==> Updating $VERSION_FILE${NC}"
-    
+
     if [[ -f "$VERSION_FILE" ]]; then
         CURRENT_VERSION=$(cat "$VERSION_FILE")
         echo "  Current version: $CURRENT_VERSION"
@@ -188,7 +188,7 @@ update_version_file() {
         echo "  File does not exist, creating..."
     fi
     echo "  New version:     $VERSION"
-    
+
     if [[ "$DRY_RUN" == "true" ]]; then
         echo -e "  ${YELLOW}[DRY RUN] Would write version${NC}"
     else
@@ -203,21 +203,21 @@ create_git_commit() {
         echo -e "${YELLOW}==> Skipping git commit (--no-commit)${NC}"
         return
     fi
-    
+
     echo -e "${BLUE}==> Creating git commit${NC}"
-    
+
     # Check if git repo
     if ! git rev-parse --git-dir > /dev/null 2>&1; then
         echo -e "  ${RED}Error: Not a git repository${NC}"
         return 1
     fi
-    
+
     # Check for uncommitted changes (excluding our version files)
     if ! git diff --quiet --exit-code -- ':!nanopdf-rs/Cargo.toml' ':!nanopdf-js/package.json' ':!VERSION'; then
         echo -e "  ${YELLOW}Warning: Uncommitted changes in other files${NC}"
         echo "  Commit message will include only version updates"
     fi
-    
+
     if [[ "$DRY_RUN" == "true" ]]; then
         echo -e "  ${YELLOW}[DRY RUN] Would commit:${NC}"
         echo "    - nanopdf-rs/Cargo.toml"
@@ -241,23 +241,23 @@ create_git_tag() {
         echo -e "${YELLOW}==> Skipping git tag (--no-tag)${NC}"
         return
     fi
-    
+
     echo -e "${BLUE}==> Creating git tag${NC}"
-    
+
     # Check if git repo
     if ! git rev-parse --git-dir > /dev/null 2>&1; then
         echo -e "  ${RED}Error: Not a git repository${NC}"
         return 1
     fi
-    
+
     TAG_NAME="v$VERSION"
-    
+
     # Check if tag already exists
     if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
         echo -e "  ${RED}Error: Tag $TAG_NAME already exists${NC}"
         return 1
     fi
-    
+
     if [[ "$DRY_RUN" == "true" ]]; then
         echo -e "  ${YELLOW}[DRY RUN] Would create tag: $TAG_NAME${NC}"
     else
@@ -307,13 +307,13 @@ else
     echo "  ✓ nanopdf-rs/Cargo.toml -> $VERSION"
     echo "  ✓ nanopdf-js/package.json -> $VERSION"
     echo "  ✓ VERSION -> $VERSION"
-    
+
     if [[ "$CREATE_COMMIT" == "true" ]]; then
         echo ""
         echo "Git commit created:"
         echo "  $(git log -1 --oneline)"
     fi
-    
+
     if [[ "$CREATE_TAG" == "true" ]]; then
         echo ""
         echo "Git tag created: v$VERSION"

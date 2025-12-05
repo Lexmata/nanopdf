@@ -302,18 +302,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Extract version
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-      
+
       - name: Verify version sync
         run: |
           if [[ "$(cat VERSION)" != "${{ steps.version.outputs.VERSION }}" ]]; then
             echo "Version mismatch!"
             exit 1
           fi
-      
+
       - name: Build and publish
         run: |
           cd nanopdf-rs && cargo publish
