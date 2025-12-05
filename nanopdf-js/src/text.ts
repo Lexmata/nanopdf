@@ -1,6 +1,6 @@
 /**
  * Text - PDF text object handling
- * 
+ *
  * This module provides 100% API compatibility with MuPDF's text operations.
  * Handles text layout, glyph rendering, and text extraction.
  */
@@ -141,8 +141,8 @@ export class Text {
     const trmMatrix = Matrix.from(trm);
 
     // Start new span if needed
-    if (!this._currentSpan || 
-        this._currentSpan.font !== font || 
+    if (!this._currentSpan ||
+        this._currentSpan.font !== font ||
         this._currentSpan.size !== size ||
         this._currentSpan.wmode !== wmode ||
         !this._currentSpan.trm.equals(trmMatrix)) {
@@ -175,8 +175,8 @@ export class Text {
   ): void {
     const trmMatrix = Matrix.from(trm);
 
-    if (!this._currentSpan || 
-        this._currentSpan.font !== font || 
+    if (!this._currentSpan ||
+        this._currentSpan.font !== font ||
         this._currentSpan.size !== size ||
         this._currentSpan.wmode !== wmode ||
         !this._currentSpan.trm.equals(trmMatrix)) {
@@ -191,7 +191,7 @@ export class Text {
     for (let i = 0; i < text.length; i++) {
       const unicode = text.charCodeAt(i);
       const pos = trmMatrix.transformPoint({ x, y: 0 });
-      
+
       this._currentSpan!.items.push({
         x: pos.x,
         y: pos.y,
@@ -231,7 +231,7 @@ export class Text {
     for (const span of this._spans) {
       for (const item of span.items) {
         const p = transform.transformPoint({ x: item.x, y: item.y });
-        
+
         // Approximate glyph bounds (height = font size, width = size * 0.5)
         const width = span.size * 0.5;
         const height = span.size;
