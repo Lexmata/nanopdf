@@ -19,20 +19,20 @@ jobs:
   test-go-docker:
     name: Test Go Bindings (Docker)
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Build and test Go bindings
         run: |
           cd go-nanopdf
           chmod +x docker/build-test.sh
           ./docker/build-test.sh
-      
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -45,19 +45,19 @@ jobs:
   test-go-native:
     name: Test Go Bindings (Native)
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.23'
-      
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Cache Rust dependencies
         uses: actions/cache@v4
         with:
@@ -68,27 +68,27 @@ jobs:
             ~/.cargo/git/db/
             nanopdf-rs/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      
+
       - name: Build Rust library
         run: |
           cd nanopdf-rs
           cargo build --release
-      
+
       - name: Install Rust library
         run: |
           cd nanopdf-rs
           sudo make install PREFIX=/usr
-      
+
       - name: Test Go bindings (Mock)
         run: |
           cd go-nanopdf
           CGO_ENABLED=0 go test -tags=mock -v ./...
-      
+
       - name: Test Go bindings (CGO)
         run: |
           cd go-nanopdf
           CGO_ENABLED=1 go test -v ./...
-      
+
       - name: Build examples
         run: |
           cd go-nanopdf/example
@@ -96,7 +96,7 @@ jobs:
           CGO_ENABLED=0 go build -tags=mock -o example-mock .
           # CGO build
           CGO_ENABLED=1 go build -o example-cgo .
-      
+
       - name: Run examples
         run: |
           cd go-nanopdf/example
@@ -108,21 +108,21 @@ jobs:
   test-go-coverage:
     name: Test Coverage
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.23'
-      
+
       - name: Run coverage (Mock)
         run: |
           cd go-nanopdf
           CGO_ENABLED=0 go test -tags=mock -coverprofile=coverage-mock.out ./...
-      
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
@@ -133,27 +133,27 @@ jobs:
   lint-go:
     name: Lint Go Code
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.23'
-      
+
       - name: Run go fmt
         run: |
           cd go-nanopdf
           gofmt -l . | tee /tmp/gofmt.out
           test ! -s /tmp/gofmt.out
-      
+
       - name: Run go vet
         run: |
           cd go-nanopdf
           CGO_ENABLED=0 go vet -tags=mock ./...
-      
+
       - name: Run staticcheck
         uses: dominikh/staticcheck-action@v1
         with:
