@@ -68,7 +68,7 @@ func bufferData(ptr uintptr) []byte {
 	if length == 0 {
 		return nil
 	}
-	
+
 	// For now, we can't safely get the data pointer from the Rust implementation
 	// as noted in the Rust code comments. We'll need to copy data differently.
 	// For the mock implementation, this will work fine.
