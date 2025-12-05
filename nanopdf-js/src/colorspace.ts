@@ -1,6 +1,6 @@
 /**
  * Colorspace - PDF color space handling
- * 
+ *
  * This module provides 100% API compatibility with MuPDF's colorspace operations.
  * Handles color spaces, conversion, and color manipulation.
  */
