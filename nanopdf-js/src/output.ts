@@ -370,7 +370,7 @@ export class Output {
    */
   syncBits(): void {
     if (this._bitCount > 0) {
-      this._bits <<= (8 - this._bitCount);
+      this._bits <<= 8 - this._bitCount;
       this.writeByte(this._bits);
       this._bits = 0;
       this._bitCount = 0;
@@ -417,4 +417,3 @@ export class Output {
     return this._path;
   }
 }
-

@@ -14,7 +14,7 @@ export interface TextSpan {
   font: string;
   size: number;
   wmode: number; // 0 = horizontal, 1 = vertical
-  trm: Matrix;   // text rendering matrix
+  trm: Matrix; // text rendering matrix
   items: TextItem[];
 }
 
@@ -82,7 +82,7 @@ export class Text {
         size: span.size,
         wmode: span.wmode,
         trm: span.trm,
-        items: [...span.items],
+        items: [...span.items]
       });
     }
     return cloned;
@@ -113,7 +113,7 @@ export class Text {
       size,
       wmode,
       trm,
-      items: [],
+      items: []
     };
   }
 
@@ -141,11 +141,13 @@ export class Text {
     const trmMatrix = Matrix.from(trm);
 
     // Start new span if needed
-    if (!this._currentSpan ||
-        this._currentSpan.font !== font ||
-        this._currentSpan.size !== size ||
-        this._currentSpan.wmode !== wmode ||
-        !this._currentSpan.trm.equals(trmMatrix)) {
+    if (
+      !this._currentSpan ||
+      this._currentSpan.font !== font ||
+      this._currentSpan.size !== size ||
+      this._currentSpan.wmode !== wmode ||
+      !this._currentSpan.trm.equals(trmMatrix)
+    ) {
       if (this._currentSpan) {
         this.endSpan();
       }
@@ -159,27 +161,23 @@ export class Text {
       x: pos.x,
       y: pos.y,
       glyph,
-      unicode,
+      unicode
     });
   }
 
   /**
    * Show a string of text
    */
-  showString(
-    font: string,
-    size: number,
-    trm: MatrixLike,
-    text: string,
-    wmode: number = 0
-  ): void {
+  showString(font: string, size: number, trm: MatrixLike, text: string, wmode: number = 0): void {
     const trmMatrix = Matrix.from(trm);
 
-    if (!this._currentSpan ||
-        this._currentSpan.font !== font ||
-        this._currentSpan.size !== size ||
-        this._currentSpan.wmode !== wmode ||
-        !this._currentSpan.trm.equals(trmMatrix)) {
+    if (
+      !this._currentSpan ||
+      this._currentSpan.font !== font ||
+      this._currentSpan.size !== size ||
+      this._currentSpan.wmode !== wmode ||
+      !this._currentSpan.trm.equals(trmMatrix)
+    ) {
       if (this._currentSpan) {
         this.endSpan();
       }
@@ -196,7 +194,7 @@ export class Text {
         x: pos.x,
         y: pos.y,
         glyph: unicode, // Use unicode as glyph ID (FFI would provide actual glyph ID)
-        unicode,
+        unicode
       });
 
       // Advance x by approximate character width (FFI would use actual glyph metrics)
@@ -374,9 +372,9 @@ export class Text {
     if (this._currentSpan) {
       this.endSpan();
     }
-    return this._spans.map(span => ({
+    return this._spans.map((span) => ({
       ...span,
-      items: [...span.items],
+      items: [...span.items]
     }));
   }
 
@@ -394,8 +392,7 @@ export class Text {
     const span = this._spans[index]!;
     return {
       ...span,
-      items: [...span.items],
+      items: [...span.items]
     };
   }
 }
-

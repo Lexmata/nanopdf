@@ -72,11 +72,7 @@ export interface NativeAddon {
   deviceLab(): NativeColorspace;
   colorspaceN(cs: NativeColorspace): number;
   colorspaceName(cs: NativeColorspace): string;
-  convertColor(
-    srcCs: NativeColorspace,
-    srcValues: number[],
-    dstCs: NativeColorspace
-  ): number[];
+  convertColor(srcCs: NativeColorspace, srcValues: number[], dstCs: NativeColorspace): number[];
 
   // Pixmap
   createPixmap(
@@ -172,7 +168,7 @@ function tryLoadNative(): NativeAddon | null {
     // node-gyp-build locations
     join(__dirname, '..', 'prebuilds'),
     join(__dirname, '..', 'build', 'Release'),
-    join(__dirname, '..', 'build', 'Debug'),
+    join(__dirname, '..', 'build', 'Debug')
   ];
 
   for (const location of locations) {
@@ -303,7 +299,7 @@ function createMockAddon(): NativeAddon {
     createPoint: (x: number, y: number): NativePoint => ({ x, y }),
     transformPoint: (p: NativePoint, m: NativeMatrix): NativePoint => ({
       x: p.x * m.a + p.y * m.c + m.e,
-      y: p.x * m.b + p.y * m.d + m.f,
+      y: p.x * m.b + p.y * m.d + m.f
     }),
     normalizeVector: (p: NativePoint): NativePoint => {
       const len = Math.sqrt(p.x * p.x + p.y * p.y);
@@ -316,19 +312,19 @@ function createMockAddon(): NativeAddon {
       x0,
       y0,
       x1,
-      y1,
+      y1
     }),
     rectEmpty: (): NativeRect => ({
       x0: Infinity,
       y0: Infinity,
       x1: -Infinity,
-      y1: -Infinity,
+      y1: -Infinity
     }),
     rectInfinite: (): NativeRect => ({
       x0: -Infinity,
       y0: -Infinity,
       x1: Infinity,
-      y1: Infinity,
+      y1: Infinity
     }),
     rectUnit: (): NativeRect => ({ x0: 0, y0: 0, x1: 1, y1: 1 }),
     isRectEmpty: (r: NativeRect): boolean => r.x0 >= r.x1 || r.y0 >= r.y1,
@@ -337,13 +333,13 @@ function createMockAddon(): NativeAddon {
       x0: Math.min(a.x0, b.x0),
       y0: Math.min(a.y0, b.y0),
       x1: Math.max(a.x1, b.x1),
-      y1: Math.max(a.y1, b.y1),
+      y1: Math.max(a.y1, b.y1)
     }),
     rectIntersect: (a: NativeRect, b: NativeRect): NativeRect => ({
       x0: Math.max(a.x0, b.x0),
       y0: Math.max(a.y0, b.y0),
       x1: Math.min(a.x1, b.x1),
-      y1: Math.min(a.y1, b.y1),
+      y1: Math.min(a.y1, b.y1)
     }),
     rectContains: (a: NativeRect, b: NativeRect): boolean =>
       a.x0 <= b.x0 && a.y0 <= b.y0 && a.x1 >= b.x1 && a.y1 >= b.y1,
@@ -356,7 +352,7 @@ function createMockAddon(): NativeAddon {
         x0: Math.min(p1.x, p2.x, p3.x, p4.x),
         y0: Math.min(p1.y, p2.y, p3.y, p4.y),
         x1: Math.max(p1.x, p2.x, p3.x, p4.x),
-        y1: Math.max(p1.y, p2.y, p3.y, p4.y),
+        y1: Math.max(p1.y, p2.y, p3.y, p4.y)
       };
     },
 
@@ -365,32 +361,32 @@ function createMockAddon(): NativeAddon {
       x0: Math.floor(x0),
       y0: Math.floor(y0),
       x1: Math.floor(x1),
-      y1: Math.floor(y1),
+      y1: Math.floor(y1)
     }),
     iRectFromRect: (r: NativeRect): NativeIRect => ({
       x0: Math.floor(r.x0),
       y0: Math.floor(r.y0),
       x1: Math.ceil(r.x1),
-      y1: Math.ceil(r.y1),
+      y1: Math.ceil(r.y1)
     }),
     rectFromIRect: (r: NativeIRect): NativeRect => ({
       x0: r.x0,
       y0: r.y0,
       x1: r.x1,
-      y1: r.y1,
+      y1: r.y1
     }),
     isIRectEmpty: (r: NativeIRect): boolean => r.x0 >= r.x1 || r.y0 >= r.y1,
     iRectUnion: (a: NativeIRect, b: NativeIRect): NativeIRect => ({
       x0: Math.min(a.x0, b.x0),
       y0: Math.min(a.y0, b.y0),
       x1: Math.max(a.x1, b.x1),
-      y1: Math.max(a.y1, b.y1),
+      y1: Math.max(a.y1, b.y1)
     }),
     iRectIntersect: (a: NativeIRect, b: NativeIRect): NativeIRect => ({
       x0: Math.max(a.x0, b.x0),
       y0: Math.max(a.y0, b.y0),
       x1: Math.min(a.x1, b.x1),
-      y1: Math.min(a.y1, b.y1),
+      y1: Math.min(a.y1, b.y1)
     }),
 
     // Matrix
@@ -401,7 +397,7 @@ function createMockAddon(): NativeAddon {
       c: 0,
       d: 1,
       e: tx,
-      f: ty,
+      f: ty
     }),
     matrixScale: (sx: number, sy: number): NativeMatrix => ({
       a: sx,
@@ -409,7 +405,7 @@ function createMockAddon(): NativeAddon {
       c: 0,
       d: sy,
       e: 0,
-      f: 0,
+      f: 0
     }),
     matrixRotate: (degrees: number): NativeMatrix => {
       const rad = (degrees * Math.PI) / 180;
@@ -423,7 +419,7 @@ function createMockAddon(): NativeAddon {
       c: sx,
       d: 1,
       e: 0,
-      f: 0,
+      f: 0
     }),
     matrixConcat: (a: NativeMatrix, b: NativeMatrix): NativeMatrix => ({
       a: a.a * b.a + a.b * b.c,
@@ -431,7 +427,7 @@ function createMockAddon(): NativeAddon {
       c: a.c * b.a + a.d * b.c,
       d: a.c * b.b + a.d * b.d,
       e: a.e * b.a + a.f * b.c + b.e,
-      f: a.e * b.b + a.f * b.d + b.f,
+      f: a.e * b.b + a.f * b.d + b.f
     }),
     matrixInvert: (m: NativeMatrix): NativeMatrix | null => {
       const det = m.a * m.d - m.b * m.c;
@@ -443,7 +439,7 @@ function createMockAddon(): NativeAddon {
         c: -m.c * invDet,
         d: m.a * invDet,
         e: (m.c * m.f - m.d * m.e) * invDet,
-        f: (m.b * m.e - m.a * m.f) * invDet,
+        f: (m.b * m.e - m.a * m.f) * invDet
       };
     },
     isMatrixIdentity: (m: NativeMatrix): boolean =>
@@ -456,24 +452,24 @@ function createMockAddon(): NativeAddon {
       ul: { x: r.x0, y: r.y0 },
       ur: { x: r.x1, y: r.y0 },
       ll: { x: r.x0, y: r.y1 },
-      lr: { x: r.x1, y: r.y1 },
+      lr: { x: r.x1, y: r.y1 }
     }),
     rectFromQuad: (q: NativeQuad): NativeRect => ({
       x0: Math.min(q.ul.x, q.ur.x, q.ll.x, q.lr.x),
       y0: Math.min(q.ul.y, q.ur.y, q.ll.y, q.lr.y),
       x1: Math.max(q.ul.x, q.ur.x, q.ll.x, q.lr.x),
-      y1: Math.max(q.ul.y, q.ur.y, q.ll.y, q.lr.y),
+      y1: Math.max(q.ul.y, q.ur.y, q.ll.y, q.lr.y)
     }),
     transformQuad: (q: NativeQuad, m: NativeMatrix): NativeQuad => {
       const transform = (p: NativePoint) => ({
         x: p.x * m.a + p.y * m.c + m.e,
-        y: p.x * m.b + p.y * m.d + m.f,
+        y: p.x * m.b + p.y * m.d + m.f
       });
       return {
         ul: transform(q.ul),
         ur: transform(q.ur),
         ll: transform(q.ll),
-        lr: transform(q.lr),
+        lr: transform(q.lr)
       };
     },
     isPointInsideQuad: (p: NativePoint, q: NativeQuad): boolean => {
@@ -510,8 +506,11 @@ function createMockAddon(): NativeAddon {
           rgb = [srcValues[2] ?? 0, srcValues[1] ?? 0, srcValues[0] ?? 0];
           break;
         case 'CMYK': {
-          const c = srcValues[0] ?? 0, m = srcValues[1] ?? 0, y = srcValues[2] ?? 0, k = srcValues[3] ?? 0;
-          rgb = [(1-c)*(1-k), (1-m)*(1-k), (1-y)*(1-k)];
+          const c = srcValues[0] ?? 0,
+            m = srcValues[1] ?? 0,
+            y = srcValues[2] ?? 0,
+            k = srcValues[3] ?? 0;
+          rgb = [(1 - c) * (1 - k), (1 - m) * (1 - k), (1 - y) * (1 - k)];
           break;
         }
         default:
@@ -528,7 +527,12 @@ function createMockAddon(): NativeAddon {
         case 'CMYK': {
           const k = 1 - Math.max(rgb[0], rgb[1], rgb[2]);
           if (k === 1) return [0, 0, 0, 1];
-          return [(1-rgb[0]-k)/(1-k), (1-rgb[1]-k)/(1-k), (1-rgb[2]-k)/(1-k), k];
+          return [
+            (1 - rgb[0] - k) / (1 - k),
+            (1 - rgb[1] - k) / (1 - k),
+            (1 - rgb[2] - k) / (1 - k),
+            k
+          ];
         }
         default:
           return [];
@@ -550,7 +554,7 @@ function createMockAddon(): NativeAddon {
         n,
         alpha,
         stride,
-        samples: new Uint8Array(stride * height),
+        samples: new Uint8Array(stride * height)
       };
     },
     pixmapWidth: (pm: NativePixmap): number => pm.width,
@@ -570,12 +574,12 @@ function createMockAddon(): NativeAddon {
       for (let y = 0; y < pm.height; y++) {
         for (let x = 0; x < pm.width; x++) {
           const offset = y * pm.stride + x * pm.n;
-        for (let i = 0; i < colorants; i++) {
-          const idx = offset + i;
-          if (idx < pm.samples.length) {
-            pm.samples[idx] = 255 - (pm.samples[idx] ?? 0);
+          for (let i = 0; i < colorants; i++) {
+            const idx = offset + i;
+            if (idx < pm.samples.length) {
+              pm.samples[idx] = 255 - (pm.samples[idx] ?? 0);
+            }
           }
-        }
         }
       }
     },
@@ -585,16 +589,16 @@ function createMockAddon(): NativeAddon {
       for (let y = 0; y < pm.height; y++) {
         for (let x = 0; x < pm.width; x++) {
           const offset = y * pm.stride + x * pm.n;
-        for (let i = 0; i < colorants; i++) {
-          const idx = offset + i;
-          if (idx < pm.samples.length) {
-            const normalized = (pm.samples[idx] ?? 0) / 255;
-            pm.samples[idx] = Math.round(Math.pow(normalized, invGamma) * 255);
+          for (let i = 0; i < colorants; i++) {
+            const idx = offset + i;
+            if (idx < pm.samples.length) {
+              const normalized = (pm.samples[idx] ?? 0) / 255;
+              pm.samples[idx] = Math.round(Math.pow(normalized, invGamma) * 255);
+            }
           }
         }
-        }
       }
-    },
+    }
   };
 }
 

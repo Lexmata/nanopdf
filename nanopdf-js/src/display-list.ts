@@ -37,7 +37,7 @@ enum CommandType {
   BeginGroup,
   EndGroup,
   BeginTile,
-  EndTile,
+  EndTile
 }
 
 /**
@@ -49,26 +49,26 @@ interface CommandData {
   path?: Path;
   evenOdd?: boolean;
   stroke?: StrokeState;
-  
+
   // Text operations
   text?: Text;
-  
+
   // Image operations
   image?: Image;
-  
+
   // Transformation and color
   ctm?: Matrix;
   colorspace?: Colorspace | null;
   color?: number[];
   alpha?: number;
-  
+
   // Masks and groups
   area?: Rect;
   luminosity?: boolean;
   isolated?: boolean;
   knockout?: boolean;
   blendMode?: number;
-  
+
   // Tiles
   view?: Rect;
   scale?: number;
@@ -126,9 +126,9 @@ export class DisplayList {
    */
   clone(): DisplayList {
     const cloned = new DisplayList(this._bounds);
-    cloned._commands = this._commands.map(cmd => ({
+    cloned._commands = this._commands.map((cmd) => ({
       type: cmd.type,
-      data: { ...cmd.data },
+      data: { ...cmd.data }
     }));
     return cloned;
   }
@@ -224,7 +224,7 @@ export class DisplayList {
       ctm: Matrix.from(ctm),
       colorspace,
       color: [...color],
-      alpha,
+      alpha
     });
   }
 
@@ -245,7 +245,7 @@ export class DisplayList {
       ctm: Matrix.from(ctm),
       colorspace,
       color: [...color],
-      alpha,
+      alpha
     });
   }
 
@@ -256,7 +256,7 @@ export class DisplayList {
     this.addCommand(CommandType.ClipPath, {
       path,
       evenOdd,
-      ctm: Matrix.from(ctm),
+      ctm: Matrix.from(ctm)
     });
   }
 
@@ -267,7 +267,7 @@ export class DisplayList {
     this.addCommand(CommandType.ClipStrokePath, {
       path,
       stroke,
-      ctm: Matrix.from(ctm),
+      ctm: Matrix.from(ctm)
     });
   }
 
@@ -286,7 +286,7 @@ export class DisplayList {
       ctm: Matrix.from(ctm),
       colorspace,
       color: [...color],
-      alpha,
+      alpha
     });
   }
 
@@ -307,7 +307,7 @@ export class DisplayList {
       ctm: Matrix.from(ctm),
       colorspace,
       color: [...color],
-      alpha,
+      alpha
     });
   }
 
@@ -317,7 +317,7 @@ export class DisplayList {
   recordClipText(text: Text, ctm: MatrixLike): void {
     this.addCommand(CommandType.ClipText, {
       text,
-      ctm: Matrix.from(ctm),
+      ctm: Matrix.from(ctm)
     });
   }
 
@@ -328,7 +328,7 @@ export class DisplayList {
     this.addCommand(CommandType.ClipStrokeText, {
       text,
       stroke,
-      ctm: Matrix.from(ctm),
+      ctm: Matrix.from(ctm)
     });
   }
 
@@ -338,7 +338,7 @@ export class DisplayList {
   recordIgnoreText(text: Text, ctm: MatrixLike): void {
     this.addCommand(CommandType.IgnoreText, {
       text,
-      ctm: Matrix.from(ctm),
+      ctm: Matrix.from(ctm)
     });
   }
 
@@ -349,7 +349,7 @@ export class DisplayList {
     this.addCommand(CommandType.FillImage, {
       image,
       ctm: Matrix.from(ctm),
-      alpha,
+      alpha
     });
   }
 
@@ -367,7 +367,7 @@ export class DisplayList {
       image,
       ctm: Matrix.from(ctm),
       colorspace,
-      color: [...color],
+      color: [...color]
     });
   }
 
@@ -377,7 +377,7 @@ export class DisplayList {
   recordClipImageMask(image: Image, ctm: MatrixLike): void {
     this.addCommand(CommandType.ClipImageMask, {
       image,
-      ctm: Matrix.from(ctm),
+      ctm: Matrix.from(ctm)
     });
   }
 
@@ -401,7 +401,7 @@ export class DisplayList {
       area: Rect.from(area),
       luminosity,
       colorspace,
-      color: [...color],
+      color: [...color]
     });
   }
 
@@ -429,7 +429,7 @@ export class DisplayList {
       isolated,
       knockout,
       blendMode,
-      alpha,
+      alpha
     });
   }
 
@@ -455,7 +455,7 @@ export class DisplayList {
       view: Rect.from(view),
       xStep,
       yStep,
-      ctm: Matrix.from(ctm),
+      ctm: Matrix.from(ctm)
     });
   }
 
@@ -477,9 +477,7 @@ export class DisplayList {
     const transform = ctm ? Matrix.from(ctm) : Matrix.IDENTITY;
 
     for (const cmd of this._commands) {
-      const combinedCtm = cmd.data.ctm
-        ? transform.concat(cmd.data.ctm)
-        : transform;
+      const combinedCtm = cmd.data.ctm ? transform.concat(cmd.data.ctm) : transform;
 
       switch (cmd.type) {
         case CommandType.FillPath:
@@ -620,10 +618,9 @@ export class DisplayList {
    * Get all commands
    */
   getCommands(): DisplayCommand[] {
-    return this._commands.map(cmd => ({
+    return this._commands.map((cmd) => ({
       type: cmd.type,
-      data: { ...cmd.data },
+      data: { ...cmd.data }
     }));
   }
 }
-

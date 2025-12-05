@@ -157,7 +157,7 @@ export class Context {
       2: 'Out of memory',
       3: 'Invalid operation',
       4: 'File not found',
-      5: 'I/O error',
+      5: 'I/O error'
     };
     return errors[code] || `Error ${code}`;
   }
@@ -252,7 +252,6 @@ export class Context {
     return before - this._storeUsed;
   }
 
-
   // ============================================================================
   // ICC Color Management
   // ============================================================================
@@ -325,7 +324,7 @@ export class Context {
       hasError: this.hasError(),
       errorMessage: this.caughtMessage(),
       warningCount: this._warnings.length,
-      refCount: this._refCount,
+      refCount: this._refCount
     };
   }
 
@@ -382,4 +381,3 @@ export function setDefaultContext(ctx: Context): void {
 export function resetDefaultContext(): void {
   defaultContext = null;
 }
-

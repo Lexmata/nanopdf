@@ -17,7 +17,7 @@ export enum FieldType {
   RadioButton = 3,
   Text = 4,
   Choice = 5,
-  Signature = 6,
+  Signature = 6
 }
 
 /**
@@ -26,7 +26,7 @@ export enum FieldType {
 export enum FieldAlignment {
   Left = 0,
   Center = 1,
-  Right = 2,
+  Right = 2
 }
 
 /**
@@ -50,7 +50,7 @@ export enum FieldFlags {
   DoNotScroll = 1 << 23,
   Comb = 1 << 24,
   RadiosInUnison = 1 << 25,
-  CommitOnSelChange = 1 << 26,
+  CommitOnSelChange = 1 << 26
 }
 
 /**
@@ -278,7 +278,7 @@ export class FormField {
   addChoice(label: string, value?: string): void {
     this._choices.push({
       label,
-      value: value ?? label,
+      value: value ?? label
     });
   }
 
@@ -532,9 +532,7 @@ export class Form {
    * Delete a field
    */
   deleteField(nameOrField: string | FormField): boolean {
-    const field = typeof nameOrField === 'string'
-      ? this._fieldMap.get(nameOrField)
-      : nameOrField;
+    const field = typeof nameOrField === 'string' ? this._fieldMap.get(nameOrField) : nameOrField;
 
     if (!field) return false;
 
@@ -595,4 +593,3 @@ export class Form {
     }
   }
 }
-

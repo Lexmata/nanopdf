@@ -24,30 +24,12 @@ describe('Enhanced API Module', () => {
     });
 
     it('should draw circle', () => {
-      const result = Enhanced.drawCircle(
-        null as any,
-        0,
-        100,
-        100,
-        50,
-        [1, 0, 0],
-        [1, 1, 1],
-        2
-      );
+      const result = Enhanced.drawCircle(null as any, 0, 100, 100, 50, [1, 0, 0], [1, 1, 1], 2);
       expect(typeof result).toBe('boolean');
     });
 
     it('should draw line', () => {
-      const result = Enhanced.drawLine(
-        null as any,
-        0,
-        10,
-        10,
-        100,
-        100,
-        [0, 0, 0],
-        2
-      );
+      const result = Enhanced.drawLine(null as any, 0, 10, 10, 100, 100, [0, 0, 0], 2);
       expect(typeof result).toBe('boolean');
     });
 
@@ -72,11 +54,7 @@ describe('Enhanced API Module', () => {
     });
 
     it('should merge PDFs', () => {
-      const result = Enhanced.mergePdfs(
-        null as any,
-        ['file1.pdf', 'file2.pdf'],
-        'merged.pdf'
-      );
+      const result = Enhanced.mergePdfs(null as any, ['file1.pdf', 'file2.pdf'], 'merged.pdf');
       expect(typeof result).toBe('boolean');
     });
 
@@ -107,16 +85,7 @@ describe('Enhanced API Module', () => {
       Enhanced.drawLine(null as any, 0, 100, 600, 500, 600, [0, 0, 1], 2);
 
       // Add watermark
-      Enhanced.addWatermark(
-        null as any,
-        0,
-        'DRAFT',
-        250,
-        400,
-        48,
-        0.2,
-        [0.8, 0.8, 0.8]
-      );
+      Enhanced.addWatermark(null as any, 0, 'DRAFT', 250, 400, 48, 0.2, [0.8, 0.8, 0.8]);
 
       expect(true).toBe(true);
     });
@@ -190,19 +159,9 @@ describe('Enhanced API Module', () => {
       Enhanced.drawLine(null as any, 0, 50, 742, 562, 742, [0, 0, 0], 1);
 
       // Add watermark
-      Enhanced.addWatermark(
-        null as any,
-        0,
-        'TEMPLATE',
-        250,
-        400,
-        72,
-        0.1,
-        [0.9, 0.9, 0.9]
-      );
+      Enhanced.addWatermark(null as any, 0, 'TEMPLATE', 250, 400, 72, 0.1, [0.9, 0.9, 0.9]);
 
       expect(true).toBe(true);
     });
   });
 });
-

@@ -23,7 +23,7 @@ export default [
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        project: './tsconfig.json',
+        project: './tsconfig.json'
       },
       globals: {
         console: 'readonly',
@@ -38,8 +38,8 @@ export default [
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
         setInterval: 'readonly',
-        clearInterval: 'readonly',
-      },
+        clearInterval: 'readonly'
+      }
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
@@ -50,7 +50,7 @@ export default [
       promise: promisePlugin,
       security: securityPlugin,
       sonarjs: sonarjsPlugin,
-      unicorn: unicornPlugin,
+      unicorn: unicornPlugin
     },
     rules: {
       // ======================================================================
@@ -66,8 +66,8 @@ export default [
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
-        },
+          caughtErrorsIgnorePattern: '^_'
+        }
       ],
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
@@ -80,16 +80,16 @@ export default [
         'error',
         {
           selector: 'interface',
-          format: ['PascalCase'],
+          format: ['PascalCase']
         },
         {
           selector: 'typeAlias',
-          format: ['PascalCase'],
+          format: ['PascalCase']
         },
         {
           selector: 'class',
-          format: ['PascalCase'],
-        },
+          format: ['PascalCase']
+        }
       ],
 
       // ======================================================================
@@ -98,20 +98,13 @@ export default [
       'import/order': [
         'error',
         {
-          groups: [
-            'builtin',
-            'external',
-            'internal',
-            'parent',
-            'sibling',
-            'index',
-          ],
+          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
           'newlines-between': 'always',
           alphabetize: {
             order: 'asc',
-            caseInsensitive: true,
-          },
-        },
+            caseInsensitive: true
+          }
+        }
       ],
       'import/no-duplicates': 'error',
       'import/no-unresolved': 'off', // TypeScript handles this
@@ -193,8 +186,8 @@ export default [
         'error',
         {
           case: 'kebabCase',
-          ignore: ['^[A-Z].*\\.ts$'], // Allow PascalCase for class files
-        },
+          ignore: ['^[A-Z].*\\.ts$'] // Allow PascalCase for class files
+        }
       ],
       'unicorn/new-for-builtins': 'error',
       'unicorn/no-abusive-eslint-disable': 'warn',
@@ -252,8 +245,8 @@ export default [
       // ======================================================================
       // Prettier Integration
       // ======================================================================
-      'prettier/prettier': 'error',
-    },
+      'prettier/prettier': 'error'
+    }
   },
 
   // Configuration for test files
@@ -263,8 +256,8 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
       'sonarjs/no-duplicate-string': 'off',
-      'sonarjs/no-identical-functions': 'off',
-    },
+      'sonarjs/no-identical-functions': 'off'
+    }
   },
 
   // Ignore patterns
@@ -277,11 +270,10 @@ export default [
       '*.d.ts',
       'native/**/*.cpp',
       'native/**/*.h',
-      '.cursor/**',
-    ],
+      '.cursor/**'
+    ]
   },
 
   // Prettier config to disable conflicting rules
-  prettierConfig,
+  prettierConfig
 ];
-

@@ -437,4 +437,3 @@ describe('Geometry Module', () => {
     });
   });
 });
-

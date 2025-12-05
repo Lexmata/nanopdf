@@ -29,7 +29,7 @@ describe('Annotation Module', () => {
       expect(AnnotationType.PrinterMark).toBeDefined();
       expect(AnnotationType.TrapNet).toBeDefined();
       expect(AnnotationType.Watermark).toBeDefined();
-      expect(AnnotationType.3D).toBeDefined();
+      expect(AnnotationType['3D']).toBeDefined();
       expect(AnnotationType.Unknown).toBeDefined();
     });
   });
@@ -280,4 +280,3 @@ describe('Annotation Module', () => {
     });
   });
 });
-

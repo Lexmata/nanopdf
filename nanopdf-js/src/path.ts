@@ -14,7 +14,7 @@ export enum LineCap {
   Butt = 0,
   Round = 1,
   Square = 2,
-  Triangle = 3,
+  Triangle = 3
 }
 
 /**
@@ -24,7 +24,7 @@ export enum LineJoin {
   Miter = 0,
   Round = 1,
   Bevel = 2,
-  MiterXPS = 3,
+  MiterXPS = 3
 }
 
 /**
@@ -188,9 +188,7 @@ export class StrokeState {
    * Check if stroke state is valid
    */
   isValid(): boolean {
-    return this._lineWidth >= 0 &&
-           this._miterLimit >= 1 &&
-           this._dashPattern.every(v => v >= 0);
+    return this._lineWidth >= 0 && this._miterLimit >= 1 && this._dashPattern.every((v) => v >= 0);
   }
 }
 
@@ -215,7 +213,7 @@ enum PathCmd {
   CurveTo,
   Close,
   QuadTo,
-  RectTo,
+  RectTo
 }
 
 /**
@@ -265,9 +263,9 @@ export class Path {
    */
   clone(): Path {
     const cloned = new Path();
-    cloned._commands = this._commands.map(cmd => ({
+    cloned._commands = this._commands.map((cmd) => ({
       cmd: cmd.cmd,
-      params: [...cmd.params],
+      params: [...cmd.params]
     }));
     cloned._currentPoint = this._currentPoint;
     return cloned;
@@ -290,9 +288,7 @@ export class Path {
   moveTo(x: number, y: number): this;
   moveTo(point: PointLike): this;
   moveTo(xOrPoint: number | PointLike, y?: number): this {
-    const [x, actualY] = typeof xOrPoint === 'number'
-      ? [xOrPoint, y!]
-      : [xOrPoint.x, xOrPoint.y];
+    const [x, actualY] = typeof xOrPoint === 'number' ? [xOrPoint, y!] : [xOrPoint.x, xOrPoint.y];
 
     this._commands.push({ cmd: PathCmd.MoveTo, params: [x, actualY] });
     this._currentPoint = new Point(x, actualY);
@@ -305,9 +301,7 @@ export class Path {
   lineTo(x: number, y: number): this;
   lineTo(point: PointLike): this;
   lineTo(xOrPoint: number | PointLike, y?: number): this {
-    const [x, actualY] = typeof xOrPoint === 'number'
-      ? [xOrPoint, y!]
-      : [xOrPoint.x, xOrPoint.y];
+    const [x, actualY] = typeof xOrPoint === 'number' ? [xOrPoint, y!] : [xOrPoint.x, xOrPoint.y];
 
     this._commands.push({ cmd: PathCmd.LineTo, params: [x, actualY] });
     this._currentPoint = new Point(x, actualY);
@@ -317,11 +311,7 @@ export class Path {
   /**
    * Draw a cubic Bézier curve
    */
-  curveTo(
-    cx1: number, cy1: number,
-    cx2: number, cy2: number,
-    x: number, y: number
-  ): this {
+  curveTo(cx1: number, cy1: number, cx2: number, cy2: number, x: number, y: number): this {
     this._commands.push({
       cmd: PathCmd.CurveTo,
       params: [cx1, cy1, cx2, cy2, x, y]
@@ -507,25 +497,22 @@ export class Path {
           break;
         case PathCmd.CurveTo:
           walker.curveTo?.(
-            cmd.params[0]!, cmd.params[1]!,
-            cmd.params[2]!, cmd.params[3]!,
-            cmd.params[4]!, cmd.params[5]!
+            cmd.params[0]!,
+            cmd.params[1]!,
+            cmd.params[2]!,
+            cmd.params[3]!,
+            cmd.params[4]!,
+            cmd.params[5]!
           );
           break;
         case PathCmd.QuadTo:
-          walker.quadTo?.(
-            cmd.params[0]!, cmd.params[1]!,
-            cmd.params[2]!, cmd.params[3]!
-          );
+          walker.quadTo?.(cmd.params[0]!, cmd.params[1]!, cmd.params[2]!, cmd.params[3]!);
           break;
         case PathCmd.Close:
           walker.closePath?.();
           break;
         case PathCmd.RectTo:
-          walker.rectTo?.(
-            cmd.params[0]!, cmd.params[1]!,
-            cmd.params[2]!, cmd.params[3]!
-          );
+          walker.rectTo?.(cmd.params[0]!, cmd.params[1]!, cmd.params[2]!, cmd.params[3]!);
           break;
       }
     }
@@ -535,8 +522,8 @@ export class Path {
    * Check if path is valid
    */
   isValid(): boolean {
-    return this._commands.every(cmd => {
-      return cmd.params.every(p => isFinite(p));
+    return this._commands.every((cmd) => {
+      return cmd.params.every((p) => isFinite(p));
     });
   }
 
@@ -556,4 +543,3 @@ export class Path {
     return this;
   }
 }
-

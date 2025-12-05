@@ -89,12 +89,7 @@ describe('Path Module', () => {
     });
 
     it('should support method chaining', () => {
-      const result = path
-        .moveTo(0, 0)
-        .lineTo(100, 0)
-        .lineTo(100, 100)
-        .lineTo(0, 100)
-        .close();
+      const result = path.moveTo(0, 0).lineTo(100, 0).lineTo(100, 100).lineTo(0, 100).close();
       expect(result).toBe(path);
       expect(path.isEmpty()).toBe(false);
     });
@@ -271,11 +266,11 @@ describe('Path Module', () => {
       const path = new Path();
 
       // Draw a house
-      path.moveTo(50, 100);  // Bottom left
+      path.moveTo(50, 100); // Bottom left
       path.lineTo(150, 100); // Bottom right
-      path.lineTo(150, 50);  // Right wall
-      path.lineTo(100, 20);  // Roof peak
-      path.lineTo(50, 50);   // Left wall
+      path.lineTo(150, 50); // Right wall
+      path.lineTo(100, 20); // Roof peak
+      path.lineTo(50, 50); // Left wall
       path.close();
 
       // Door
@@ -308,34 +303,19 @@ describe('Path Module', () => {
 
     it('should create circle approximation', () => {
       const path = new Path();
-      const cx = 50, cy = 50, r = 30;
+      const cx = 50,
+        cy = 50,
+        r = 30;
       const k = 0.5522848; // magic number for circle approximation
 
       path.moveTo(cx, cy - r);
-      path.curveTo(
-        cx + k * r, cy - r,
-        cx + r, cy - k * r,
-        cx + r, cy
-      );
-      path.curveTo(
-        cx + r, cy + k * r,
-        cx + k * r, cy + r,
-        cx, cy + r
-      );
-      path.curveTo(
-        cx - k * r, cy + r,
-        cx - r, cy + k * r,
-        cx - r, cy
-      );
-      path.curveTo(
-        cx - r, cy - k * r,
-        cx - k * r, cy - r,
-        cx, cy - r
-      );
+      path.curveTo(cx + k * r, cy - r, cx + r, cy - k * r, cx + r, cy);
+      path.curveTo(cx + r, cy + k * r, cx + k * r, cy + r, cx, cy + r);
+      path.curveTo(cx - k * r, cy + r, cx - r, cy + k * r, cx - r, cy);
+      path.curveTo(cx - r, cy - k * r, cx - k * r, cy - r, cx, cy - r);
       path.close();
 
       expect(path.isEmpty()).toBe(false);
     });
   });
 });
-

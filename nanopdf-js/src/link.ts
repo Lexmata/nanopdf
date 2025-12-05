@@ -11,16 +11,16 @@ import { Rect, Point, type RectLike, type PointLike } from './geometry.js';
  * Link destination types
  */
 export enum LinkDestinationType {
-  URI = 0,          // External URI
-  Page = 1,         // Internal page number
-  XYZ = 2,          // Go to position on page
-  Fit = 3,          // Fit page to window
-  FitH = 4,         // Fit horizontally
-  FitV = 5,         // Fit vertically
-  FitR = 6,         // Fit rectangle
-  FitB = 7,         // Fit bounding box
-  FitBH = 8,        // Fit bounding box horizontally
-  FitBV = 9,        // Fit bounding box vertically
+  URI = 0, // External URI
+  Page = 1, // Internal page number
+  XYZ = 2, // Go to position on page
+  Fit = 3, // Fit page to window
+  FitH = 4, // Fit horizontally
+  FitV = 5, // Fit vertically
+  FitR = 6, // Fit rectangle
+  FitB = 7, // Fit bounding box
+  FitBH = 8, // Fit bounding box horizontally
+  FitBV = 9 // Fit bounding box vertically
 }
 
 /**
@@ -204,7 +204,7 @@ export class LinkList {
    */
   clone(): LinkList {
     const cloned = new LinkList();
-    cloned._links = this._links.map(link => link.clone());
+    cloned._links = this._links.map((link) => link.clone());
     return cloned;
   }
 
@@ -338,23 +338,21 @@ export class LinkList {
    * Get all external (URI) links
    */
   getExternalLinks(): Link[] {
-    return this._links.filter(link => link.isExternal());
+    return this._links.filter((link) => link.isExternal());
   }
 
   /**
    * Get all page links
    */
   getPageLinks(): Link[] {
-    return this._links.filter(link => link.isPageLink());
+    return this._links.filter((link) => link.isPageLink());
   }
 
   /**
    * Get links by page number
    */
   getLinksToPage(pageNumber: number): Link[] {
-    return this._links.filter(
-      link => link.isPageLink() && link.pageNumber === pageNumber
-    );
+    return this._links.filter((link) => link.isPageLink() && link.pageNumber === pageNumber);
   }
 
   // ============================================================================
@@ -391,4 +389,3 @@ export class LinkList {
     return this._links.filter(predicate);
   }
 }
-

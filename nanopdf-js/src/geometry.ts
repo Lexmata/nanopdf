@@ -46,10 +46,7 @@ export class Point implements PointLike {
 
   /** Transform this point by a matrix */
   transform(m: MatrixLike): Point {
-    return new Point(
-      this.x * m.a + this.y * m.c + m.e,
-      this.x * m.b + this.y * m.d + m.f
-    );
+    return new Point(this.x * m.a + this.y * m.c + m.e, this.x * m.b + this.y * m.d + m.f);
   }
 
   /** Calculate distance to another point */
@@ -188,12 +185,7 @@ export class Rect implements RectLike {
 
   /** Check if this rectangle contains another rectangle */
   containsRect(other: RectLike): boolean {
-    return (
-      this.x0 <= other.x0 &&
-      this.y0 <= other.y0 &&
-      this.x1 >= other.x1 &&
-      this.y1 >= other.y1
-    );
+    return this.x0 <= other.x0 && this.y0 <= other.y0 && this.x1 >= other.x1 && this.y1 >= other.y1;
   }
 
   /** Union with another rectangle */
@@ -282,10 +274,7 @@ export class Rect implements RectLike {
   /** Check equality */
   equals(other: RectLike): boolean {
     return (
-      this.x0 === other.x0 &&
-      this.y0 === other.y0 &&
-      this.x1 === other.x1 &&
-      this.y1 === other.y1
+      this.x0 === other.x0 && this.y0 === other.y0 && this.x1 === other.x1 && this.y1 === other.y1
     );
   }
 
@@ -334,12 +323,7 @@ export class IRect implements IRectLike {
 
   /** Create from a Rect by rounding */
   static fromRect(r: RectLike): IRect {
-    return new IRect(
-      Math.floor(r.x0),
-      Math.floor(r.y0),
-      Math.ceil(r.x1),
-      Math.ceil(r.y1)
-    );
+    return new IRect(Math.floor(r.x0), Math.floor(r.y0), Math.ceil(r.x1), Math.ceil(r.y1));
   }
 
   // ============================================================================
@@ -404,10 +388,7 @@ export class IRect implements IRectLike {
   /** Check equality */
   equals(other: IRectLike): boolean {
     return (
-      this.x0 === other.x0 &&
-      this.y0 === other.y0 &&
-      this.x1 === other.x1 &&
-      this.y1 === other.y1
+      this.x0 === other.x0 && this.y0 === other.y0 && this.x1 === other.x1 && this.y1 === other.y1
     );
   }
 
@@ -485,12 +466,7 @@ export class Matrix implements MatrixLike {
   /** Check if this is the identity matrix */
   get isIdentity(): boolean {
     return (
-      this.a === 1 &&
-      this.b === 0 &&
-      this.c === 0 &&
-      this.d === 1 &&
-      this.e === 0 &&
-      this.f === 0
+      this.a === 1 && this.b === 0 && this.c === 0 && this.d === 1 && this.e === 0 && this.f === 0
     );
   }
 
@@ -574,10 +550,7 @@ export class Matrix implements MatrixLike {
 
   /** Transform a point */
   transformPoint(p: PointLike): Point {
-    return new Point(
-      p.x * this.a + p.y * this.c + this.e,
-      p.x * this.b + p.y * this.d + this.f
-    );
+    return new Point(p.x * this.a + p.y * this.c + this.e, p.x * this.b + p.y * this.d + this.f);
   }
 
   /** Check equality */
@@ -681,8 +654,7 @@ export class Quad implements QuadLike {
     const c3 = cross(this.lr, this.ll, this.ul);
     const c4 = cross(this.ll, this.ul, this.ur);
 
-    return (c1 >= 0 && c2 >= 0 && c3 >= 0 && c4 >= 0) ||
-           (c1 <= 0 && c2 <= 0 && c3 <= 0 && c4 <= 0);
+    return (c1 >= 0 && c2 >= 0 && c3 >= 0 && c4 >= 0) || (c1 <= 0 && c2 <= 0 && c3 <= 0 && c4 <= 0);
   }
 
   toString(): string {
@@ -697,7 +669,11 @@ export class Quad implements QuadLike {
 /**
  * Color-like type
  */
-export type ColorLike = Color | { r: number; g: number; b: number; a?: number } | [number, number, number] | [number, number, number, number];
+export type ColorLike =
+  | Color
+  | { r: number; g: number; b: number; a?: number }
+  | [number, number, number]
+  | [number, number, number, number];
 
 /**
  * An RGBA color

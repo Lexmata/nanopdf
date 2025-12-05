@@ -239,7 +239,9 @@ export class Document {
     const defaultBounds = new Rect(0, 0, 612, 792); // US Letter size
 
     // Parse MediaBox if present
-    const mediaBoxMatch = content.match(/\/MediaBox\s*\[\s*([\d.-]+)\s+([\d.-]+)\s+([\d.-]+)\s+([\d.-]+)\s*\]/);
+    const mediaBoxMatch = content.match(
+      /\/MediaBox\s*\[\s*([\d.-]+)\s+([\d.-]+)\s+([\d.-]+)\s+([\d.-]+)\s*\]/
+    );
     let mediaBox = defaultBounds;
     if (mediaBoxMatch) {
       mediaBox = new Rect(
@@ -529,4 +531,3 @@ export class Document {
     return this._metadata.get('info:Producer');
   }
 }
-

@@ -16,17 +16,39 @@ export abstract class PdfObject {
 
   abstract get type(): PdfObjectType;
 
-  get isNull(): boolean { return this.type === PdfObjectType.Null; }
-  get isBool(): boolean { return this.type === PdfObjectType.Bool; }
-  get isInt(): boolean { return this.type === PdfObjectType.Int; }
-  get isReal(): boolean { return this.type === PdfObjectType.Real; }
-  get isNumber(): boolean { return this.isInt || this.isReal; }
-  get isString(): boolean { return this.type === PdfObjectType.String; }
-  get isName(): boolean { return this.type === PdfObjectType.Name; }
-  get isArray(): boolean { return this.type === PdfObjectType.Array; }
-  get isDict(): boolean { return this.type === PdfObjectType.Dict; }
-  get isStream(): boolean { return this.type === PdfObjectType.Stream; }
-  get isIndirect(): boolean { return this.type === PdfObjectType.Indirect; }
+  get isNull(): boolean {
+    return this.type === PdfObjectType.Null;
+  }
+  get isBool(): boolean {
+    return this.type === PdfObjectType.Bool;
+  }
+  get isInt(): boolean {
+    return this.type === PdfObjectType.Int;
+  }
+  get isReal(): boolean {
+    return this.type === PdfObjectType.Real;
+  }
+  get isNumber(): boolean {
+    return this.isInt || this.isReal;
+  }
+  get isString(): boolean {
+    return this.type === PdfObjectType.String;
+  }
+  get isName(): boolean {
+    return this.type === PdfObjectType.Name;
+  }
+  get isArray(): boolean {
+    return this.type === PdfObjectType.Array;
+  }
+  get isDict(): boolean {
+    return this.type === PdfObjectType.Dict;
+  }
+  get isStream(): boolean {
+    return this.type === PdfObjectType.Stream;
+  }
+  get isIndirect(): boolean {
+    return this.type === PdfObjectType.Indirect;
+  }
 
   // ============================================================================
   // Reference Counting
@@ -142,7 +164,9 @@ export abstract class PdfObject {
  * PDF Null object
  */
 class PdfNull extends PdfObject {
-  get type(): PdfObjectType { return PdfObjectType.Null; }
+  get type(): PdfObjectType {
+    return PdfObjectType.Null;
+  }
 
   equals(other: PdfObject): boolean {
     return other instanceof PdfNull;
@@ -160,7 +184,9 @@ class PdfBool extends PdfObject {
     this.value = value;
   }
 
-  get type(): PdfObjectType { return PdfObjectType.Bool; }
+  get type(): PdfObjectType {
+    return PdfObjectType.Bool;
+  }
 
   equals(other: PdfObject): boolean {
     return other instanceof PdfBool && other.value === this.value;
@@ -178,7 +204,9 @@ class PdfInt extends PdfObject {
     this.value = Math.trunc(value);
   }
 
-  get type(): PdfObjectType { return PdfObjectType.Int; }
+  get type(): PdfObjectType {
+    return PdfObjectType.Int;
+  }
 
   equals(other: PdfObject): boolean {
     return other instanceof PdfInt && other.value === this.value;
@@ -196,7 +224,9 @@ class PdfReal extends PdfObject {
     this.value = value;
   }
 
-  get type(): PdfObjectType { return PdfObjectType.Real; }
+  get type(): PdfObjectType {
+    return PdfObjectType.Real;
+  }
 
   equals(other: PdfObject): boolean {
     return other instanceof PdfReal && other.value === this.value;
@@ -214,7 +244,9 @@ class PdfString extends PdfObject {
     this.value = value;
   }
 
-  get type(): PdfObjectType { return PdfObjectType.String; }
+  get type(): PdfObjectType {
+    return PdfObjectType.String;
+  }
 
   equals(other: PdfObject): boolean {
     return other instanceof PdfString && other.value === this.value;
@@ -232,7 +264,9 @@ class PdfName extends PdfObject {
     this.value = value;
   }
 
-  get type(): PdfObjectType { return PdfObjectType.Name; }
+  get type(): PdfObjectType {
+    return PdfObjectType.Name;
+  }
 
   equals(other: PdfObject): boolean {
     return other instanceof PdfName && other.value === this.value;
@@ -251,7 +285,9 @@ export class PdfArray extends PdfObject {
     this.items = [...items];
   }
 
-  get type(): PdfObjectType { return PdfObjectType.Array; }
+  get type(): PdfObjectType {
+    return PdfObjectType.Array;
+  }
 
   /**
    * Get the number of elements in the array
@@ -384,7 +420,7 @@ export class PdfArray extends PdfObject {
    * Create a deep copy of this array
    */
   deepCopy(): PdfArray {
-    const copied = this.items.map(item => {
+    const copied = this.items.map((item) => {
       if (item instanceof PdfArray) return item.deepCopy();
       if (item instanceof PdfDict) return item.deepCopy();
       if (item instanceof PdfStream) return item.deepCopy();
@@ -419,7 +455,9 @@ export class PdfDict extends PdfObject {
     this.entries = new Map(Object.entries(entries));
   }
 
-  get type(): PdfObjectType { return PdfObjectType.Dict; }
+  get type(): PdfObjectType {
+    return PdfObjectType.Dict;
+  }
 
   /**
    * Get the number of entries in the dictionary
@@ -675,7 +713,9 @@ export class PdfStream extends PdfObject {
     this._data = data;
   }
 
-  get type(): PdfObjectType { return PdfObjectType.Stream; }
+  get type(): PdfObjectType {
+    return PdfObjectType.Stream;
+  }
 
   /**
    * Get the stream data
@@ -732,12 +772,16 @@ export class PdfIndirectRef extends PdfObject {
     this.genNum = genNum;
   }
 
-  get type(): PdfObjectType { return PdfObjectType.Indirect; }
+  get type(): PdfObjectType {
+    return PdfObjectType.Indirect;
+  }
 
   equals(other: PdfObject): boolean {
-    return other instanceof PdfIndirectRef &&
-           other.objNum === this.objNum &&
-           other.genNum === this.genNum;
+    return (
+      other instanceof PdfIndirectRef &&
+      other.objNum === this.objNum &&
+      other.genNum === this.genNum
+    );
   }
 }
 
@@ -1065,14 +1109,7 @@ export function pdfNewMatrix(
   e: number,
   f: number
 ): PdfArray {
-  return pdfArray([
-    pdfReal(a),
-    pdfReal(b),
-    pdfReal(c),
-    pdfReal(d),
-    pdfReal(e),
-    pdfReal(f),
-  ]);
+  return pdfArray([pdfReal(a), pdfReal(b), pdfReal(c), pdfReal(d), pdfReal(e), pdfReal(f)]);
 }
 
 /**
@@ -1161,4 +1198,3 @@ export function pdfLoadObject(_objNum: number, _genNum: number): PdfObject | und
   // The real implementation will be in the Document class
   return undefined;
 }
-

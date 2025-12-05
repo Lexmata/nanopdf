@@ -19,7 +19,7 @@ export enum DeviceType {
   BBox = 2,
   Trace = 3,
   List = 4,
-  Custom = 5,
+  Custom = 5
 }
 
 /**
@@ -27,7 +27,7 @@ export enum DeviceType {
  */
 export enum DeviceHint {
   NoCache = 1 << 0,
-  NoPureColor = 1 << 1,
+  NoPureColor = 1 << 1
 }
 
 /**
@@ -45,7 +45,7 @@ export enum BlendMode {
   HardLight = 8,
   SoftLight = 9,
   Difference = 10,
-  Exclusion = 11,
+  Exclusion = 11
 }
 
 /**
@@ -128,7 +128,13 @@ export abstract class Device {
     this.onBeginTile(Rect.from(area), Rect.from(view), xStep, yStep, Matrix.from(ctm));
   }
 
-  protected onBeginTile(_area: Rect, _view: Rect, _xStep: number, _yStep: number, _ctm: Matrix): void {
+  protected onBeginTile(
+    _area: Rect,
+    _view: Rect,
+    _xStep: number,
+    _yStep: number,
+    _ctm: Matrix
+  ): void {
     // Override in subclasses
   }
 
@@ -326,12 +332,7 @@ export abstract class Device {
   // Masking
   // ============================================================================
 
-  beginMask(
-    area: RectLike,
-    luminosity: boolean,
-    colorspace: Colorspace,
-    color: number[]
-  ): void {
+  beginMask(area: RectLike, luminosity: boolean, colorspace: Colorspace, color: number[]): void {
     this.onBeginMask(Rect.from(area), luminosity, colorspace, color);
   }
 
@@ -500,7 +501,9 @@ export class TraceDevice extends Device {
     color: number[],
     alpha: number
   ): void {
-    this._log.push(`fillPath(evenOdd=${evenOdd}, colorspace=${colorspace.type}, color=[${color}], alpha=${alpha})`);
+    this._log.push(
+      `fillPath(evenOdd=${evenOdd}, colorspace=${colorspace.type}, color=[${color}], alpha=${alpha})`
+    );
   }
 
   protected onStrokePath(
@@ -511,7 +514,9 @@ export class TraceDevice extends Device {
     color: number[],
     alpha: number
   ): void {
-    this._log.push(`strokePath(width=${stroke.lineWidth}, colorspace=${colorspace.type}, color=[${color}], alpha=${alpha})`);
+    this._log.push(
+      `strokePath(width=${stroke.lineWidth}, colorspace=${colorspace.type}, color=[${color}], alpha=${alpha})`
+    );
   }
 
   protected override onFillText(
@@ -521,7 +526,9 @@ export class TraceDevice extends Device {
     color: number[],
     alpha: number
   ): void {
-    this._log.push(`fillText("${text}", colorspace=${colorspace.type}, color=[${color}], alpha=${alpha})`);
+    this._log.push(
+      `fillText("${text}", colorspace=${colorspace.type}, color=[${color}], alpha=${alpha})`
+    );
   }
 
   protected override onFillImage(image: Pixmap, _ctm: Matrix, alpha: number): void {
@@ -536,7 +543,9 @@ export class TraceDevice extends Device {
     blendMode: BlendMode,
     alpha: number
   ): void {
-    this._log.push(`beginGroup(area=${area}, isolated=${isolated}, knockout=${knockout}, blend=${blendMode}, alpha=${alpha})`);
+    this._log.push(
+      `beginGroup(area=${area}, isolated=${isolated}, knockout=${knockout}, blend=${blendMode}, alpha=${alpha})`
+    );
   }
 
   protected override onEndGroup(): void {
@@ -591,7 +600,7 @@ export class ListDevice extends Device {
       ctm,
       colorspace,
       color: [...color],
-      alpha,
+      alpha
     });
   }
 
@@ -610,8 +619,7 @@ export class ListDevice extends Device {
       ctm,
       colorspace,
       color: [...color],
-      alpha,
+      alpha
     });
   }
 }
-

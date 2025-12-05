@@ -32,7 +32,7 @@ import {
   pdfNewMatrix,
   pdfNewDate,
   pdfDictGetKey,
-  pdfDictGetVal,
+  pdfDictGetVal
 } from '../src/index.js';
 
 describe('PDF Object - Basic Types', () => {
@@ -185,8 +185,8 @@ describe('PDF Object - Dictionaries', () => {
 
   it('creates dictionary with entries', () => {
     const dict = pdfDict({
-      'Type': pdfName('Page'),
-      'Count': pdfInt(10),
+      Type: pdfName('Page'),
+      Count: pdfInt(10)
     });
 
     expect(dict.length).toBe(2);
@@ -214,8 +214,8 @@ describe('PDF Object - Dictionaries', () => {
 
   it('deletes entries from dictionary', () => {
     const dict = pdfDict({
-      'Key1': pdfInt(1),
-      'Key2': pdfInt(2),
+      Key1: pdfInt(1),
+      Key2: pdfInt(2)
     });
 
     dict.del('Key1');
@@ -245,8 +245,8 @@ describe('PDF Object - Dictionaries', () => {
 
   it('creates shallow copy', () => {
     const original = pdfDict({
-      'Key1': pdfInt(1),
-      'Key2': pdfString('value'),
+      Key1: pdfInt(1),
+      Key2: pdfString('value')
     });
     const copy = pdfCopyDict(original);
 
@@ -256,8 +256,8 @@ describe('PDF Object - Dictionaries', () => {
   });
 
   it('creates deep copy', () => {
-    const nested = pdfDict({ 'Nested': pdfInt(1) });
-    const original = pdfDict({ 'Dict': nested });
+    const nested = pdfDict({ Nested: pdfInt(1) });
+    const original = pdfDict({ Dict: nested });
     const copy = pdfDeepCopy(original) as PdfDict;
 
     // Modify original nested dict
@@ -270,9 +270,9 @@ describe('PDF Object - Dictionaries', () => {
 
   it('gets keys and values', () => {
     const dict = pdfDict({
-      'A': pdfInt(1),
-      'B': pdfInt(2),
-      'C': pdfInt(3),
+      A: pdfInt(1),
+      B: pdfInt(2),
+      C: pdfInt(3)
     });
 
     const keys = dict.keys();
@@ -408,9 +408,9 @@ describe('PDF Object - Geometry Utilities', () => {
 describe('PDF Object - Dictionary Utilities', () => {
   it('gets keys by index', () => {
     const dict = pdfDict({
-      'A': pdfInt(1),
-      'B': pdfInt(2),
-      'C': pdfInt(3),
+      A: pdfInt(1),
+      B: pdfInt(2),
+      C: pdfInt(3)
     });
 
     const key0 = pdfDictGetKey(dict, 0);
@@ -420,8 +420,8 @@ describe('PDF Object - Dictionary Utilities', () => {
 
   it('gets values by index', () => {
     const dict = pdfDict({
-      'Key1': pdfInt(42),
-      'Key2': pdfString('hello'),
+      Key1: pdfInt(42),
+      Key2: pdfString('hello')
     });
 
     const val0 = pdfDictGetVal(dict, 0);
@@ -429,7 +429,7 @@ describe('PDF Object - Dictionary Utilities', () => {
   });
 
   it('returns undefined for out of bounds', () => {
-    const dict = pdfDict({ 'A': pdfInt(1) });
+    const dict = pdfDict({ A: pdfInt(1) });
     expect(pdfDictGetKey(dict, 999)).toBeUndefined();
     expect(pdfDictGetVal(dict, 999)).toBeUndefined();
   });

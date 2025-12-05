@@ -18,7 +18,7 @@ export enum ColorspaceType {
   Indexed = 6,
   Separation = 7,
   DeviceN = 8,
-  ICC = 9,
+  ICC = 9
 }
 
 /**
@@ -51,7 +51,7 @@ export class Colorspace {
       [ColorspaceType.Indexed]: 'Indexed',
       [ColorspaceType.Separation]: 'Separation',
       [ColorspaceType.DeviceN]: 'DeviceN',
-      [ColorspaceType.ICC]: 'ICCBased',
+      [ColorspaceType.ICC]: 'ICCBased'
     };
     return names[type];
   }
@@ -277,14 +277,14 @@ export class Colorspace {
     if (this._type !== ColorspaceType.DeviceN) {
       return false;
     }
-    return this._colorants.some(c => ['Cyan', 'Magenta', 'Yellow', 'Black'].includes(c));
+    return this._colorants.some((c) => ['Cyan', 'Magenta', 'Yellow', 'Black'].includes(c));
   }
 
   deviceNHasOnlyCMYK(): boolean {
     if (this._type !== ColorspaceType.DeviceN) {
       return false;
     }
-    return this._colorants.every(c => ['Cyan', 'Magenta', 'Yellow', 'Black'].includes(c));
+    return this._colorants.every((c) => ['Cyan', 'Magenta', 'Yellow', 'Black'].includes(c));
   }
 
   hasSpots(): boolean {
@@ -395,11 +395,7 @@ export class Colorspace {
         const m = color[1]!;
         const y = color[2]!;
         const k = color[3]!;
-        return [
-          (1 - c) * (1 - k),
-          (1 - m) * (1 - k),
-          (1 - y) * (1 - k),
-        ];
+        return [(1 - c) * (1 - k), (1 - m) * (1 - k), (1 - y) * (1 - k)];
       }
 
       default:
@@ -428,12 +424,7 @@ export class Colorspace {
         if (k === 1) {
           return [0, 0, 0, 1];
         }
-        return [
-          (1 - r - k) / (1 - k),
-          (1 - g - k) / (1 - k),
-          (1 - b - k) / (1 - k),
-          k,
-        ];
+        return [(1 - r - k) / (1 - k), (1 - g - k) / (1 - k), (1 - b - k) / (1 - k), k];
       }
 
       default:
@@ -445,7 +436,7 @@ export class Colorspace {
    * Convert a single pixel
    */
   convertPixel(destCS: Colorspace, srcPixel: Uint8Array, destPixel: Uint8Array): void {
-    const srcColor = Array.from(srcPixel.slice(0, this._n)).map(v => v / 255);
+    const srcColor = Array.from(srcPixel.slice(0, this._n)).map((v) => v / 255);
     const destColor = this.convertColor(destCS, srcColor);
     for (let i = 0; i < destCS._n; i++) {
       destPixel[i] = Math.round(destColor[i]! * 255);
@@ -457,7 +448,7 @@ export class Colorspace {
    */
   clampColor(color: number[]): number[] {
     const max = this.max();
-    return color.map(v => Math.max(0, Math.min(max, v)));
+    return color.map((v) => Math.max(0, Math.min(max, v)));
   }
 
   // ============================================================================

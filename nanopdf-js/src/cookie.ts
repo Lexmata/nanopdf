@@ -259,7 +259,7 @@ export class Cookie {
       progressFloat: this.getProgressFloat(),
       errors: this._errors,
       incomplete: this._incomplete,
-      complete: this.isComplete(),
+      complete: this.isComplete()
     };
   }
 
@@ -328,10 +328,7 @@ export class CookieOperation<T> {
       // Start progress monitoring
       const progressInterval = setInterval(() => {
         if (this._onProgress) {
-          this._onProgress(
-            this._cookie.getProgress(),
-            this._cookie.getProgressMax()
-          );
+          this._onProgress(this._cookie.getProgress(), this._cookie.getProgressMax());
         }
       }, 100);
 
@@ -366,4 +363,3 @@ export class CookieOperation<T> {
     return this._cookie.getProgressPercent();
   }
 }
-

@@ -19,7 +19,7 @@ export enum ImageOrientation {
   Transpose = 4,
   Rotate90 = 5,
   Transverse = 6,
-  Rotate270 = 7,
+  Rotate270 = 7
 }
 
 /**
@@ -77,7 +77,7 @@ export class Image {
   static createFromPixmap(pixmap: Pixmap): Image {
     return new Image(pixmap.width, pixmap.height, pixmap.colorspace, {
       hasAlpha: pixmap.hasAlpha,
-      data: new Uint8Array(pixmap.data),
+      data: new Uint8Array(pixmap.data)
     });
   }
 
@@ -98,7 +98,7 @@ export class Image {
   ): Image {
     return new Image(width, height, colorspace, {
       ...options,
-      data,
+      data
     });
   }
 
@@ -146,7 +146,7 @@ export class Image {
       hasAlpha: this._hasAlpha,
       bpp: this._bpp,
       orientation: this._orientation,
-      data: new Uint8Array(this._data),
+      data: new Uint8Array(this._data)
     });
   }
 
@@ -206,12 +206,7 @@ export class Image {
    * Decode image to pixmap
    */
   getPixmap(): Pixmap {
-    const pixmap = Pixmap.create(
-      this._colorspace,
-      this._width,
-      this._height,
-      this._hasAlpha
-    );
+    const pixmap = Pixmap.create(this._colorspace, this._width, this._height, this._hasAlpha);
 
     // Copy data
     pixmap.data.set(this._data);
@@ -225,12 +220,7 @@ export class Image {
    */
   getPixmapScaled(width: number, height: number): Pixmap {
     // Image scaling requires FFI connection to image processing APIs
-    const pixmap = Pixmap.create(
-      this._colorspace,
-      width,
-      height,
-      this._hasAlpha
-    );
+    const pixmap = Pixmap.create(this._colorspace, width, height, this._hasAlpha);
     return pixmap;
   }
 
@@ -293,7 +283,7 @@ export class Image {
       orientation: this._orientation,
       size: this.getSize(),
       stride: this.getStride(),
-      components: this.getComponentCount(),
+      components: this.getComponentCount()
     };
   }
 }
@@ -330,7 +320,7 @@ export enum ImageFormat {
   PNM = 7,
   PAM = 8,
   JXR = 9,
-  JP2 = 10,
+  JP2 = 10
 }
 
 /**
@@ -408,9 +398,8 @@ export class ImageDecoder {
       [ImageFormat.PNM]: 'PNM',
       [ImageFormat.PAM]: 'PAM',
       [ImageFormat.JXR]: 'JPEG XR',
-      [ImageFormat.JP2]: 'JPEG 2000',
+      [ImageFormat.JP2]: 'JPEG 2000'
     };
     return names[format];
   }
 }
-

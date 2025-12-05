@@ -56,11 +56,7 @@ export class Pixmap {
   /**
    * Create pixmap with bounding box
    */
-  static createWithBBox(
-    colorspace: Colorspace,
-    bbox: IRectLike,
-    alpha: boolean = true
-  ): Pixmap {
+  static createWithBBox(colorspace: Colorspace, bbox: IRectLike, alpha: boolean = true): Pixmap {
     const b = IRect.from(bbox);
     return new Pixmap(colorspace, b.width, b.height, alpha, b.x0, b.y0);
   }
@@ -405,14 +401,7 @@ export class Pixmap {
    * Scale pixmap to new dimensions
    */
   scale(width: number, height: number): Pixmap {
-    const scaled = new Pixmap(
-      this._colorspace,
-      width,
-      height,
-      this._alpha,
-      this._x,
-      this._y
-    );
+    const scaled = new Pixmap(this._colorspace, width, height, this._alpha, this._x, this._y);
 
     scaled._xres = this._xres;
     scaled._yres = this._yres;
@@ -479,7 +468,7 @@ export class Pixmap {
       stride: this.stride,
       xres: this._xres,
       yres: this._yres,
-      size: this._data.length,
+      size: this._data.length
     };
   }
 }

@@ -5,6 +5,7 @@ This project uses **ESLint** and **Prettier** with a comprehensive suite of prof
 ## 🛠️ Tools Installed
 
 ### Core Tools
+
 - **ESLint 9.x** - Latest ESLint with flat config format
 - **Prettier 3.x** - Opinionated code formatter
 - **TypeScript ESLint** - TypeScript-specific linting rules
@@ -43,6 +44,7 @@ pnpm quality
 ## 🎯 What's Being Checked
 
 ### TypeScript Rules
+
 - ✅ Type safety and correctness
 - ✅ Unused variables and imports
 - ✅ Floating promises and async/await
@@ -50,12 +52,14 @@ pnpm quality
 - ✅ Prefer nullish coalescing and optional chaining
 
 ### Import Organization
+
 - ✅ Automatic import sorting
 - ✅ No duplicate imports
 - ✅ No circular dependencies
 - ✅ No self-imports
 
 ### Code Quality (SonarJS)
+
 - ✅ Cognitive complexity limits
 - ✅ Duplicate code detection
 - ✅ Identical function detection
@@ -64,6 +68,7 @@ pnpm quality
 - ✅ Prefer object literals
 
 ### Best Practices (Unicorn)
+
 - ✅ Better regex patterns
 - ✅ Consistent error handling
 - ✅ Filename conventions (kebab-case)
@@ -72,18 +77,21 @@ pnpm quality
 - ✅ Custom error definitions
 
 ### Security
+
 - ✅ Detect unsafe regex patterns
 - ✅ Detect insecure random numbers
 - ✅ Detect unsafe child process usage
 - ✅ Detect eval usage
 
 ### Promise Handling
+
 - ✅ No unhandled promises
 - ✅ Proper promise parameter names
 - ✅ Catch or return patterns
 - ✅ No promise nesting
 
 ### General Best Practices
+
 - ✅ No console.log (only warn/error allowed)
 - ✅ No debugger statements
 - ✅ Use const over let
@@ -108,7 +116,9 @@ pnpm quality
 ## 🔧 IDE Integration
 
 ### VS Code
+
 The project includes `.vscode/settings.json` with:
+
 - ✅ Format on save
 - ✅ Auto-fix ESLint issues on save
 - ✅ Organize imports on save
@@ -116,7 +126,9 @@ The project includes `.vscode/settings.json` with:
 - ✅ Proper TypeScript SDK configuration
 
 ### Cursor / Other IDEs
+
 Install the following extensions:
+
 - ESLint
 - Prettier - Code formatter
 - EditorConfig for VS Code
@@ -126,6 +138,7 @@ The project includes `.editorconfig` for consistent settings across all editors.
 ## 📦 File Ignores
 
 Both ESLint and Prettier ignore:
+
 - `dist/` - Build output
 - `build/` - Native build output
 - `node_modules/` - Dependencies
@@ -177,16 +190,21 @@ Some rules are intentionally disabled:
 ## 🐛 Troubleshooting
 
 ### ESLint is slow
+
 Run with `--debug` flag to see what's taking time:
+
 ```bash
 pnpm eslint --debug src/
 ```
 
 ### Prettier conflicts with ESLint
+
 The `eslint-config-prettier` package is installed to disable conflicting rules.
 
 ### Type checking errors
+
 Make sure `tsconfig.json` is properly configured and TypeScript can find all files:
+
 ```bash
 pnpm tsc --noEmit
 ```
@@ -194,6 +212,7 @@ pnpm tsc --noEmit
 ## 📈 Metrics
 
 Current code quality metrics:
+
 - ESLint Errors: Target 0
 - ESLint Warnings: Minimize
 - Prettier Issues: Target 0
@@ -203,4 +222,3 @@ Current code quality metrics:
 ---
 
 **Remember**: The goal is to write **professional, maintainable, and secure code**! 🎯
-

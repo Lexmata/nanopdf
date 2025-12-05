@@ -62,13 +62,29 @@ describe('Device Module', () => {
 
     it('should handle fill path', () => {
       device = new Device(null as any);
-      device.fillPath(null as any, true, Matrix.identity(), null as any, 1.0, null as any, null as any);
+      device.fillPath(
+        null as any,
+        true,
+        Matrix.identity(),
+        null as any,
+        1.0,
+        null as any,
+        null as any
+      );
       // Verify it doesn't throw
     });
 
     it('should handle stroke path', () => {
       device = new Device(null as any);
-      device.strokePath(null as any, null as any, Matrix.identity(), null as any, 1.0, null as any, null as any);
+      device.strokePath(
+        null as any,
+        null as any,
+        Matrix.identity(),
+        null as any,
+        1.0,
+        null as any,
+        null as any
+      );
       // Verify it doesn't throw
     });
 
@@ -92,7 +108,15 @@ describe('Device Module', () => {
 
     it('should handle stroke text', () => {
       device = new Device(null as any);
-      device.strokeText(null as any, null as any, Matrix.identity(), null as any, 1.0, null as any, null as any);
+      device.strokeText(
+        null as any,
+        null as any,
+        Matrix.identity(),
+        null as any,
+        1.0,
+        null as any,
+        null as any
+      );
       // Verify it doesn't throw
     });
 
@@ -122,7 +146,14 @@ describe('Device Module', () => {
 
     it('should handle fill image mask', () => {
       device = new Device(null as any);
-      device.fillImageMask(null as any, Matrix.identity(), null as any, 1.0, null as any, null as any);
+      device.fillImageMask(
+        null as any,
+        Matrix.identity(),
+        null as any,
+        1.0,
+        null as any,
+        null as any
+      );
       // Verify it doesn't throw
     });
 
@@ -165,7 +196,15 @@ describe('Device Module', () => {
 
       device.beginTile(rect, rect, 1.0, 0, matrix, 0);
       device.fillPath(null as any, true, matrix, null as any, 1.0, null as any, null as any);
-      device.strokePath(null as any, null as any, matrix, null as any, 1.0, null as any, null as any);
+      device.strokePath(
+        null as any,
+        null as any,
+        matrix,
+        null as any,
+        1.0,
+        null as any,
+        null as any
+      );
       device.endTile();
       device.close();
 
@@ -189,7 +228,15 @@ describe('Device Module', () => {
       const rect = new Rect(0, 0, 100, 100);
 
       device.beginMask(rect, false, null as any, null as any, null as any);
-      device.fillPath(null as any, true, Matrix.identity(), null as any, 1.0, null as any, null as any);
+      device.fillPath(
+        null as any,
+        true,
+        Matrix.identity(),
+        null as any,
+        1.0,
+        null as any,
+        null as any
+      );
       device.endMask();
       device.close();
 
@@ -201,7 +248,15 @@ describe('Device Module', () => {
       const rect = new Rect(0, 0, 100, 100);
 
       device.beginGroup(rect, null as any, false, false, 0, 1.0);
-      device.fillPath(null as any, true, Matrix.identity(), null as any, 1.0, null as any, null as any);
+      device.fillPath(
+        null as any,
+        true,
+        Matrix.identity(),
+        null as any,
+        1.0,
+        null as any,
+        null as any
+      );
       device.endGroup();
       device.close();
 
@@ -209,4 +264,3 @@ describe('Device Module', () => {
     });
   });
 });
-

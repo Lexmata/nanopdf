@@ -254,4 +254,3 @@ export async function createTextPDF(
 ): Promise<void> {
   return Enhanced.createTextPDF(text, outputPath, options);
 }
-

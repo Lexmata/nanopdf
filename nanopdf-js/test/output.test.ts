@@ -25,7 +25,7 @@ describe('Output Module', () => {
 
     it('should write byte', () => {
       output = new Output(null as any);
-      output.writeByte(0xFF);
+      output.writeByte(0xff);
       // Verify it doesn't throw
     });
 
@@ -121,7 +121,7 @@ describe('Output Module', () => {
 
     it('should write rune', () => {
       output = new Output(null as any);
-      output.writeRune(0x1F600); // Emoji
+      output.writeRune(0x1f600); // Emoji
       // Verify it doesn't throw
     });
 
@@ -202,7 +202,7 @@ describe('Output Module', () => {
 
       output.writeString('Header\n');
       output.writeInt32BE(12345);
-      output.writeFloat  LE(3.14);
+      output.writeFloatLE(3.14);
       output.writeString('\nFooter');
 
       expect(true).toBe(true);
@@ -262,4 +262,3 @@ describe('Output Module', () => {
     });
   });
 });
-

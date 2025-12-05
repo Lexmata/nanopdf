@@ -63,7 +63,7 @@ export {
 
   // Form types
   FormFieldType,
-  type FormFieldLike,
+  type FormFieldLike
 } from './types.js';
 
 // ============================================================================
@@ -159,7 +159,7 @@ export {
   // Indirect reference utilities
   pdfObjIsResolved,
   pdfResolveIndirect,
-  pdfLoadObject,
+  pdfLoadObject
 } from './pdf/object.js';
 
 // ============================================================================
@@ -177,20 +177,14 @@ export {
   runLengthDecode,
   lzwDecode,
   decodeFilter,
-  encodeFilter,
+  encodeFilter
 } from './filter.js';
 
 // ============================================================================
 // Path
 // ============================================================================
 
-export {
-  Path,
-  StrokeState,
-  LineCap,
-  LineJoin,
-  type PathWalker,
-} from './path.js';
+export { Path, StrokeState, LineCap, LineJoin, type PathWalker } from './path.js';
 
 // ============================================================================
 // Form
@@ -202,7 +196,7 @@ export {
   FieldType,
   FieldAlignment,
   FieldFlags,
-  type ChoiceOption,
+  type ChoiceOption
 } from './form.js';
 
 // ============================================================================
@@ -214,7 +208,7 @@ export {
   AnnotationList,
   AnnotationType,
   AnnotationFlags,
-  LineEndingStyle,
+  LineEndingStyle
 } from './annot.js';
 
 // ============================================================================
@@ -229,106 +223,68 @@ export {
   ListDevice,
   DeviceType,
   DeviceHint,
-  BlendMode,
+  BlendMode
 } from './device.js';
 
 // ============================================================================
 // Colorspace (Full Implementation)
 // ============================================================================
 
-export {
-  Colorspace,
-  ColorspaceType,
-} from './colorspace.js';
+export { Colorspace, ColorspaceType } from './colorspace.js';
 
 // ============================================================================
 // Pixmap (Full Implementation)
 // ============================================================================
 
-export {
-  Pixmap,
-  type PixmapInfo,
-} from './pixmap.js';
+export { Pixmap, type PixmapInfo } from './pixmap.js';
 
 // ============================================================================
 // Text
 // ============================================================================
 
-export {
-  Text,
-  type TextSpan,
-  type TextItem,
-  type TextWalker,
-} from './text.js';
+export { Text, type TextSpan, type TextItem, type TextWalker } from './text.js';
 
 // ============================================================================
 // Display List
 // ============================================================================
 
-export {
-  DisplayList,
-} from './display-list.js';
+export { DisplayList } from './display-list.js';
 
 // ============================================================================
 // Link
 // ============================================================================
 
-export {
-  Link,
-  LinkList,
-  LinkDestinationType,
-} from './link.js';
+export { Link, LinkList, LinkDestinationType } from './link.js';
 
 // ============================================================================
 // Cookie (Progress Tracking)
 // ============================================================================
 
-export {
-  Cookie,
-  CookieOperation,
-} from './cookie.js';
+export { Cookie, CookieOperation } from './cookie.js';
 
 // ============================================================================
 // Font
 // ============================================================================
 
-export {
-  Font,
-  FontManager,
-  FontFlags,
-  StandardFonts,
-  type GlyphInfo,
-} from './font.js';
+export { Font, FontManager, FontFlags, StandardFonts, type GlyphInfo } from './font.js';
 
 // ============================================================================
 // Image
 // ============================================================================
 
-export {
-  Image,
-  ImageDecoder,
-  ImageFormat,
-  ImageOrientation,
-  type ImageInfo,
-} from './image.js';
+export { Image, ImageDecoder, ImageFormat, ImageOrientation, type ImageInfo } from './image.js';
 
 // ============================================================================
 // Output (Binary Writer)
 // ============================================================================
 
-export {
-  Output,
-} from './output.js';
+export { Output } from './output.js';
 
 // ============================================================================
 // Archive (ZIP, TAR)
 // ============================================================================
 
-export {
-  Archive,
-  ArchiveFormat,
-  type ArchiveEntry,
-} from './archive.js';
+export { Archive, ArchiveFormat, type ArchiveEntry } from './archive.js';
 
 // ============================================================================
 // Context (Error & Memory Management)
@@ -341,7 +297,7 @@ export {
   resetDefaultContext,
   type ErrorCallback,
   type WarningCallback,
-  type ContextInfo,
+  type ContextInfo
 } from './context.js';
 
 // ============================================================================
@@ -357,7 +313,7 @@ export {
   optimizePDF,
   linearizePDF,
   createBlankDocument,
-  createTextPDF,
+  createTextPDF
 } from './enhanced.js';
 
 // ============================================================================

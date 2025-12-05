@@ -8,7 +8,7 @@ import {
   CheckboxField,
   PushButtonField,
   ComboBoxField,
-  SignatureField,
+  SignatureField
 } from '../src/form';
 import { Rect } from '../src/geometry';
 
@@ -449,4 +449,3 @@ describe('Form Module', () => {
     });
   });
 });
-

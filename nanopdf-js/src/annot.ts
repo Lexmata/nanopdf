@@ -36,7 +36,7 @@ export enum AnnotationType {
   TrapNet = 22,
   Watermark = 23,
   ThreeD = 24,
-  Redact = 25,
+  Redact = 25
 }
 
 /**
@@ -52,7 +52,7 @@ export enum AnnotationFlags {
   ReadOnly = 1 << 6,
   Locked = 1 << 7,
   ToggleNoView = 1 << 8,
-  LockedContents = 1 << 9,
+  LockedContents = 1 << 9
 }
 
 /**
@@ -68,7 +68,7 @@ export enum LineEndingStyle {
   Butt = 6,
   ROpenArrow = 7,
   RClosedArrow = 8,
-  Slash = 9,
+  Slash = 9
 }
 
 /**
@@ -542,4 +542,3 @@ export class AnnotationList {
     }
   }
 }
-

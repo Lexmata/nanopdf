@@ -12,7 +12,7 @@ export enum ArchiveFormat {
   Unknown = 0,
   Zip = 1,
   Tar = 2,
-  Directory = 3,
+  Directory = 3
 }
 
 /**
@@ -47,8 +47,8 @@ export class Archive {
     const format = path.endsWith('.zip')
       ? ArchiveFormat.Zip
       : path.endsWith('.tar')
-      ? ArchiveFormat.Tar
-      : ArchiveFormat.Unknown;
+        ? ArchiveFormat.Tar
+        : ArchiveFormat.Unknown;
     return new Archive(format, path);
   }
 
@@ -214,7 +214,7 @@ export class Archive {
       entries.push({
         name,
         size: data.length,
-        isDirectory: name.endsWith('/'),
+        isDirectory: name.endsWith('/')
       });
     }
     return entries;
@@ -291,4 +291,3 @@ export class Archive {
     return extracted;
   }
 }
-

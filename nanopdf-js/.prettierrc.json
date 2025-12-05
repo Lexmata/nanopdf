@@ -1,6 +1,6 @@
 {
   "semi": true,
-  "trailingComma": "es5",
+  "trailingComma": "none",
   "singleQuote": true,
   "printWidth": 100,
   "tabWidth": 2,
@@ -11,4 +11,3 @@
   "quoteProps": "as-needed",
   "proseWrap": "preserve"
 }
-

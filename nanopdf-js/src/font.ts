@@ -16,7 +16,7 @@ export enum FontFlags {
   Italic = 1 << 1,
   Serif = 1 << 2,
   Monospaced = 1 << 3,
-  Embedded = 1 << 4,
+  Embedded = 1 << 4
 }
 
 /**
@@ -61,7 +61,11 @@ export class Font {
    */
   static createFromFile(path: string): Font {
     // Font file loading requires FFI connection to native library
-    const name = path.split('/').pop()?.replace(/\.[^.]+$/, '') || 'Unknown';
+    const name =
+      path
+        .split('/')
+        .pop()
+        ?.replace(/\.[^.]+$/, '') || 'Unknown';
     return new Font(name);
   }
 
@@ -417,6 +421,5 @@ export const StandardFonts = {
   CourierOblique: 'Courier-Oblique',
   CourierBoldOblique: 'Courier-BoldOblique',
   Symbol: 'Symbol',
-  ZapfDingbats: 'ZapfDingbats',
+  ZapfDingbats: 'ZapfDingbats'
 } as const;
-
