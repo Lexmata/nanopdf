@@ -57,7 +57,7 @@ pub extern "C" fn fz_bound_display_list(_ctx: Handle, list: Handle) -> fz_rect {
     let Ok(display_list) = arc.lock() else {
         return fz_rect { x0: 0.0, y0: 0.0, x1: 0.0, y1: 0.0 };
     };
-    
+
     let mediabox = display_list.mediabox();
     fz_rect {
         x0: mediabox.x0,
@@ -88,7 +88,7 @@ pub extern "C" fn fz_run_display_list(
     let Ok(_display_list) = arc.lock() else {
         return;
     };
-    
+
     // In full implementation:
     // - Transform device with matrix
     // - Clip to rect
@@ -108,11 +108,11 @@ pub extern "C" fn fz_new_display_list_from_page(_ctx: Handle, page: Handle) -> H
     // - Parse page content stream
     // - Record all drawing operations
     // - Return cached display list
-    
+
     // For now, use default US Letter bounds
     let _ = page; // Mark parameter as used
     let bounds = Rect::new(0.0, 0.0, 612.0, 792.0);
-    
+
     let list = DisplayList::new(bounds);
     DISPLAY_LIST_STORE.insert(list)
 }

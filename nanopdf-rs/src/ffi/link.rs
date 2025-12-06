@@ -36,7 +36,7 @@ pub extern "C" fn fz_load_links(_ctx: Handle, _page: Handle) -> Handle {
     // - Parse page annotations
     // - Extract link annotations
     // - Return first link handle
-    
+
     let link = Link::new(
         Rect::new(10.0, 10.0, 100.0, 30.0),
         "https://example.com".to_string(),
@@ -78,7 +78,7 @@ pub extern "C" fn fz_link_rect(_ctx: Handle, link: Handle) -> fz_rect {
     let Ok(link_obj) = arc.lock() else {
         return fz_rect { x0: 0.0, y0: 0.0, x1: 0.0, y1: 0.0 };
     };
-    
+
     let rect = &link_obj.rect;
     fz_rect {
         x0: rect.x0,
@@ -112,7 +112,7 @@ pub unsafe extern "C" fn fz_link_uri(_ctx: Handle, link: Handle, buffer: *mut c_
 
     let bytes = uri.as_bytes();
     let copy_len = bytes.len().min(size - 1);
-    
+
     unsafe {
         std::ptr::copy_nonoverlapping(bytes.as_ptr(), buffer as *mut u8, copy_len);
         *buffer.add(copy_len) = 0; // Null terminate
@@ -132,7 +132,7 @@ pub extern "C" fn fz_link_is_external(_ctx: Handle, link: Handle) -> c_int {
     let Ok(link_obj) = arc.lock() else {
         return 0;
     };
-    
+
     if link_obj.is_external() { 1 } else { 0 }
 }
 
@@ -154,12 +154,12 @@ pub extern "C" fn fz_resolve_link_page(_ctx: Handle, _doc: Handle, link: Handle)
     let Ok(link_obj) = arc.lock() else {
         return -1;
     };
-    
+
     // If external, return -1
     if link_obj.is_external() {
         return -1;
     }
-    
+
     // Simplified: Parse URI for page number
     // In full implementation, would resolve named destinations, etc.
     let uri = &link_obj.uri;

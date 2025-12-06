@@ -13,7 +13,8 @@
         "native/annot.cc",
         "native/form.cc",
         "native/display_list.cc",
-        "native/link.cc"
+        "native/link.cc",
+        "native/cookie.cc"
       ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",

@@ -228,7 +228,7 @@ Napi::Object InitLink(Napi::Env env, Napi::Object exports) {
     exports.Set("isLinkExternal", Napi::Function::New(env, IsLinkExternal));
     exports.Set("resolveLinkPage", Napi::Function::New(env, ResolveLinkPage));
     exports.Set("isLinkValid", Napi::Function::New(env, IsLinkValid));
-    
+
     return exports;
 }
 

@@ -218,6 +218,19 @@ void fz_run_display_list(fz_context ctx, fz_display_list_handle list, fz_device 
 fz_display_list_handle fz_new_display_list_from_page(fz_context ctx, fz_page page);
 
 // ============================================================================
+// Cookie Functions
+// ============================================================================
+
+typedef uint64_t fz_cookie_handle;
+
+fz_cookie_handle fz_new_cookie(fz_context ctx);
+void fz_drop_cookie(fz_context ctx, fz_cookie_handle cookie);
+void fz_abort_cookie(fz_context ctx, fz_cookie_handle cookie);
+void fz_cookie_progress(fz_context ctx, fz_cookie_handle cookie, int* progress, int* progress_max, int* errors);
+int fz_cookie_is_aborted(fz_context ctx, fz_cookie_handle cookie);
+void fz_reset_cookie(fz_context ctx, fz_cookie_handle cookie);
+
+// ============================================================================
 // Link Functions
 // ============================================================================
 

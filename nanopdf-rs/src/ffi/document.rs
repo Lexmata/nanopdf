@@ -443,7 +443,7 @@ pub extern "C" fn fz_run_page(
     // Check for cancellation via cookie
     if !cookie.is_null() {
         let cookie_handle = cookie as Handle;
-        if let Some(c) = super::cookie::COOKIES.get(cookie_handle) {
+        if let Some(c) = super::cookie::COOKIE_STORE.get(cookie_handle) {
             if let Ok(guard) = c.lock() {
                 if guard.should_abort() {
                     return; // Operation cancelled
@@ -527,7 +527,7 @@ pub extern "C" fn fz_run_page_annots(
     // Check for cancellation via cookie
     if !cookie.is_null() {
         let cookie_handle = cookie as Handle;
-        if let Some(c) = super::cookie::COOKIES.get(cookie_handle) {
+        if let Some(c) = super::cookie::COOKIE_STORE.get(cookie_handle) {
             if let Ok(guard) = c.lock() {
                 if guard.should_abort() {
                     return; // Operation cancelled

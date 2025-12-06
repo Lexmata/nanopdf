@@ -26,7 +26,7 @@ Napi::BigInt NewDisplayList(const Napi::CallbackInfo& info) {
 
     bool lossless;
     uint64_t ctx_handle = info[0].As<Napi::BigInt>().Uint64Value(&lossless);
-    
+
     Napi::Object rect_obj = info[1].As<Napi::Object>();
     fz_rect rect;
     rect.x0 = rect_obj.Get("x0").As<Napi::Number>().FloatValue();
@@ -172,7 +172,7 @@ Napi::Object InitDisplayList(Napi::Env env, Napi::Object exports) {
     exports.Set("getDisplayListBounds", Napi::Function::New(env, GetDisplayListBounds));
     exports.Set("runDisplayList", Napi::Function::New(env, RunDisplayList));
     exports.Set("newDisplayListFromPage", Napi::Function::New(env, NewDisplayListFromPage));
-    
+
     return exports;
 }
 
