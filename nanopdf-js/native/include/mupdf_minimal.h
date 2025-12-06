@@ -47,16 +47,16 @@ typedef int32_t fz_document;
 typedef int32_t fz_page;
 // fz_pixmap is defined later with specific functions
 typedef int32_t fz_buffer;
-typedef int32_t fz_colorspace;
 typedef int32_t fz_stext_page;
 typedef int32_t fz_link;
-typedef int32_t fz_device;
-typedef int32_t fz_display_list;
 typedef int32_t fz_stream;
 typedef int32_t fz_output;
-typedef int32_t fz_font;
-// fz_image is defined later with specific functions
 typedef int32_t fz_archive;
+
+// Forward declarations for types defined later with specific functions
+typedef uint64_t fz_colorspace;
+typedef uint64_t fz_device;
+typedef uint64_t fz_font;
 
 // ============================================================================
 // Context Functions
@@ -128,14 +128,6 @@ fz_rect fz_bound_stext_page(fz_context ctx, fz_stext_page stext);
 int fz_search_stext_page(fz_context ctx, fz_stext_page stext, const char* needle, int* mark, fz_quad* hit_bbox, int hit_max);
 
 // ============================================================================
-// Font Functions
-// ============================================================================
-
-fz_font fz_new_font_from_memory(fz_context ctx, const char* name, const unsigned char* data, int len, int index, int use_glyph_bbox);
-fz_font fz_new_font_from_file(fz_context ctx, const char* name, const char* path, int index, int use_glyph_bbox);
-void fz_drop_font(fz_context ctx, fz_font font);
-
-// ============================================================================
 // Archive Functions
 // ============================================================================
 
@@ -200,6 +192,22 @@ uint64_t fz_device_bgr(fz_context ctx);
 uint64_t fz_device_cmyk(fz_context ctx);
 int fz_colorspace_n(fz_context ctx, fz_colorspace_handle cs);
 const char* fz_colorspace_name(fz_context ctx, fz_colorspace_handle cs);
+
+// ============================================================================
+// Font Functions
+// ============================================================================
+
+typedef uint64_t fz_font;
+
+fz_font fz_new_font(fz_context ctx, const char* name, int is_bold, int is_italic, uint64_t font_file);
+fz_font fz_new_font_from_file(fz_context ctx, const char* name, const char* path, int index, int use_glyph_bbox);
+fz_font fz_new_font_from_memory(fz_context ctx, const char* name, const unsigned char* data, int len, int index, int use_glyph_bbox);
+void fz_drop_font(fz_context ctx, fz_font font);
+void fz_font_name(fz_context ctx, fz_font font, char* buf, int size);
+int fz_font_is_bold(fz_context ctx, fz_font font);
+int fz_font_is_italic(fz_context ctx, fz_font font);
+int fz_encode_character(fz_context ctx, fz_font font, int unicode);
+float fz_advance_glyph(fz_context ctx, fz_font font, int glyph, int wmode);
 
 // ============================================================================
 // Image Functions

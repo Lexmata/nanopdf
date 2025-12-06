@@ -23,6 +23,7 @@ Napi::Object InitPath(Napi::Env env, Napi::Object exports);
 Napi::Object InitPixmap(Napi::Env env, Napi::Object exports);
 Napi::Object InitImage(Napi::Env env, Napi::Object exports);
 Napi::Object InitColorspace(Napi::Env env, Napi::Object exports);
+Napi::Object InitFont(Napi::Env env, Napi::Object exports);
 
 /**
  * Get the NanoPDF library version
@@ -55,6 +56,7 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
     InitPixmap(env, exports);
     InitImage(env, exports);
     InitColorspace(env, exports);
+    InitFont(env, exports);
 
     return exports;
 }
