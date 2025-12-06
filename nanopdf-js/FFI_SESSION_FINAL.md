@@ -306,10 +306,10 @@ console.log(`Found ${stext.blockCount()} blocks`);
 for (const block of stext.getBlocks()) {
   console.log(`\nBlock Type: ${block.blockType}`);
   console.log(`  Bounds: ${JSON.stringify(block.bbox)}`);
-  
+
   for (const line of block.lines) {
     console.log(`  Line (${line.wmode}):`);
-    
+
     for (const char of line.chars) {
       console.log(`    '${char.c}' @ ${char.size}pt`);
       console.log(`      Font: ${char.fontName}`);
