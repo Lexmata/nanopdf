@@ -13,6 +13,7 @@ pub mod document;
 pub mod error;
 pub mod font;
 pub mod geometry;
+pub mod glyph;
 pub mod hash;
 pub mod image;
 pub mod link;
