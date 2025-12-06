@@ -23,8 +23,7 @@
     "dist",
     "native",
     "prebuilds",
-    "binding.gyp",
-    "scripts"
+    "binding.gyp"
   ],
   "scripts": {
     "build": "npm run build:ts",
