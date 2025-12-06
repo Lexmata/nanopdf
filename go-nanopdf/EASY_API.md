@@ -207,10 +207,10 @@ files := []string{"doc1.pdf", "doc2.pdf", "doc3.pdf"}
 for _, file := range files {
     // Extract text
     easy.SaveTextToFile(file, file+".txt")
-    
+
     // Render first page
     easy.RenderToPNG(file, file+".png", 0, 150)
-    
+
     // Get summary
     summary, _ := easy.QuickSummary(file)
     fmt.Println(summary)
@@ -372,7 +372,7 @@ err := func() error {
     if err != nil {
         return err
     }
-    
+
     return pdf.Use(func(p *easy.PDF) error {
         text, err := p.ExtractAllText()
         if err != nil {
@@ -391,11 +391,11 @@ err := func() error {
    // Good: One open/close
    pdf, _ := easy.Open("doc.pdf")
    defer pdf.Close()
-   
+
    text, _ := pdf.ExtractAllText()
    info := pdf.GetInfo()
    pdf.RenderToFile(0, "page.png", easy.RenderOptions{DPI: 150})
-   
+
    // Less efficient: Multiple opens
    text, _ := easy.ExtractText("doc.pdf")
    info, _ := easy.GetInfo("doc.pdf")

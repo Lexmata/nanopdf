@@ -19,7 +19,7 @@
  * ```
  */
 
-import { EasyPDF, type EasyRenderOptions, type PdfMetadata, type DocumentInfo } from './easy.js';
+import { EasyPDF, type PdfMetadata, type DocumentInfo } from './easy.js';
 import * as fs from 'fs/promises';
 
 /**

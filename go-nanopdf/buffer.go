@@ -110,3 +110,21 @@ func (b *Buffer) Clone() *Buffer {
 	return NewBufferFromBytes(b.Bytes())
 }
 
+// Handle returns the internal handle (for internal use).
+func (b *Buffer) Handle() uintptr {
+	if b == nil {
+		return 0
+	}
+	return b.ptr
+}
+
+// Drop is an alias for Free for consistency with other types.
+func (b *Buffer) Drop() {
+	b.Free()
+}
+
+// Data is an alias for Bytes for consistency with other types.
+func (b *Buffer) Data() []byte {
+	return b.Bytes()
+}
+

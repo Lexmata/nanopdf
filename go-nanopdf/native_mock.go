@@ -134,9 +134,11 @@ type mockPage struct {
 }
 
 type mockPixmap struct {
-	width  int
-	height int
-	data   []byte
+	width      int
+	height     int
+	components int
+	stride     int
+	data       []byte
 }
 
 // Context functions
@@ -272,9 +274,11 @@ func pageRenderToPixmap(_ uintptr, _ uintptr, matrix [6]float32, _ bool) uintptr
 	id := nextPixmapID
 	nextPixmapID++
 	mockPixmaps[id] = &mockPixmap{
-		width:  width,
-		height: height,
-		data:   make([]byte, width*height*3),
+		width:      width,
+		height:     height,
+		components: 3,
+		stride:     width * 3,
+		data:       make([]byte, width*height*3),
 	}
 	return id
 }
@@ -349,4 +353,299 @@ func pixmapSamples(_ uintptr, pix uintptr) []byte {
 		return result
 	}
 	return nil
+}
+
+// ============================================================================
+// Cookie Functions (Mock)
+// ============================================================================
+
+func cookieNew(_ uintptr) uintptr {
+	return 1 // Mock cookie handle
+}
+
+func cookieDrop(_ uintptr, _ uintptr) {
+	// No-op in mock
+}
+
+func cookieAbort(_ uintptr, _ uintptr) {
+	// No-op in mock
+}
+
+func cookieProgress(_ uintptr, _ uintptr) int {
+	return 0 // Mock progress
+}
+
+func cookieIsAborted(_ uintptr, _ uintptr) bool {
+	return false // Mock not aborted
+}
+
+func cookieReset(_ uintptr, _ uintptr) {
+	// No-op in mock
+}
+
+// ============================================================================
+// Device Functions (Mock)
+// ============================================================================
+
+func deviceNewDraw(_ uintptr, _ Matrix, _ uintptr) uintptr {
+	return 1 // Mock device handle
+}
+
+func deviceDrop(_ uintptr, _ uintptr) {
+	// No-op in mock
+}
+
+func deviceClose(_ uintptr, _ uintptr) {
+	// No-op in mock
+}
+
+// ============================================================================
+// Path Functions (Mock)
+// ============================================================================
+
+func pathNew(_ uintptr) uintptr {
+	return 1 // Mock path handle
+}
+
+func pathDrop(_ uintptr, _ uintptr) {
+	// No-op in mock
+}
+
+func pathMoveTo(_ uintptr, _ uintptr, _ float32, _ float32) {
+	// No-op in mock
+}
+
+func pathLineTo(_ uintptr, _ uintptr, _ float32, _ float32) {
+	// No-op in mock
+}
+
+func pathCurveTo(_ uintptr, _ uintptr, _ float32, _ float32, _ float32, _ float32, _ float32, _ float32) {
+	// No-op in mock
+}
+
+func pathClosePath(_ uintptr, _ uintptr) {
+	// No-op in mock
+}
+
+func pathRectTo(_ uintptr, _ uintptr, _ float32, _ float32, _ float32, _ float32) {
+	// No-op in mock
+}
+
+// ============================================================================
+// Stream Functions (Mock)
+// ============================================================================
+
+func streamOpenFile(_ uintptr, _ string) uintptr {
+	return 1 // Mock stream handle
+}
+
+func streamOpenMemory(_ uintptr, _ []byte) uintptr {
+	return 1 // Mock stream handle
+}
+
+func streamDrop(_ uintptr, _ uintptr) {
+	// No-op in mock
+}
+
+func streamRead(_ uintptr, _ uintptr, data []byte) int {
+	return len(data) // Mock read all
+}
+
+func streamReadByte(_ uintptr, _ uintptr) int {
+	return 65 // Mock return 'A'
+}
+
+func streamIsEOF(_ uintptr, _ uintptr) bool {
+	return false // Mock not EOF
+}
+
+func streamSeek(_ uintptr, _ uintptr, _ int64, _ int) {
+	// No-op in mock
+}
+
+func streamTell(_ uintptr, _ uintptr) int64 {
+	return 0 // Mock position 0
+}
+
+// ============================================================================
+// Output Functions (Mock)
+// ============================================================================
+
+func outputNewWithPath(_ uintptr, _ string, _ bool) uintptr {
+	return 1 // Mock output handle
+}
+
+func outputNewWithBuffer(_ uintptr, _ uintptr) uintptr {
+	return 1 // Mock output handle
+}
+
+func outputDrop(_ uintptr, _ uintptr) {
+	// No-op in mock
+}
+
+func outputWriteData(_ uintptr, _ uintptr, _ []byte) {
+	// No-op in mock
+}
+
+func outputWriteString(_ uintptr, _ uintptr, _ string) {
+	// No-op in mock
+}
+
+func outputWriteByte(_ uintptr, _ uintptr, _ byte) {
+	// No-op in mock
+}
+
+func outputClose(_ uintptr, _ uintptr) {
+	// No-op in mock
+}
+
+func outputTell(_ uintptr, _ uintptr) int64 {
+	return 0 // Mock position 0
+}
+
+// ============================================================================
+// Font Functions (Mock)
+// ============================================================================
+
+func fontNew(_ uintptr, _ string, _ bool, _ bool) uintptr {
+	return 1 // Mock font handle
+}
+
+func fontNewFromFile(_ uintptr, _ string, _ string, _ int) uintptr {
+	return 1 // Mock font handle
+}
+
+func fontNewFromMemory(_ uintptr, _ string, _ []byte, _ int) uintptr {
+	return 1 // Mock font handle
+}
+
+func fontDrop(_ uintptr, _ uintptr) {
+	// No-op in mock
+}
+
+func fontName(_ uintptr, _ uintptr) string {
+	return "MockFont"
+}
+
+func fontIsBold(_ uintptr, _ uintptr) bool {
+	return false
+}
+
+func fontIsItalic(_ uintptr, _ uintptr) bool {
+	return false
+}
+
+func fontEncodeCharacter(_ uintptr, _ uintptr, unicode int) int {
+	return unicode // Mock: glyph ID = Unicode
+}
+
+func fontAdvanceGlyph(_ uintptr, _ uintptr, _ int) float32 {
+	return 0.5 // Mock advance
+}
+
+// ============================================================================
+// Colorspace Functions (Mock Extended)
+// ============================================================================
+
+func colorspaceDeviceRGB(_ uintptr) uintptr {
+	return 2 // Mock RGB handle
+}
+
+func colorspaceDeviceGray(_ uintptr) uintptr {
+	return 1 // Mock Gray handle
+}
+
+func colorspaceDeviceBGR(_ uintptr) uintptr {
+	return 3 // Mock BGR handle
+}
+
+func colorspaceDeviceCMYK(_ uintptr) uintptr {
+	return 4 // Mock CMYK handle
+}
+
+func colorspaceN(_ uintptr, cs uintptr) int {
+	switch cs {
+	case 1: // Gray
+		return 1
+	case 2, 3: // RGB, BGR
+		return 3
+	case 4: // CMYK
+		return 4
+	default:
+		return 0
+	}
+}
+
+func colorspaceName(_ uintptr, cs uintptr) string {
+	switch cs {
+	case 1:
+		return "DeviceGray"
+	case 2:
+		return "DeviceRGB"
+	case 3:
+		return "DeviceBGR"
+	case 4:
+		return "DeviceCMYK"
+	default:
+		return "Unknown"
+	}
+}
+
+// ============================================================================
+// Image Functions (Mock Extended)
+// ============================================================================
+
+func imageNewFromPixmap(_ uintptr, _ uintptr, _ uintptr) uintptr {
+	return 1 // Mock image handle
+}
+
+func imageKeep(_ uintptr, image uintptr) uintptr {
+	return image // Mock: return same handle
+}
+
+func imageColorspace(_ uintptr, _ uintptr) uintptr {
+	return 2 // Mock: return RGB colorspace
+}
+
+// ============================================================================
+// Pixmap Functions (Mock Extended)
+// ============================================================================
+
+func pixmapNew(_ uintptr, _ uintptr, width int, height int, _ bool) uintptr {
+	mockStorageMu.Lock()
+	defer mockStorageMu.Unlock()
+
+	id := nextPixmapID
+	nextPixmapID++
+
+	mockPixmaps[id] = &mockPixmap{
+		width:      width,
+		height:     height,
+		components: 3,
+		stride:     width * 3,
+		data:       make([]byte, width*height*3),
+	}
+
+	return id
+}
+
+func pixmapStride(_ uintptr, pix uintptr) int {
+	mockStorageMu.RLock()
+	defer mockStorageMu.RUnlock()
+
+	if p, ok := mockPixmaps[pix]; ok {
+		return p.stride
+	}
+	return 0
+}
+
+func pixmapClear(_ uintptr, pix uintptr) {
+	mockStorageMu.Lock()
+	defer mockStorageMu.Unlock()
+
+	if p, ok := mockPixmaps[pix]; ok {
+		for i := range p.data {
+			p.data[i] = 0
+		}
+	}
 }

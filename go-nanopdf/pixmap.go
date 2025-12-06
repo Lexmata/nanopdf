@@ -68,3 +68,8 @@ func (p *Pixmap) IsValid() bool {
 	defer p.mu.Unlock()
 	return !p.dropped && p.ptr != 0
 }
+
+// Handle returns the internal handle (for internal use).
+func (p *Pixmap) Handle() uintptr {
+	return p.ptr
+}

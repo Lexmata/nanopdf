@@ -135,7 +135,10 @@ fz_rect fz_bound_page(fz_context ctx, fz_page page);
 
 fz_colorspace fz_device_rgb(fz_context ctx);
 fz_colorspace fz_device_gray(fz_context ctx);
+fz_colorspace fz_device_bgr(fz_context ctx);
 fz_colorspace fz_device_cmyk(fz_context ctx);
+int fz_colorspace_n(fz_context ctx, fz_colorspace cs);
+const char* fz_colorspace_name(fz_context ctx, fz_colorspace cs);
 
 // ============================================================================
 // Matrix Functions
@@ -151,12 +154,15 @@ fz_matrix fz_concat(fz_matrix a, fz_matrix b);
 // Pixmap Functions
 // ============================================================================
 
+fz_pixmap fz_new_pixmap(fz_context ctx, fz_colorspace cs, int w, int h, int alpha);
 fz_pixmap fz_new_pixmap_from_page(fz_context ctx, fz_page page, fz_matrix ctm, fz_colorspace cs, int alpha);
 void fz_drop_pixmap(fz_context ctx, fz_pixmap pix);
 int fz_pixmap_width(fz_context ctx, fz_pixmap pix);
 int fz_pixmap_height(fz_context ctx, fz_pixmap pix);
 int fz_pixmap_components(fz_context ctx, fz_pixmap pix);
+int fz_pixmap_stride(fz_context ctx, fz_pixmap pix);
 unsigned char* fz_pixmap_samples(fz_context ctx, fz_pixmap pix);
+void fz_clear_pixmap(fz_context ctx, fz_pixmap pix);
 
 // ============================================================================
 // Buffer Functions
@@ -194,19 +200,96 @@ int fz_search_stext_page(fz_context ctx, fz_stext_page stext, const char* needle
 // Font Functions
 // ============================================================================
 
+fz_font fz_new_font(fz_context ctx, const char* name, int is_bold, int is_italic, uint64_t font_file);
 fz_font fz_new_font_from_memory(fz_context ctx, const char* name, const unsigned char* data, int len, int index, int use_glyph_bbox);
 fz_font fz_new_font_from_file(fz_context ctx, const char* name, const char* path, int index, int use_glyph_bbox);
 void fz_drop_font(fz_context ctx, fz_font font);
+void fz_font_name(fz_context ctx, fz_font font, char* buf, int size);
+int fz_font_is_bold(fz_context ctx, fz_font font);
+int fz_font_is_italic(fz_context ctx, fz_font font);
+int fz_encode_character(fz_context ctx, fz_font font, int unicode);
+float fz_advance_glyph(fz_context ctx, fz_font font, int glyph, int wmode);
 
 // ============================================================================
 // Image Functions
 // ============================================================================
 
+fz_image fz_new_image_from_pixmap(fz_context ctx, fz_pixmap pixmap, fz_image mask);
 fz_image fz_new_image_from_buffer(fz_context ctx, fz_buffer buffer);
 fz_image fz_new_image_from_file(fz_context ctx, const char* path);
 void fz_drop_image(fz_context ctx, fz_image image);
+fz_image fz_keep_image(fz_context ctx, fz_image image);
 int fz_image_width(fz_context ctx, fz_image image);
 int fz_image_height(fz_context ctx, fz_image image);
+fz_colorspace fz_image_colorspace(fz_context ctx, fz_image image);
+fz_pixmap fz_get_pixmap_from_image(fz_context ctx, fz_image image, const fz_irect* subarea, fz_matrix* ctm, int* w, int* h);
+
+// ============================================================================
+// Cookie Functions (Progress Tracking)
+// ============================================================================
+
+typedef uint64_t fz_cookie;
+
+fz_cookie fz_new_cookie(fz_context ctx);
+void fz_drop_cookie(fz_context ctx, fz_cookie cookie);
+void fz_abort_cookie(fz_context ctx, fz_cookie cookie);
+int fz_cookie_progress(fz_context ctx, fz_cookie cookie);
+int fz_cookie_is_aborted(fz_context ctx, fz_cookie cookie);
+void fz_reset_cookie(fz_context ctx, fz_cookie cookie);
+
+// ============================================================================
+// Device Functions (Rendering Targets)
+// ============================================================================
+
+typedef uint64_t fz_device_handle;
+
+fz_device_handle fz_new_draw_device(fz_context ctx, fz_matrix transform, fz_pixmap dest);
+fz_device_handle fz_new_list_device(fz_context ctx, uint64_t list);
+void fz_drop_device(fz_context ctx, fz_device_handle dev);
+void fz_close_device(fz_context ctx, fz_device_handle dev);
+void fz_begin_page(fz_context ctx, fz_device_handle dev, fz_rect rect, fz_matrix ctm);
+void fz_end_page(fz_context ctx, fz_device_handle dev);
+
+// ============================================================================
+// Path Functions (Vector Graphics)
+// ============================================================================
+
+typedef uint64_t fz_path_handle;
+
+fz_path_handle fz_new_path(fz_context ctx);
+void fz_drop_path(fz_context ctx, fz_path_handle path);
+void fz_moveto(fz_context ctx, fz_path_handle path, float x, float y);
+void fz_lineto(fz_context ctx, fz_path_handle path, float x, float y);
+void fz_curveto(fz_context ctx, fz_path_handle path, float x1, float y1, float x2, float y2, float x3, float y3);
+void fz_closepath(fz_context ctx, fz_path_handle path);
+void fz_rectto(fz_context ctx, fz_path_handle path, float x, float y, float w, float h);
+fz_rect fz_bound_path(fz_context ctx, fz_path_handle path, const void* stroke, fz_matrix ctm);
+
+// ============================================================================
+// Stream Functions (Input)
+// ============================================================================
+
+fz_stream fz_open_file(fz_context ctx, const char* filename);
+fz_stream fz_open_memory(fz_context ctx, const unsigned char* data, size_t len);
+void fz_drop_stream(fz_context ctx, fz_stream stm);
+size_t fz_read(fz_context ctx, fz_stream stm, unsigned char* data, size_t len);
+int fz_read_byte(fz_context ctx, fz_stream stm);
+int fz_is_eof(fz_context ctx, fz_stream stm);
+void fz_seek(fz_context ctx, fz_stream stm, int64_t offset, int whence);
+int64_t fz_tell(fz_context ctx, fz_stream stm);
+
+// ============================================================================
+// Output Functions (Output)
+// ============================================================================
+
+fz_output fz_new_output_with_path(fz_context ctx, const char* filename, int append);
+fz_output fz_new_output_with_buffer(fz_context ctx, fz_buffer buf);
+void fz_drop_output(fz_context ctx, fz_output out);
+void fz_write_data(fz_context ctx, fz_output out, const void* data, size_t size);
+void fz_write_string(fz_context ctx, fz_output out, const char* s);
+void fz_write_byte(fz_context ctx, fz_output out, unsigned char byte);
+void fz_close_output(fz_context ctx, fz_output out);
+int64_t fz_tell_output(fz_context ctx, fz_output out);
 
 // ============================================================================
 // Archive Functions

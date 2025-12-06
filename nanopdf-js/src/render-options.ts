@@ -279,10 +279,10 @@ export function mergeRenderOptions(options: RenderOptions): Required<RenderOptio
   const defaults = getDefaultRenderOptions();
   return {
     dpi: options.dpi ?? defaults.dpi!,
-    colorspace: options.colorspace ?? defaults.colorspace,
+    colorspace: options.colorspace ?? defaults.colorspace!,
     alpha: options.alpha ?? defaults.alpha!,
     antiAlias: options.antiAlias ?? defaults.antiAlias!,
-    transform: options.transform ?? defaults.transform,
+    transform: options.transform ?? defaults.transform!,
     renderAnnotations: options.renderAnnotations ?? defaults.renderAnnotations!,
     renderFormFields: options.renderFormFields ?? defaults.renderFormFields!
   };

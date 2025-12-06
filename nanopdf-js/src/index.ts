@@ -323,7 +323,6 @@ export { Colorspace, ColorspaceType } from './colorspace.js';
 // ============================================================================
 
 export {
-  type RenderOptions,
   type ExtendedRenderOptions,
   type RenderProgressCallback,
   type RenderErrorCallback,
@@ -355,7 +354,6 @@ export {
   STextPage,
   STextBlockType,
   WritingMode,
-  type Quad,
   type STextCharData,
   type STextLineData,
   type STextBlockData,

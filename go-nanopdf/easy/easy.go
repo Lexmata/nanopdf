@@ -481,7 +481,7 @@ func (p *PDF) RenderToBytes(pageNumber int, opts RenderOptions) ([]byte, error) 
 	defer page.Drop()
 
 	// Calculate transform matrix
-	matrix := nanopdf.IdentityMatrix()
+	matrix := nanopdf.MatrixIdentity()
 
 	if opts.DPI > 0 {
 		scale := opts.DPI / 72.0
