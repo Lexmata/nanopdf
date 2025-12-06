@@ -125,7 +125,7 @@ The Node.js bindings now have deep FFI integration across all three layers:
    - Anti-aliasing validation (0, 1, 2, 4)
    - Timeout validation
    - Annotation/form rendering flags
-   
+
 ✅ Napi::Value renderPageToPNGWithOptions(ctx, page, options)  // PNG export with options
    - All same options as renderPageWithOptions
    - Direct PNG buffer output
