@@ -4,8 +4,9 @@
  * This implementation mirrors the Rust `fitz::stream::Stream` for 100% API compatibility.
  */
 
-import { readFile, readFileSync } from 'fs';
-import { promisify } from 'util';
+import { readFile, readFileSync } from 'node:fs';
+import { promisify } from 'node:util';
+
 import { Buffer } from './buffer.js';
 import { NanoPDFError, SeekOrigin } from './types.js';
 

@@ -27,7 +27,7 @@ export class NanoPDFError extends Error {
   readonly code: ErrorCode;
   override readonly cause?: Error | undefined;
 
-  constructor(code: ErrorCode, message: string, cause?: Error | undefined) {
+  constructor(code: ErrorCode, message: string, cause?: Error) {
     super(message);
     this.name = 'NanoPDFError';
     this.code = code;

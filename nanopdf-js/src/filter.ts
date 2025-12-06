@@ -4,7 +4,8 @@
  * This implementation mirrors the Rust `pdf::filter` module for 100% API compatibility.
  */
 
-import { deflateSync, inflateSync } from 'zlib';
+import { deflateSync, inflateSync } from 'node:zlib';
+
 import { NanoPDFError, type FilterType } from './types.js';
 
 // ============================================================================
@@ -18,8 +19,11 @@ export function flateEncode(data: Uint8Array): Uint8Array {
   try {
     const compressed = deflateSync(globalThis.Buffer.from(data));
     return new Uint8Array(compressed);
-  } catch (e) {
-    throw NanoPDFError.system('FlateDecode encoding failed', e instanceof Error ? e : undefined);
+  } catch (error) {
+    throw NanoPDFError.system(
+      'FlateDecode encoding failed',
+      error instanceof Error ? error : undefined
+    );
   }
 }
 
@@ -30,8 +34,11 @@ export function flateDecode(data: Uint8Array): Uint8Array {
   try {
     const decompressed = inflateSync(globalThis.Buffer.from(data));
     return new Uint8Array(decompressed);
-  } catch (e) {
-    throw NanoPDFError.system('FlateDecode decoding failed', e instanceof Error ? e : undefined);
+  } catch (error) {
+    throw NanoPDFError.system(
+      'FlateDecode decoding failed',
+      error instanceof Error ? error : undefined
+    );
   }
 }
 
@@ -62,7 +69,7 @@ export function asciiHexDecode(data: Uint8Array): Uint8Array {
   }
 
   // Validate hex characters
-  if (!/^[0-9A-Fa-f]*$/.test(hex)) {
+  if (!/^[\dA-Fa-f]*$/.test(hex)) {
     throw NanoPDFError.argument('Invalid ASCIIHex data');
   }
 

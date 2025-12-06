@@ -5,14 +5,13 @@
  * Display lists cache drawing commands for efficient re-rendering.
  */
 
-import { Rect, Matrix, type RectLike, type MatrixLike } from './geometry.js';
-import { Device } from './device.js';
-import { Path } from './path.js';
-import { StrokeState } from './path.js';
-import { Text } from './text.js';
-import { Image } from './image.js';
 import { Colorspace } from './colorspace.js';
+import { Device } from './device.js';
+import { Rect, Matrix, type RectLike, type MatrixLike } from './geometry.js';
+import { Image } from './image.js';
+import { Path, StrokeState } from './path.js';
 import { Pixmap } from './pixmap.js';
+import { Text } from './text.js';
 
 /**
  * Display list command types

@@ -5,11 +5,11 @@
  * Handles image loading, decoding, and format conversion.
  */
 
-import { Pixmap } from './pixmap.js';
 import { Colorspace } from './colorspace.js';
+import { getDefaultContext } from './context.js';
 import { native } from './native.js';
 import type { NativeContext, NativeImage } from './native.js';
-import { getDefaultContext } from './context.js';
+import { Pixmap } from './pixmap.js';
 
 /**
  * Image orientation (EXIF orientation)
@@ -29,9 +29,8 @@ export enum ImageOrientation {
  * A PDF image
  */
 export class Image {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private _ctx?: NativeContext;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   private _image?: NativeImage;
   private _width: number;
   private _height: number;
@@ -260,8 +259,7 @@ export class Image {
    */
   getPixmapScaled(width: number, height: number): Pixmap {
     // Image scaling requires FFI connection to image processing APIs
-    const pixmap = Pixmap.create(this._colorspace, width, height, this._hasAlpha);
-    return pixmap;
+    return Pixmap.create(this._colorspace, width, height, this._hasAlpha);
   }
 
   // ============================================================================

@@ -88,7 +88,7 @@ Napi::String GetSTextAsText(const Napi::CallbackInfo& info) {
 
     // Create buffer for text
     uint64_t buffer_handle = fz_new_buffer_from_stext_page(ctx_handle, stext_handle);
-    
+
     if (buffer_handle == 0) {
         return Napi::String::New(env, "");
     }
@@ -131,7 +131,7 @@ Napi::Array SearchSTextPage(const Napi::CallbackInfo& info) {
     uint64_t ctx_handle = info[0].As<Napi::BigInt>().Uint64Value(&lossless);
     uint64_t stext_handle = info[1].As<Napi::BigInt>().Uint64Value(&lossless);
     std::string needle = info[2].As<Napi::String>().Utf8Value();
-    
+
     int max_hits = 500;
     if (info.Length() > 3 && info[3].IsNumber()) {
         max_hits = info[3].As<Napi::Number>().Int32Value();
@@ -153,32 +153,32 @@ Napi::Array SearchSTextPage(const Napi::CallbackInfo& info) {
     // Convert quads to JS objects
     for (int i = 0; i < hit_count; i++) {
         Napi::Object quad = Napi::Object::New(env);
-        
+
         // Upper-left
         Napi::Object ul = Napi::Object::New(env);
         ul.Set("x", Napi::Number::New(env, hit_bbox[i].x0));
         ul.Set("y", Napi::Number::New(env, hit_bbox[i].y0));
-        
+
         // Upper-right
         Napi::Object ur = Napi::Object::New(env);
         ur.Set("x", Napi::Number::New(env, hit_bbox[i].x1));
         ur.Set("y", Napi::Number::New(env, hit_bbox[i].y1));
-        
+
         // Lower-left
         Napi::Object ll = Napi::Object::New(env);
         ll.Set("x", Napi::Number::New(env, hit_bbox[i].x3));
         ll.Set("y", Napi::Number::New(env, hit_bbox[i].y3));
-        
+
         // Lower-right
         Napi::Object lr = Napi::Object::New(env);
         lr.Set("x", Napi::Number::New(env, hit_bbox[i].x2));
         lr.Set("y", Napi::Number::New(env, hit_bbox[i].y2));
-        
+
         quad.Set("ul", ul);
         quad.Set("ur", ur);
         quad.Set("ll", ll);
         quad.Set("lr", lr);
-        
+
         results.Set(i, quad);
     }
 

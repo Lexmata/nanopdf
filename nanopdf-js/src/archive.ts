@@ -5,9 +5,9 @@
  * Handles ZIP and other archive formats embedded in PDFs.
  */
 
+import { getDefaultContext } from './context.js';
 import { native } from './native.js';
 import type { NativeContext, NativeArchive } from './native.js';
-import { getDefaultContext } from './context.js';
 
 /**
  * Archive format types
@@ -32,9 +32,8 @@ export interface ArchiveEntry {
  * An archive (ZIP, TAR, etc.)
  */
 export class Archive {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private _ctx?: NativeContext;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   private _archive?: NativeArchive;
   private _format: ArchiveFormat;
   private _entries: Map<string, Uint8Array> = new Map();
@@ -190,7 +189,7 @@ export class Archive {
    * List entry by index
    */
   listEntry(index: number): string | null {
-    const names = Array.from(this._entries.keys());
+    const names = [...this._entries.keys()];
     return names[index] || null;
   }
 
@@ -198,7 +197,7 @@ export class Archive {
    * Get all entry names
    */
   entryNames(): string[] {
-    return Array.from(this._entries.keys());
+    return [...this._entries.keys()];
   }
 
   /**

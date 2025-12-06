@@ -5,10 +5,10 @@
  * for development/testing without native bindings.
  */
 
+import { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { existsSync } from 'node:fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -309,6 +309,10 @@ export interface NativeArchive {
   _handle: number; // Opaque handle
 }
 
+export interface NativeSTextPage {
+  _handle: number; // Opaque handle
+}
+
 export interface NativePoint {
   x: number;
   y: number;
@@ -494,7 +498,7 @@ function createMockAddon(): NativeAddon {
     }
 
     md5Digest(): Uint8Array {
-      const crypto = require('crypto');
+      const crypto = require('node:crypto');
       const hash = crypto.createHash('md5');
       hash.update(this.data);
       return new Uint8Array(hash.digest());
@@ -883,6 +887,35 @@ function createMockAddon(): NativeAddon {
       needle: string,
       caseSensitive: boolean
     ) => NativeRect[],
+
+    // Structured text
+    newSTextPage: requireFFI('newSTextPage') as (
+      ctx: NativeContext,
+      page: NativePage
+    ) => NativeSTextPage,
+    dropSTextPage: requireFFI('dropSTextPage') as (
+      ctx: NativeContext,
+      stext: NativeSTextPage
+    ) => void,
+    getSTextAsText: requireFFI('getSTextAsText') as (
+      ctx: NativeContext,
+      stext: NativeSTextPage
+    ) => string,
+    searchSTextPage: requireFFI('searchSTextPage') as (
+      ctx: NativeContext,
+      stext: NativeSTextPage,
+      needle: string,
+      maxHits: number
+    ) => Array<{
+      ul: { x: number; y: number };
+      ur: { x: number; y: number };
+      ll: { x: number; y: number };
+      lr: { x: number; y: number };
+    }>,
+    getSTextPageBounds: requireFFI('getSTextPageBounds') as (
+      ctx: NativeContext,
+      stext: NativeSTextPage
+    ) => NativeRect,
 
     // Links
     getPageLinks: requireFFI('getPageLinks') as (

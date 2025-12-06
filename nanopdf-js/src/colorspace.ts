@@ -571,7 +571,7 @@ export class Colorspace {
    * Convert a single pixel
    */
   convertPixel(destCS: Colorspace, srcPixel: Uint8Array, destPixel: Uint8Array): void {
-    const srcColor = Array.from(srcPixel.slice(0, this._n)).map((v) => v / 255);
+    const srcColor = [...srcPixel.slice(0, this._n)].map((v) => v / 255);
     const destColor = this.convertColor(destCS, srcColor);
     for (let i = 0; i < destCS._n; i++) {
       destPixel[i] = Math.round(destColor[i]! * 255);

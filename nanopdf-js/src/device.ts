@@ -5,9 +5,9 @@
  * Devices receive drawing commands and render them to various outputs.
  */
 
+import { Colorspace } from './colorspace.js';
 import { Rect, Matrix, type RectLike, type MatrixLike } from './geometry.js';
 import { Path, StrokeState } from './path.js';
-import { Colorspace } from './colorspace.js';
 import { Pixmap } from './pixmap.js';
 
 /**

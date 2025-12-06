@@ -541,21 +541,21 @@ export class PdfDict extends PdfObject {
    * Get all keys in the dictionary
    */
   keys(): string[] {
-    return Array.from(this.entries.keys());
+    return [...this.entries.keys()];
   }
 
   /**
    * Get all values in the dictionary
    */
   values(): PdfObject[] {
-    return Array.from(this.entries.values());
+    return [...this.entries.values()];
   }
 
   /**
    * Get all entries as [key, value] pairs
    */
   getEntries(): [string, PdfObject][] {
-    return Array.from(this.entries.entries());
+    return [...this.entries.entries()];
   }
 
   *[Symbol.iterator](): Generator<[string, PdfObject]> {

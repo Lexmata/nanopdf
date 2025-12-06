@@ -932,7 +932,7 @@ export class Color {
       return c;
     }
     if (Array.isArray(c)) {
-      return new Color(c[0]!, c[1]!, c[2]!, c[3]);
+      return new Color(c[0], c[1], c[2], c[3]);
     }
     return new Color(c.r, c.g, c.b, c.a);
   }

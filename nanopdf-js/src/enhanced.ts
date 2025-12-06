@@ -159,7 +159,7 @@ export class Enhanced {
     lineWidth: number = 1.0
   ): void {
     const ctx = (this._ctx as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
-    const nativePage = (page as unknown as { _page?: NativePage })?._page;
+    const nativePage = (page as { _page?: NativePage })?._page;
 
     if (!ctx || !nativePage) {
       throw new Error('Drawing line requires native FFI bindings (np_draw_line)');
@@ -185,7 +185,7 @@ export class Enhanced {
     fill: boolean = false
   ): void {
     const ctx = (this._ctx as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
-    const nativePage = (page as unknown as { _page?: NativePage })?._page;
+    const nativePage = (page as { _page?: NativePage })?._page;
 
     if (!ctx || !nativePage) {
       throw new Error('Drawing rectangle requires native FFI bindings (np_draw_rectangle)');
@@ -210,7 +210,7 @@ export class Enhanced {
     fill: boolean = false
   ): void {
     const ctx = (this._ctx as unknown as { _nativeCtx?: NativeContext })?._nativeCtx;
-    const nativePage = (page as unknown as { _page?: NativePage })?._page;
+    const nativePage = (page as { _page?: NativePage })?._page;
 
     if (!ctx || !nativePage) {
       throw new Error('Drawing circle requires native FFI bindings (np_draw_circle)');

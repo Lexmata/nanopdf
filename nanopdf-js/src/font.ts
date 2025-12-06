@@ -5,11 +5,11 @@
  * Handles font loading, glyph encoding, metrics, and rendering.
  */
 
+import { getDefaultContext } from './context.js';
 import { Rect, type RectLike } from './geometry.js';
-import { Path } from './path.js';
 import { native } from './native.js';
 import type { NativeContext, NativeFont } from './native.js';
-import { getDefaultContext } from './context.js';
+import { Path } from './path.js';
 
 /**
  * Font flags
@@ -26,9 +26,8 @@ export enum FontFlags {
  * A PDF font
  */
 export class Font {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private _ctx?: NativeContext;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   private _font?: NativeFont;
   private _name: string;
   private _flags: number = 0;
@@ -427,7 +426,7 @@ export class FontManager {
    * Get all registered font names
    */
   getFontNames(): string[] {
-    return Array.from(this._fonts.keys());
+    return [...this._fonts.keys()];
   }
 
   /**

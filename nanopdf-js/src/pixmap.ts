@@ -46,8 +46,8 @@
  * ```
  */
 
-import { Rect, IRect, type IRectLike } from './geometry.js';
 import { Colorspace } from './colorspace.js';
+import { Rect, IRect, type IRectLike } from './geometry.js';
 
 /**
  * A raster image with pixel-level manipulation capabilities.
@@ -610,9 +610,7 @@ export class Pixmap {
           rgbaData[dstOffset] = 255;
           rgbaData[dstOffset + 1] = 255;
           rgbaData[dstOffset + 2] = 255;
-          rgbaData[dstOffset + 3] = this._alpha
-            ? this._data[srcOffset + this._colorspace.n]!
-            : 255;
+          rgbaData[dstOffset + 3] = this._alpha ? this._data[srcOffset + this._colorspace.n]! : 255;
         }
       }
     }
@@ -662,7 +660,7 @@ export class Pixmap {
     if (this._width <= 0 || this._height <= 0) {
       return false;
     }
-    if (!this._colorspace || !this._colorspace.isValid()) {
+    if (!this._colorspace?.isValid()) {
       return false;
     }
     if (this._data.length !== this._width * this._height * this.components) {

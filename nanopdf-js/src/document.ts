@@ -36,12 +36,12 @@
  */
 
 import { Buffer } from './buffer.js';
-import { Pixmap } from './pixmap.js';
 import { Colorspace } from './colorspace.js';
 import { Rect, Matrix, Quad } from './geometry.js';
-import { NanoPDFError, LinkDestType, type Link, type RectLike, type MatrixLike } from './types.js';
 import { native } from './native.js';
 import type { NativeContext, NativeDocument, NativePage, NativeRect } from './native.js';
+import { Pixmap } from './pixmap.js';
+import { NanoPDFError, LinkDestType, type Link, type RectLike, type MatrixLike } from './types.js';
 
 /**
  * An item in the document outline (table of contents / bookmarks).
@@ -285,9 +285,8 @@ export interface TextSpan {
  * ```
  */
 export class Page {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private _ctx?: NativeContext;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   private _page?: NativePage;
   private readonly _pageNumber: number;
   private readonly _bounds: Rect;
@@ -555,9 +554,8 @@ export class Page {
  * ```
  */
 export class Document {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private _ctx?: NativeContext;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   private _doc?: NativeDocument;
   private _pages: Page[];
   private readonly _format: string;
@@ -586,7 +584,7 @@ export class Document {
    */
   static open(path: string, password?: string): Document {
     // Read file synchronously
-    const fs = require('fs') as typeof import('fs');
+    const fs = require('node:fs') as typeof import('fs');
     const data = fs.readFileSync(path);
     return Document.fromBuffer(Buffer.fromBuffer(data), password);
   }
@@ -620,15 +618,15 @@ export class Document {
 
     // Parse MediaBox if present
     const mediaBoxMatch = content.match(
-      /\/MediaBox\s*\[\s*([\d.-]+)\s+([\d.-]+)\s+([\d.-]+)\s+([\d.-]+)\s*\]/
+      /\/MediaBox\s*\[\s*([\d.-]+)\s+([\d.-]+)\s+([\d.-]+)\s+([\d.-]+)\s*]/
     );
     let mediaBox = defaultBounds;
     if (mediaBoxMatch) {
       mediaBox = new Rect(
-        parseFloat(mediaBoxMatch[1] ?? '0'),
-        parseFloat(mediaBoxMatch[2] ?? '0'),
-        parseFloat(mediaBoxMatch[3] ?? '612'),
-        parseFloat(mediaBoxMatch[4] ?? '792')
+        Number.parseFloat(mediaBoxMatch[1] ?? '0'),
+        Number.parseFloat(mediaBoxMatch[2] ?? '0'),
+        Number.parseFloat(mediaBoxMatch[3] ?? '612'),
+        Number.parseFloat(mediaBoxMatch[4] ?? '792')
       );
     }
 
@@ -751,7 +749,7 @@ export class Document {
    */
   getPageFromLabel(label: string): number {
     // Simple implementation: try to parse as number
-    const num = parseInt(label, 10);
+    const num = Number.parseInt(label, 10);
     if (!isNaN(num) && num > 0 && num <= this.pageCount) {
       return num - 1;
     }

@@ -342,7 +342,7 @@ export class Buffer {
    * Get the buffer data as a number array
    */
   toArray(): number[] {
-    return Array.from(this._data);
+    return [...this._data];
   }
 
   // ============================================================================
@@ -643,7 +643,7 @@ export class Buffer {
    * Compute MD5 digest of buffer contents
    */
   md5Digest(): Uint8Array {
-    const crypto = require('crypto');
+    const crypto = require('node:crypto');
     const hash = crypto.createHash('md5');
     hash.update(this._data);
     return new Uint8Array(hash.digest());
@@ -653,7 +653,7 @@ export class Buffer {
    * Compute SHA-256 digest of buffer contents
    */
   sha256Digest(): Uint8Array {
-    const crypto = require('crypto');
+    const crypto = require('node:crypto');
     const hash = crypto.createHash('sha256');
     hash.update(this._data);
     return new Uint8Array(hash.digest());
@@ -695,7 +695,7 @@ export class Buffer {
    * Check if buffer includes a byte or pattern
    */
   includes(value: number | BufferLike, start = 0): boolean {
-    return this.indexOf(value, start) !== -1;
+    return this.includes(value, start);
   }
 
   // ============================================================================

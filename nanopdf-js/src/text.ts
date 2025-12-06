@@ -399,8 +399,7 @@ export class Text {
 
     // Start new span if needed
     if (
-      !this._currentSpan ||
-      this._currentSpan.font !== font ||
+      this._currentSpan?.font !== font ||
       this._currentSpan.size !== size ||
       this._currentSpan.wmode !== wmode ||
       !this._currentSpan.trm.equals(trmMatrix)
@@ -429,8 +428,7 @@ export class Text {
     const trmMatrix = Matrix.from(trm);
 
     if (
-      !this._currentSpan ||
-      this._currentSpan.font !== font ||
+      this._currentSpan?.font !== font ||
       this._currentSpan.size !== size ||
       this._currentSpan.wmode !== wmode ||
       !this._currentSpan.trm.equals(trmMatrix)

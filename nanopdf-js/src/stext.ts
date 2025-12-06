@@ -5,9 +5,9 @@
  * Organizes text into a hierarchy: Page → Block → Line → Char
  */
 
-import { native_addon } from './native.js';
 import type { Page } from './document.js';
 import { Rect } from './geometry.js';
+import { native_addon } from './native.js';
 
 /**
  * Quad - four-corner bounding box for rotated text
@@ -69,10 +69,11 @@ export class STextPage {
    * ```
    */
   static fromPage(page: Page): STextPage {
-    // @ts-expect-error - Accessing private properties
-    const ctx = page._ctx;
-    // @ts-expect-error - Accessing private properties
-    const pageHandle = page._handle;
+    // Access internal page state for FFI call
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pageAny = page as any;
+    const ctx = pageAny._ctx as bigint;
+    const pageHandle = pageAny._handle as bigint;
 
     const handle = native_addon.newSTextPage(ctx, pageHandle);
     return new STextPage(ctx, handle);
@@ -206,6 +207,6 @@ export function quadToRect(quad: Quad): Rect {
 export function quadsOverlap(q1: Quad, q2: Quad): boolean {
   const r1 = quadToRect(q1);
   const r2 = quadToRect(q2);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return r1.intersects(r2);
 }
-
