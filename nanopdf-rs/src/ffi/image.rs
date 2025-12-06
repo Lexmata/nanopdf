@@ -401,9 +401,11 @@ mod tests {
 
     #[test]
     fn test_new_image_from_pixmap() {
-        // Create a pixmap first using FFI colorspace
-        let cs_handle = super::super::colorspace::fz_device_rgb(0);
-        let pixmap = super::super::pixmap::Pixmap::new(cs_handle, 10, 10, true);
+        // Create a pixmap first using device RGB colorspace
+        let cs = Some(crate::fitz::colorspace::Colorspace::device_rgb());
+        let Ok(pixmap) = crate::fitz::pixmap::Pixmap::new(cs, 10, 10, true) else {
+            panic!("Failed to create pixmap");
+        };
         let pixmap_handle = PIXMAPS.insert(pixmap);
 
         let image_handle = fz_new_image_from_pixmap(0, pixmap_handle, 0);
