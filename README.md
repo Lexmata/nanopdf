@@ -269,16 +269,67 @@ Benchmarks run automatically on every push and publish results to GitHub Pages.
 
 ## 📋 Project Status
 
+### Core Rust Library (nanopdf-rs)
+
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Core geometry | ✅ Complete | Point, Rect, Matrix, Quad |
 | Buffer/Stream | ✅ Complete | Full MuPDF compatibility |
 | PDF objects | ✅ Complete | All object types |
 | Compression filters | ✅ Complete | Flate, LZW, ASCII85, ASCIIHex, RunLength |
+| FFI Layer | ✅ Complete | 660+ C-compatible functions |
 | Document loading | 🚧 In Progress | Basic structure complete |
 | Page rendering | 🚧 In Progress | Device infrastructure ready |
-| Text extraction | 📋 Planned | |
+| Text extraction | 🚧 In Progress | Basic implementation |
 | Annotations | 📋 Planned | |
+
+### Node.js Bindings (nanopdf-js)
+
+| Feature | Status | Coverage |
+|---------|--------|----------|
+| Document operations | ✅ Working | Open, authenticate, metadata, save |
+| Page rendering | ✅ Working | Render to PNG/pixmap at any DPI |
+| Text extraction | ✅ Working | Extract text, search, blocks |
+| Geometry | ✅ Complete | Point, Rect, Matrix, Quad |
+| Buffer/Stream | ✅ Complete | Full API |
+| Colorspace | ✅ Complete | RGB, Gray, CMYK |
+| N-API Bindings | ⚠️ 20% | 130/660 functions (see FFI_IMPLEMENTATION_STATUS.md) |
+| Test Coverage | ⚠️ 62.0% | 439/708 tests passing |
+| Forms | ❌ Not Yet | Planned for v0.2.0 |
+| Annotations | ❌ Not Yet | Planned for v0.3.0 |
+
+### Go Bindings (go-nanopdf)
+
+| Feature | Status | Coverage |
+|---------|--------|----------|
+| Document operations | ✅ Complete | Open, authenticate, metadata, save |
+| Page rendering | ✅ Complete | Render to PNG/pixmap at any DPI |
+| Text extraction | ✅ Complete | Extract text, search, structured text |
+| Geometry | ✅ Complete | Point, Rect, Matrix, Quad |
+| Buffer/Stream | ✅ Complete | Full API |
+| CGO Bindings | ✅ Complete | All core functions |
+| Pure Go Mock | ✅ Complete | For CGO-disabled builds |
+| Test Coverage | ✅ 90.5% | 83 unit + 60 integration tests |
+| Forms | 📋 Planned | v0.2.0 |
+| Annotations | 📋 Planned | v0.3.0 |
+
+### Current Capabilities
+
+**What Works Now:**
+- ✅ Open and read PDFs from files or memory
+- ✅ Render pages to images (PNG, pixmaps) at any resolution
+- ✅ Extract text from pages
+- ✅ Search text within documents
+- ✅ Access document metadata
+- ✅ Password-protected PDF support
+- ✅ All geometry operations
+
+**What's Coming:**
+- ⏳ **v0.2.0**: PDF forms support (read/write form fields)
+- ⏳ **v0.3.0**: Annotations support (read/write annotations)
+- ⏳ **v0.4.0**: Advanced text (fonts, layout analysis)
+- ⏳ **v0.5.0**: PDF creation and modification
+- ⏳ **v1.0.0**: Complete MuPDF API parity
 
 ---
 
