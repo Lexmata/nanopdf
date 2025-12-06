@@ -549,23 +549,23 @@ Napi::Object InitPage(Napi::Env env, Napi::Object exports) {
     exports.Set("loadPage", Napi::Function::New(env, LoadPage));
     exports.Set("dropPage", Napi::Function::New(env, DropPage));
     exports.Set("boundPage", Napi::Function::New(env, BoundPage));
-    
+
     // Basic rendering
     exports.Set("renderPage", Napi::Function::New(env, RenderPage));
     exports.Set("renderPageToPNG", Napi::Function::New(env, RenderPageToPNG));
-    
+
     // Advanced rendering with options
     exports.Set("renderPageWithOptions", Napi::Function::New(env, RenderPageWithOptions));
     exports.Set("renderPageToPNGWithOptions", Napi::Function::New(env, RenderPageToPNGWithOptions));
-    
+
     // Text extraction
     exports.Set("extractText", Napi::Function::New(env, ExtractText));
     exports.Set("extractTextBlocks", Napi::Function::New(env, ExtractTextBlocks));
-    
+
     // Page links and search
     exports.Set("getPageLinks", Napi::Function::New(env, GetPageLinks));
     exports.Set("searchText", Napi::Function::New(env, SearchText));
-    
+
     return exports;
 }
 

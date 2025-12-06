@@ -475,7 +475,7 @@ Napi::Array GetSTextLineChars(const Napi::CallbackInfo& info) {
 
         for (size_t i = 0; i < line_text.length(); i++) {
             Napi::Object ch = Napi::Object::New(env);
-            
+
             // Character
             std::string char_str(1, line_text[i]);
             ch.Set("c", Napi::String::New(env, char_str));
@@ -487,7 +487,7 @@ Napi::Array GetSTextLineChars(const Napi::CallbackInfo& info) {
             float y1 = y0 + line_height;
 
             Napi::Object quad = Napi::Object::New(env);
-            
+
             Napi::Object ul = Napi::Object::New(env);
             ul.Set("x", Napi::Number::New(env, x0));
             ul.Set("y", Napi::Number::New(env, y0));
