@@ -9,7 +9,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Go Version](https://img.shields.io/badge/go-%3E%3D1.19-blue.svg)](https://golang.org/dl/)
 
-[Features](#features) • [Installation](#installation) • [Quick Start](#quick-start) • [Documentation](#documentation) • [Examples](#examples) • [API Reference](#api-reference)
+[Features](#features) • [Installation](#installation) • [Easy API](#easy-api) • [Quick Start](#quick-start) • [Documentation](#documentation) • [Examples](#examples) • [API Reference](#api-reference)
 
 </div>
 
@@ -43,6 +43,36 @@ NanoPDF is a powerful PDF manipulation library for Go, built on top of MuPDF wit
 - ✅ Access page dimensions and bounds
 - ✅ Save and write modified PDFs
 - ✅ Resolve named destinations
+
+---
+
+## Easy API
+
+NanoPDF provides a simplified, ergonomic API for common PDF tasks:
+
+```go
+import "github.com/lexmata/nanopdf/go-nanopdf/easy"
+
+// Extract text (single line!)
+text, _ := easy.ExtractText("document.pdf")
+
+// Render to PNG
+easy.RenderToPNG("document.pdf", "output.png", 0, 300)
+
+// Get info
+info, _ := easy.GetInfo("document.pdf")
+fmt.Printf("%d pages\n", info.PageCount)
+
+// Fluent API with automatic cleanup
+pdf, _ := easy.Open("document.pdf")
+defer pdf.Close()
+
+pageCount := pdf.PageCount()
+text, _ := pdf.ExtractAllText()
+pdf.RenderToFile(0, "page.png", easy.RenderOptions{DPI: 300})
+```
+
+**See [EASY_API.md](EASY_API.md) for complete documentation and examples.**
 
 ---
 
