@@ -28,6 +28,12 @@ export enum LineJoin {
 }
 
 /**
+ * Type aliases for backwards compatibility
+ */
+export const LineCapStyle = LineCap;
+export const LineJoinStyle = LineJoin;
+
+/**
  * Stroke state (line width, caps, joins, dash pattern)
  */
 export class StrokeState {
@@ -276,6 +282,13 @@ export class Path {
    */
   get currentPoint(): Point {
     return this._currentPoint;
+  }
+
+  /**
+   * Check if the path is empty
+   */
+  isEmpty(): boolean {
+    return this._commands.length === 0;
   }
 
   // ============================================================================
