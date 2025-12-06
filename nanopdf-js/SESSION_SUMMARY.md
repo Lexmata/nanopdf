@@ -40,11 +40,20 @@ This session delivered **massive progress** on the Node.js bindings, implementin
   - rendering-options.integration.test.ts: 433 lines (24 test cases)
   - Other integration tests: 139 lines
 
+- **Examples**: 623 lines
+  - 05-structured-text.ts: 315 lines (7 examples)
+  - 06-advanced-rendering.ts: 308 lines (8 examples)
+
+- **Documentation**: 380 lines
+  - SESSION_SUMMARY.md: Comprehensive session summary
+  - examples/README.md: Updated with new examples
+
 ### Total Impact
-- **3,338 lines** of new production code
+- **4,341 lines** of new production code (including examples & docs)
 - **156 test cases** added
-- **60 TypeScript files** in project
-- **47,209 total lines** in project
+- **15 practical examples** (6 example files)
+- **62 TypeScript files** in project
+- **~48,000 total lines** in project
 
 ---
 
@@ -202,7 +211,7 @@ doc.close();
 
 ## 📦 Commits Summary
 
-**8 commits** in this session:
+**10 commits** in this session:
 
 1. **feat: structured text extraction API** - Basic STextPage implementation
 2. **test: comprehensive structured text tests** - 58 test cases
@@ -212,6 +221,8 @@ doc.close();
 6. **feat: advanced rendering options API** - Phase 2 start
 7. **docs: Phase 2 rendering options status** - Documentation
 8. **test: rendering options integration tests** - 24 test cases
+9. **docs: comprehensive session summary** - This document
+10. **feat: comprehensive examples for Phase 1 & Phase 2** - 15 examples
 
 ---
 
@@ -349,16 +360,51 @@ This session provides Node.js users with:
 
 ---
 
+## 📚 Examples Created
+
+**15 Practical Examples Across 6 Files:**
+
+### Existing Examples (Refresher)
+1. **01-basic-reading.ts** - Document inspection, metadata
+2. **02-text-extraction.ts** - Simple text extraction
+3. **03-rendering.ts** - Basic page rendering
+4. **04-batch-processing.ts** - Batch operations
+
+### New Phase 1 Examples (05-structured-text.ts)
+5. **Basic Text Extraction** - Layout-aware extraction
+6. **Text Search with Positions** - Quad bounding boxes
+7. **Hierarchical Text Navigation** - Block/line/char hierarchy
+8. **Character-Level Analysis** - Font, size, position
+9. **Filtering Blocks by Type** - Text, image, list, table
+10. **Export as JSON** - Structured text JSON export
+11. **Multi-Page Extraction** - Process multiple pages
+
+### New Phase 2 Examples (06-advanced-rendering.ts)
+12. **High-Quality Print** - 300 DPI rendering
+13. **Fast Preview** - 72 DPI quick rendering
+14. **Multiple DPI Comparison** - 72-600 DPI comparison
+15. **Different Colorspaces** - RGB, Gray, RGBA
+16. **Custom Transformations** - Scale, rotate, combined
+17. **Progress Tracking** - Callbacks and monitoring
+18. **Anti-Aliasing Comparison** - 4 AA levels
+19. **Batch Rendering** - Multi-page with options
+
+**Total: 623 lines of example code**
+
+---
+
 ## 📊 Final Statistics
 
-- **Project Size**: 47,209 lines
-- **TypeScript Files**: 60 files
+- **Project Size**: ~48,000 lines
+- **TypeScript Files**: 62 files
 - **Test Files**: 23 files (unit + integration)
 - **Test Cases**: 156 cases
+- **Example Files**: 6 files
+- **Practical Examples**: 15 examples
 - **Phases Started**: 2 (Phase 1, Phase 2)
 - **API Coverage**: 72% complete
-- **Commits**: 8 in this session
-- **Lines Added**: 3,338 production lines
+- **Commits**: 10 in this session
+- **Lines Added**: 4,341 production lines (inc. examples & docs)
 
 ---
 
@@ -366,9 +412,12 @@ This session provides Node.js users with:
 
 1. **Phase 1 at 75%**: Most structured text features working
 2. **Phase 2 at 40%**: Complete rendering options system
-3. **156 Tests**: Comprehensive coverage
-4. **Professional APIs**: Production-ready with validation
-5. **Clear Path Forward**: Only native FFI enhancements remain
+3. **156 Tests**: Comprehensive coverage (103 unit + 53 integration)
+4. **15 Examples**: Practical, copy-paste-ready code
+5. **4,341 Lines**: Production code + tests + examples + docs
+6. **10 Commits**: Professional Git workflow
+7. **Professional APIs**: Production-ready with validation
+8. **Clear Path Forward**: Only native FFI enhancements remain
 
 ---
 
