@@ -7,7 +7,7 @@
 [![CI](https://github.com/lexmata/nanopdf/actions/workflows/ci.yml/badge.svg)](https://github.com/lexmata/nanopdf/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](nanopdf-rs/LICENSE-MIT)
 
-[Documentation](https://docs.rs/nanopdf) · [Benchmarks](https://lexmata.github.io/nanopdf/dev/bench/) · [Compatibility](./COMPATIBILITY.md)
+[API Docs](https://lexmata.github.io/nanopdf/api/) · [Benchmarks](https://lexmata.github.io/nanopdf/dev/bench/) · [Compatibility](./COMPATIBILITY.md)
 
 </div>
 
@@ -199,6 +199,7 @@ Each package includes comprehensive documentation:
 ### Node.js (nanopdf-js)
 
 **📖 API Documentation:**
+- **[TypeDoc API Reference](https://lexmata.github.io/nanopdf/api/nodejs/)** - Complete interactive API documentation
 - **[npm package](https://www.npmjs.com/package/nanopdf)** - Installation and quick reference
 - **[Easy API Guide](./nanopdf-js/examples/easy-api-examples.ts)** - 16 examples with auto-cleanup
 - **[Simple API Guide](./nanopdf-js/src/simple.ts)** - Ultra-simple single-function operations
