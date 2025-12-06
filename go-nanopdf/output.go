@@ -1,83 +1,120 @@
-// Package nanopdf - Output types and operations
 package nanopdf
 
-// Output represents an output stream for writing data
+// #include "include/nanopdf_ffi.h"
+// #include <stdlib.h>
+import "C"
+import (
+	"unsafe"
+)
+
+// Output represents an output stream (file or buffer)
 type Output struct {
-	handle uintptr
-	ctx    uintptr
+	handle C.fz_output
+	ctx    *Context
 }
 
-// NewOutputWithPath creates an output stream to a file
+// NewOutputWithPath creates an output to a file
 func NewOutputWithPath(ctx *Context, filename string, append bool) (*Output, error) {
-	handle := outputNewWithPath(ctx.Handle(), filename, append)
+	cFilename := C.CString(filename)
+	defer C.free(unsafe.Pointer(cFilename))
+
+	appendFlag := C.int(0)
+	if append {
+		appendFlag = 1
+	}
+
+	handle := C.fz_new_output_with_path(
+		C.fz_context(ctx.Handle()),
+		cFilename,
+		appendFlag,
+	)
+
 	if handle == 0 {
-		return nil, ErrGeneric( "failed to create output: "+filename)
+		return nil, NewError(ErrCodeSystem, "failed to create output stream")
 	}
 
 	return &Output{
 		handle: handle,
-		ctx:    ctx.Handle(),
+		ctx:    ctx,
 	}, nil
 }
 
-// NewOutputWithBuffer creates an output stream to a buffer
-func NewOutputWithBuffer(ctx *Context, buffer *Buffer) (*Output, error) {
-	handle := outputNewWithBuffer(ctx.Handle(), buffer.Handle())
+// NewOutputWithBuffer creates an output to a buffer
+func NewOutputWithBuffer(ctx *Context, buf *Buffer) (*Output, error) {
+	handle := C.fz_new_output_with_buffer(
+		C.fz_context(ctx.Handle()),
+		C.fz_buffer(buf.ptr),
+	)
+
 	if handle == 0 {
-		return nil, ErrGeneric( "failed to create output with buffer")
+		return nil, NewError(ErrCodeSystem, "failed to create output stream")
 	}
 
 	return &Output{
 		handle: handle,
-		ctx:    ctx.Handle(),
+		ctx:    ctx,
 	}, nil
 }
 
 // Drop releases the output resources
 func (o *Output) Drop() {
 	if o.handle != 0 {
-		outputDrop(o.ctx, o.handle)
+		C.fz_drop_output(C.fz_context(o.ctx.Handle()), o.handle)
 		o.handle = 0
 	}
 }
 
 // WriteData writes raw data to the output
 func (o *Output) WriteData(data []byte) error {
-	outputWriteData(o.ctx, o.handle, data)
+	if len(data) == 0 {
+		return nil
+	}
+
+	C.fz_write_data(
+		C.fz_context(o.ctx.Handle()),
+		o.handle,
+		unsafe.Pointer(&data[0]),
+		C.size_t(len(data)),
+	)
+
 	return nil
 }
 
 // WriteString writes a string to the output
 func (o *Output) WriteString(s string) error {
-	outputWriteString(o.ctx, o.handle, s)
+	cStr := C.CString(s)
+	defer C.free(unsafe.Pointer(cStr))
+
+	C.fz_write_string(
+		C.fz_context(o.ctx.Handle()),
+		o.handle,
+		cStr,
+	)
+
 	return nil
 }
 
 // WriteByte writes a single byte to the output
 func (o *Output) WriteByte(b byte) error {
-	outputWriteByte(o.ctx, o.handle, b)
+	C.fz_write_byte(
+		C.fz_context(o.ctx.Handle()),
+		o.handle,
+		C.uchar(b),
+	)
+
 	return nil
 }
 
-// Close closes the output and flushes any buffered data
+// Close closes the output stream (flushes and closes file)
 func (o *Output) Close() error {
 	if o.handle != 0 {
-		outputClose(o.ctx, o.handle)
+		C.fz_close_output(C.fz_context(o.ctx.Handle()), o.handle)
 	}
 	return nil
 }
 
 // Tell returns the current position in the output
 func (o *Output) Tell() int64 {
-	return outputTell(o.ctx, o.handle)
-}
-
-// Write implements io.Writer interface
-func (o *Output) Write(p []byte) (n int, err error) {
-	err = o.WriteData(p)
-	if err != nil {
-		return 0, err
-	}
-	return len(p), nil
+	return int64(C.fz_tell_output(C.fz_context(o.ctx.Handle()), o.handle))
 }
 

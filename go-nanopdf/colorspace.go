@@ -1,92 +1,81 @@
-// Package nanopdf - Colorspace types and operations
 package nanopdf
 
-// ColorspaceType represents different colorspace types
-type ColorspaceType int
-
-const (
-	// ColorspaceNone represents no colorspace
-	ColorspaceNone ColorspaceType = 0
-	// ColorspaceGray represents grayscale
-	ColorspaceGray ColorspaceType = 1
-	// ColorspaceRGB represents RGB
-	ColorspaceRGB ColorspaceType = 2
-	// ColorspaceBGR represents BGR
-	ColorspaceBGR ColorspaceType = 3
-	// ColorspaceCMYK represents CMYK
-	ColorspaceCMYK ColorspaceType = 4
-)
+// #include "include/nanopdf_ffi.h"
+import "C"
 
 // Colorspace represents a PDF colorspace
 type Colorspace struct {
-	handle uintptr
-	ctx    uintptr
+	handle C.fz_colorspace
+	ctx    *Context
+}
+
+// DeviceGray returns the device gray colorspace
+func DeviceGray(ctx *Context) *Colorspace {
+	handle := C.fz_device_gray(C.fz_context(ctx.Handle()))
+	return &Colorspace{
+		handle: handle,
+		ctx:    ctx,
+	}
 }
 
 // DeviceRGB returns the device RGB colorspace
 func DeviceRGB(ctx *Context) *Colorspace {
-	handle := colorspaceDeviceRGB(ctx.Handle())
+	handle := C.fz_device_rgb(C.fz_context(ctx.Handle()))
 	return &Colorspace{
 		handle: handle,
-		ctx:    ctx.Handle(),
-	}
-}
-
-// DeviceGray returns the device grayscale colorspace
-func DeviceGray(ctx *Context) *Colorspace {
-	handle := colorspaceDeviceGray(ctx.Handle())
-	return &Colorspace{
-		handle: handle,
-		ctx:    ctx.Handle(),
+		ctx:    ctx,
 	}
 }
 
 // DeviceBGR returns the device BGR colorspace
 func DeviceBGR(ctx *Context) *Colorspace {
-	handle := colorspaceDeviceBGR(ctx.Handle())
+	handle := C.fz_device_bgr(C.fz_context(ctx.Handle()))
 	return &Colorspace{
 		handle: handle,
-		ctx:    ctx.Handle(),
+		ctx:    ctx,
 	}
 }
 
 // DeviceCMYK returns the device CMYK colorspace
 func DeviceCMYK(ctx *Context) *Colorspace {
-	handle := colorspaceDeviceCMYK(ctx.Handle())
+	handle := C.fz_device_cmyk(C.fz_context(ctx.Handle()))
 	return &Colorspace{
 		handle: handle,
-		ctx:    ctx.Handle(),
+		ctx:    ctx,
 	}
 }
 
-// Handle returns the internal handle (for internal use)
-func (cs *Colorspace) Handle() uintptr {
-	return cs.handle
-}
-
-// NumComponents returns the number of color components
-func (cs *Colorspace) NumComponents() int {
-	return colorspaceN(cs.ctx, cs.handle)
+// Components returns the number of components in the colorspace
+// - 1 for Gray
+// - 3 for RGB/BGR
+// - 4 for CMYK
+func (cs *Colorspace) Components() int {
+	return int(C.fz_colorspace_n(C.fz_context(cs.ctx.Handle()), cs.handle))
 }
 
 // Name returns the colorspace name
 func (cs *Colorspace) Name() string {
-	return colorspaceName(cs.ctx, cs.handle)
+	cName := C.fz_colorspace_name(C.fz_context(cs.ctx.Handle()), cs.handle)
+	if cName == nil {
+		return ""
+	}
+	return C.GoString(cName)
 }
 
-// Type returns the colorspace type
-func (cs *Colorspace) Type() ColorspaceType {
-	switch cs.handle {
-	case 1:
-		return ColorspaceGray
-	case 2:
-		return ColorspaceRGB
-	case 3:
-		return ColorspaceBGR
-	case 4:
-		return ColorspaceCMYK
-	default:
-		return ColorspaceNone
-	}
+// IsGray returns true if this is a grayscale colorspace
+func (cs *Colorspace) IsGray() bool {
+	return cs.Components() == 1
+}
+
+// IsRGB returns true if this is an RGB colorspace
+func (cs *Colorspace) IsRGB() bool {
+	n := cs.Components()
+	name := cs.Name()
+	return n == 3 && (name == "DeviceRGB" || name == "DeviceBGR")
+}
+
+// IsCMYK returns true if this is a CMYK colorspace
+func (cs *Colorspace) IsCMYK() bool {
+	return cs.Components() == 4
 }
 

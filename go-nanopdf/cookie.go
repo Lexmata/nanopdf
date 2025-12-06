@@ -1,55 +1,48 @@
-// Package nanopdf - Cookie types and operations for progress tracking
 package nanopdf
 
-// Cookie represents a progress tracking cookie for long-running operations
+// #include "include/nanopdf_ffi.h"
+import "C"
+
+// Cookie represents progress tracking for long-running operations
 type Cookie struct {
-	handle uintptr
-	ctx    uintptr
+	handle C.fz_cookie
+	ctx    *Context
 }
 
-// NewCookie creates a new cookie for tracking operation progress
-func NewCookie(ctx *Context) (*Cookie, error) {
-	handle := cookieNew(ctx.Handle())
-	if handle == 0 {
-		return nil, ErrGeneric("failed to create cookie")
-	}
-
+// NewCookie creates a new progress tracking cookie
+func NewCookie(ctx *Context) *Cookie {
+	handle := C.fz_new_cookie(C.fz_context(ctx.Handle()))
 	return &Cookie{
 		handle: handle,
-		ctx:    ctx.Handle(),
-	}, nil
+		ctx:    ctx,
+	}
 }
 
 // Drop releases the cookie resources
 func (c *Cookie) Drop() {
 	if c.handle != 0 {
-		cookieDrop(c.ctx, c.handle)
+		C.fz_drop_cookie(C.fz_context(c.ctx.Handle()), c.handle)
 		c.handle = 0
 	}
 }
 
-// Abort aborts the operation associated with this cookie
+// Abort requests the operation to abort
 func (c *Cookie) Abort() {
-	cookieAbort(c.ctx, c.handle)
+	C.fz_abort_cookie(C.fz_context(c.ctx.Handle()), c.handle)
 }
 
 // Progress returns the current progress (0-100)
 func (c *Cookie) Progress() int {
-	return cookieProgress(c.ctx, c.handle)
+	return int(C.fz_cookie_progress(C.fz_context(c.ctx.Handle()), c.handle))
 }
 
-// IsAborted returns whether the operation has been aborted
+// IsAborted returns true if the operation was aborted
 func (c *Cookie) IsAborted() bool {
-	return cookieIsAborted(c.ctx, c.handle)
+	return C.fz_cookie_is_aborted(C.fz_context(c.ctx.Handle()), c.handle) != 0
 }
 
-// Reset resets the cookie to initial state
+// Reset resets the cookie to its initial state
 func (c *Cookie) Reset() {
-	cookieReset(c.ctx, c.handle)
-}
-
-// Handle returns the internal handle (for internal use)
-func (c *Cookie) Handle() uintptr {
-	return c.handle
+	C.fz_reset_cookie(C.fz_context(c.ctx.Handle()), c.handle)
 }
 

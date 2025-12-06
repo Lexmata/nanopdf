@@ -197,6 +197,48 @@ fz_link fz_link_next(fz_context ctx, fz_link link);
 int fz_search_stext_page(fz_context ctx, fz_stext_page stext, const char* needle, int* mark, fz_quad* hit_bbox, int hit_max);
 
 // ============================================================================
+// Cookie Functions (Progress Tracking)
+// ============================================================================
+
+typedef uint64_t fz_cookie;
+
+fz_cookie fz_new_cookie(fz_context ctx);
+void fz_drop_cookie(fz_context ctx, fz_cookie cookie);
+void fz_abort_cookie(fz_context ctx, fz_cookie cookie);
+int fz_cookie_progress(fz_context ctx, fz_cookie cookie);
+int fz_cookie_is_aborted(fz_context ctx, fz_cookie cookie);
+void fz_reset_cookie(fz_context ctx, fz_cookie cookie);
+
+// ============================================================================
+// Device Functions (Rendering Destinations)
+// ============================================================================
+
+typedef uint64_t fz_device_handle;
+typedef uint64_t fz_display_list;
+
+fz_device_handle fz_new_draw_device(fz_context ctx, fz_matrix transform, fz_pixmap dest);
+fz_display_list fz_new_display_list(fz_context ctx, fz_rect rect);
+void fz_drop_device(fz_context ctx, fz_device_handle dev);
+void fz_close_device(fz_context ctx, fz_device_handle dev);
+void fz_begin_page(fz_context ctx, fz_device_handle dev, fz_rect rect, fz_matrix ctm);
+void fz_end_page(fz_context ctx, fz_device_handle dev);
+
+// ============================================================================
+// Path Functions (Vector Graphics)
+// ============================================================================
+
+typedef uint64_t fz_path;
+
+fz_path fz_new_path(fz_context ctx);
+void fz_drop_path(fz_context ctx, fz_path path);
+void fz_moveto(fz_context ctx, fz_path path, float x, float y);
+void fz_lineto(fz_context ctx, fz_path path, float x, float y);
+void fz_curveto(fz_context ctx, fz_path path, float x1, float y1, float x2, float y2, float x3, float y3);
+void fz_closepath(fz_context ctx, fz_path path);
+void fz_rectto(fz_context ctx, fz_path path, float x, float y, float w, float h);
+fz_rect fz_bound_path(fz_context ctx, fz_path path, void* stroke, fz_matrix ctm);
+
+// ============================================================================
 // Font Functions
 // ============================================================================
 
@@ -211,62 +253,7 @@ int fz_encode_character(fz_context ctx, fz_font font, int unicode);
 float fz_advance_glyph(fz_context ctx, fz_font font, int glyph, int wmode);
 
 // ============================================================================
-// Image Functions
-// ============================================================================
-
-fz_image fz_new_image_from_pixmap(fz_context ctx, fz_pixmap pixmap, fz_image mask);
-fz_image fz_new_image_from_buffer(fz_context ctx, fz_buffer buffer);
-fz_image fz_new_image_from_file(fz_context ctx, const char* path);
-void fz_drop_image(fz_context ctx, fz_image image);
-fz_image fz_keep_image(fz_context ctx, fz_image image);
-int fz_image_width(fz_context ctx, fz_image image);
-int fz_image_height(fz_context ctx, fz_image image);
-fz_colorspace fz_image_colorspace(fz_context ctx, fz_image image);
-fz_pixmap fz_get_pixmap_from_image(fz_context ctx, fz_image image, const fz_irect* subarea, fz_matrix* ctm, int* w, int* h);
-
-// ============================================================================
-// Cookie Functions (Progress Tracking)
-// ============================================================================
-
-typedef uint64_t fz_cookie;
-
-fz_cookie fz_new_cookie(fz_context ctx);
-void fz_drop_cookie(fz_context ctx, fz_cookie cookie);
-void fz_abort_cookie(fz_context ctx, fz_cookie cookie);
-int fz_cookie_progress(fz_context ctx, fz_cookie cookie);
-int fz_cookie_is_aborted(fz_context ctx, fz_cookie cookie);
-void fz_reset_cookie(fz_context ctx, fz_cookie cookie);
-
-// ============================================================================
-// Device Functions (Rendering Targets)
-// ============================================================================
-
-typedef uint64_t fz_device_handle;
-
-fz_device_handle fz_new_draw_device(fz_context ctx, fz_matrix transform, fz_pixmap dest);
-fz_device_handle fz_new_list_device(fz_context ctx, uint64_t list);
-void fz_drop_device(fz_context ctx, fz_device_handle dev);
-void fz_close_device(fz_context ctx, fz_device_handle dev);
-void fz_begin_page(fz_context ctx, fz_device_handle dev, fz_rect rect, fz_matrix ctm);
-void fz_end_page(fz_context ctx, fz_device_handle dev);
-
-// ============================================================================
-// Path Functions (Vector Graphics)
-// ============================================================================
-
-typedef uint64_t fz_path_handle;
-
-fz_path_handle fz_new_path(fz_context ctx);
-void fz_drop_path(fz_context ctx, fz_path_handle path);
-void fz_moveto(fz_context ctx, fz_path_handle path, float x, float y);
-void fz_lineto(fz_context ctx, fz_path_handle path, float x, float y);
-void fz_curveto(fz_context ctx, fz_path_handle path, float x1, float y1, float x2, float y2, float x3, float y3);
-void fz_closepath(fz_context ctx, fz_path_handle path);
-void fz_rectto(fz_context ctx, fz_path_handle path, float x, float y, float w, float h);
-fz_rect fz_bound_path(fz_context ctx, fz_path_handle path, const void* stroke, fz_matrix ctm);
-
-// ============================================================================
-// Stream Functions (Input)
+// Stream Functions (Input Streams)
 // ============================================================================
 
 fz_stream fz_open_file(fz_context ctx, const char* filename);
@@ -279,7 +266,7 @@ void fz_seek(fz_context ctx, fz_stream stm, int64_t offset, int whence);
 int64_t fz_tell(fz_context ctx, fz_stream stm);
 
 // ============================================================================
-// Output Functions (Output)
+// Output Functions (Output Streams)
 // ============================================================================
 
 fz_output fz_new_output_with_path(fz_context ctx, const char* filename, int append);
@@ -290,6 +277,20 @@ void fz_write_string(fz_context ctx, fz_output out, const char* s);
 void fz_write_byte(fz_context ctx, fz_output out, unsigned char byte);
 void fz_close_output(fz_context ctx, fz_output out);
 int64_t fz_tell_output(fz_context ctx, fz_output out);
+
+// ============================================================================
+// Image Functions
+// ============================================================================
+
+fz_image fz_new_image_from_pixmap(fz_context ctx, fz_pixmap pixmap, fz_image mask);
+fz_image fz_new_image_from_buffer(fz_context ctx, fz_buffer buffer);
+fz_image fz_new_image_from_file(fz_context ctx, const char* path);
+void fz_drop_image(fz_context ctx, fz_image image);
+fz_image fz_keep_image(fz_context ctx, fz_image image);
+int fz_image_width(fz_context ctx, fz_image image);
+int fz_image_height(fz_context ctx, fz_image image);
+fz_colorspace fz_image_colorspace(fz_context ctx, fz_image image);
+fz_pixmap fz_get_pixmap_from_image(fz_context ctx, fz_image image, fz_irect* subarea, fz_matrix* ctm, int* w, int* h);
 
 // ============================================================================
 // Archive Functions

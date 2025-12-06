@@ -1,95 +1,105 @@
-// Package nanopdf - Stream types and operations
 package nanopdf
 
-import "io"
-
-// SeekOrigin represents the origin for seek operations
-type SeekOrigin int
-
-const (
-	// SeekSet seeks relative to the start of the stream
-	SeekSet SeekOrigin = 0
-	// SeekCur seeks relative to the current position
-	SeekCur SeekOrigin = 1
-	// SeekEnd seeks relative to the end of the stream
-	SeekEnd SeekOrigin = 2
+// #include "include/nanopdf_ffi.h"
+// #include <stdlib.h>
+import "C"
+import (
+	"unsafe"
 )
 
-// Stream represents an input stream
+// Stream represents an input stream (file or memory)
 type Stream struct {
-	handle uintptr
-	ctx    uintptr
+	handle C.fz_stream
+	ctx    *Context
 }
 
 // OpenFile opens a stream from a file
 func OpenFile(ctx *Context, filename string) (*Stream, error) {
-	handle := streamOpenFile(ctx.Handle(), filename)
+	cFilename := C.CString(filename)
+	defer C.free(unsafe.Pointer(cFilename))
+
+	handle := C.fz_open_file(C.fz_context(ctx.Handle()), cFilename)
 	if handle == 0 {
-		return nil, ErrFailedToOpen
+		return nil, NewError(ErrCodeSystem, "failed to open file stream")
 	}
 
 	return &Stream{
 		handle: handle,
-		ctx:    ctx.Handle(),
+		ctx:    ctx,
 	}, nil
 }
 
 // OpenMemory opens a stream from memory
 func OpenMemory(ctx *Context, data []byte) (*Stream, error) {
-	handle := streamOpenMemory(ctx.Handle(), data)
+	if len(data) == 0 {
+		return nil, NewError(ErrCodeArgument, "stream data is empty")
+	}
+
+	handle := C.fz_open_memory(
+		C.fz_context(ctx.Handle()),
+		(*C.uchar)(unsafe.Pointer(&data[0])),
+		C.size_t(len(data)),
+	)
+
 	if handle == 0 {
-		return nil, ErrGeneric( "failed to open memory stream")
+		return nil, NewError(ErrCodeSystem, "failed to open memory stream")
 	}
 
 	return &Stream{
 		handle: handle,
-		ctx:    ctx.Handle(),
+		ctx:    ctx,
 	}, nil
 }
 
 // Drop releases the stream resources
 func (s *Stream) Drop() {
 	if s.handle != 0 {
-		streamDrop(s.ctx, s.handle)
+		C.fz_drop_stream(C.fz_context(s.ctx.Handle()), s.handle)
 		s.handle = 0
 	}
 }
 
-// Read reads data from the stream
-func (s *Stream) Read(p []byte) (int, error) {
-	if len(p) == 0 {
+// Read reads data from the stream into the provided buffer
+// Returns the number of bytes read
+func (s *Stream) Read(buffer []byte) (int, error) {
+	if len(buffer) == 0 {
 		return 0, nil
 	}
 
-	n := streamRead(s.ctx, s.handle, p)
-	if n == 0 && s.IsEOF() {
-		return 0, io.EOF
-	}
+	n := C.fz_read(
+		C.fz_context(s.ctx.Handle()),
+		s.handle,
+		(*C.uchar)(unsafe.Pointer(&buffer[0])),
+		C.size_t(len(buffer)),
+	)
 
-	return n, nil
+	return int(n), nil
 }
 
-// ReadByte reads a single byte
-func (s *Stream) ReadByte() (byte, error) {
-	b := streamReadByte(s.ctx, s.handle)
-	if b == -1 {
-		return 0, io.EOF
-	}
-	return byte(b), nil
+// ReadByte reads a single byte from the stream
+// Returns -1 on EOF
+func (s *Stream) ReadByte() int {
+	return int(C.fz_read_byte(C.fz_context(s.ctx.Handle()), s.handle))
 }
 
-// IsEOF returns whether the stream is at end-of-file
+// IsEOF returns true if the stream is at end-of-file
 func (s *Stream) IsEOF() bool {
-	return streamIsEOF(s.ctx, s.handle)
+	return C.fz_is_eof(C.fz_context(s.ctx.Handle()), s.handle) != 0
 }
 
 // Seek seeks to a position in the stream
-func (s *Stream) Seek(offset int64, whence SeekOrigin) {
-	streamSeek(s.ctx, s.handle, offset, int(whence))
+// whence: 0=SEEK_SET, 1=SEEK_CUR, 2=SEEK_END
+func (s *Stream) Seek(offset int64, whence int) {
+	C.fz_seek(
+		C.fz_context(s.ctx.Handle()),
+		s.handle,
+		C.int64_t(offset),
+		C.int(whence),
+	)
 }
 
 // Tell returns the current position in the stream
 func (s *Stream) Tell() int64 {
-	return streamTell(s.ctx, s.handle)
+	return int64(C.fz_tell(C.fz_context(s.ctx.Handle()), s.handle))
 }
 

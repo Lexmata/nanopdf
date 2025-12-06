@@ -85,6 +85,7 @@ type SearchResult struct {
 
 // PDF is a fluent builder for PDF operations
 type PDF struct {
+	ctx       *nanopdf.Context
 	doc       *nanopdf.Document
 	autoClose bool
 }

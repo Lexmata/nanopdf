@@ -1,81 +1,148 @@
-// Package nanopdf - Font types and operations
 package nanopdf
 
-// Font represents a font for text rendering
+// #include "include/nanopdf_ffi.h"
+// #include <stdlib.h>
+import "C"
+import (
+	"unsafe"
+)
+
+// Font represents a PDF font
 type Font struct {
-	handle uintptr
-	ctx    uintptr
+	handle C.fz_font
+	ctx    *Context
 }
 
-// NewFont creates a new font
-func NewFont(ctx *Context, name string, isBold, isItalic bool) (*Font, error) {
-	handle := fontNew(ctx.Handle(), name, isBold, isItalic)
-	if handle == 0 {
-		return nil, ErrGeneric( "failed to create font")
+// NewFont creates a new font with the given name
+func NewFont(ctx *Context, name string, bold, italic bool) *Font {
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+
+	isBold := C.int(0)
+	if bold {
+		isBold = 1
 	}
+
+	isItalic := C.int(0)
+	if italic {
+		isItalic = 1
+	}
+
+	handle := C.fz_new_font(C.fz_context(ctx.Handle()), cName, isBold, isItalic, 0)
 
 	return &Font{
 		handle: handle,
-		ctx:    ctx.Handle(),
-	}, nil
+		ctx:    ctx,
+	}
 }
 
 // NewFontFromFile loads a font from a file
 func NewFontFromFile(ctx *Context, name, path string, index int) (*Font, error) {
-	handle := fontNewFromFile(ctx.Handle(), name, path, index)
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+
+	cPath := C.CString(path)
+	defer C.free(unsafe.Pointer(cPath))
+
+	handle := C.fz_new_font_from_file(
+		C.fz_context(ctx.Handle()),
+		cName,
+		cPath,
+		C.int(index),
+		0,
+	)
+
 	if handle == 0 {
-		return nil, ErrGeneric( "failed to load font from file")
+		return nil, NewError(ErrCodeSystem, "failed to load font from file")
 	}
 
 	return &Font{
 		handle: handle,
-		ctx:    ctx.Handle(),
+		ctx:    ctx,
 	}, nil
 }
 
 // NewFontFromMemory loads a font from memory
 func NewFontFromMemory(ctx *Context, name string, data []byte, index int) (*Font, error) {
-	handle := fontNewFromMemory(ctx.Handle(), name, data, index)
+	if len(data) == 0 {
+		return nil, NewError(ErrCodeArgument, "font data is empty")
+	}
+
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+
+	handle := C.fz_new_font_from_memory(
+		C.fz_context(ctx.Handle()),
+		cName,
+		(*C.uchar)(unsafe.Pointer(&data[0])),
+		C.int(len(data)),
+		C.int(index),
+		0,
+	)
+
 	if handle == 0 {
-		return nil, ErrGeneric( "failed to load font from memory")
+		return nil, NewError(ErrCodeSystem, "failed to load font from memory")
 	}
 
 	return &Font{
 		handle: handle,
-		ctx:    ctx.Handle(),
+		ctx:    ctx,
 	}, nil
 }
 
 // Drop releases the font resources
 func (f *Font) Drop() {
 	if f.handle != 0 {
-		fontDrop(f.ctx, f.handle)
+		C.fz_drop_font(C.fz_context(f.ctx.Handle()), f.handle)
 		f.handle = 0
 	}
 }
 
 // Name returns the font name
 func (f *Font) Name() string {
-	return fontName(f.ctx, f.handle)
+	buf := make([]byte, 256)
+	C.fz_font_name(
+		C.fz_context(f.ctx.Handle()),
+		f.handle,
+		(*C.char)(unsafe.Pointer(&buf[0])),
+		C.int(len(buf)),
+	)
+
+	// Find null terminator
+	for i, b := range buf {
+		if b == 0 {
+			return string(buf[:i])
+		}
+	}
+	return string(buf)
 }
 
-// IsBold returns whether the font is bold
+// IsBold returns true if the font is bold
 func (f *Font) IsBold() bool {
-	return fontIsBold(f.ctx, f.handle)
+	return C.fz_font_is_bold(C.fz_context(f.ctx.Handle()), f.handle) != 0
 }
 
-// IsItalic returns whether the font is italic
+// IsItalic returns true if the font is italic
 func (f *Font) IsItalic() bool {
-	return fontIsItalic(f.ctx, f.handle)
+	return C.fz_font_is_italic(C.fz_context(f.ctx.Handle()), f.handle) != 0
 }
 
-// EncodeCharacter encodes a Unicode character to a glyph ID
-func (f *Font) EncodeCharacter(unicode int) int {
-	return fontEncodeCharacter(f.ctx, f.handle, unicode)
+// EncodeCharacter encodes a Unicode code point to a glyph ID
+func (f *Font) EncodeCharacter(unicode rune) int {
+	return int(C.fz_encode_character(
+		C.fz_context(f.ctx.Handle()),
+		f.handle,
+		C.int(unicode),
+	))
 }
 
 // AdvanceGlyph returns the advance width for a glyph
-func (f *Font) AdvanceGlyph(glyph int) float32 {
-	return fontAdvanceGlyph(f.ctx, f.handle, glyph)
+func (f *Font) AdvanceGlyph(glyphID int) float32 {
+	return float32(C.fz_advance_glyph(
+		C.fz_context(f.ctx.Handle()),
+		f.handle,
+		C.int(glyphID),
+		0,
+	))
 }
 
