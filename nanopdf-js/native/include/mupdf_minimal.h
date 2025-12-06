@@ -94,14 +94,6 @@ void fz_drop_page(fz_context ctx, fz_page page);
 fz_rect fz_bound_page(fz_context ctx, fz_page page);
 
 // ============================================================================
-// Colorspace Functions
-// ============================================================================
-
-fz_colorspace fz_device_rgb(fz_context ctx);
-fz_colorspace fz_device_gray(fz_context ctx);
-fz_colorspace fz_device_cmyk(fz_context ctx);
-
-// ============================================================================
 // Matrix Functions
 // ============================================================================
 
@@ -195,6 +187,19 @@ void fz_drop_display_list(fz_context ctx, fz_display_list_handle list);
 fz_rect fz_bound_display_list(fz_context ctx, fz_display_list_handle list);
 void fz_run_display_list(fz_context ctx, fz_display_list_handle list, fz_device device, fz_matrix matrix, fz_rect rect);
 fz_display_list_handle fz_new_display_list_from_page(fz_context ctx, fz_page page);
+
+// ============================================================================
+// Colorspace Functions
+// ============================================================================
+
+typedef uint64_t fz_colorspace_handle;
+
+uint64_t fz_device_gray(fz_context ctx);
+uint64_t fz_device_rgb(fz_context ctx);
+uint64_t fz_device_bgr(fz_context ctx);
+uint64_t fz_device_cmyk(fz_context ctx);
+int fz_colorspace_n(fz_context ctx, fz_colorspace_handle cs);
+const char* fz_colorspace_name(fz_context ctx, fz_colorspace_handle cs);
 
 // ============================================================================
 // Image Functions

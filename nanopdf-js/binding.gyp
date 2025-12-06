@@ -18,7 +18,8 @@
         "native/device.cc",
         "native/path.cc",
         "native/pixmap.cc",
-        "native/image.cc"
+        "native/image.cc",
+        "native/colorspace.cc"
       ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",

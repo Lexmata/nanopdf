@@ -595,13 +595,21 @@ pub extern "C" fn fz_colorspace_n_spots(_ctx: super::Handle, cs: ColorspaceHandl
     }
 }
 
-/// Get colorspace name as string (alias)
+/// Get colorspace name as static string
 #[unsafe(no_mangle)]
 pub extern "C" fn fz_colorspace_name_string(
     _ctx: super::Handle,
     cs: ColorspaceHandle,
 ) -> *const c_char {
-    fz_colorspace_name(_ctx, cs)
+    let name = match cs {
+        FZ_COLORSPACE_GRAY => "DeviceGray\0",
+        FZ_COLORSPACE_RGB => "DeviceRGB\0",
+        FZ_COLORSPACE_BGR => "DeviceBGR\0",
+        FZ_COLORSPACE_CMYK => "DeviceCMYK\0",
+        FZ_COLORSPACE_LAB => "Lab\0",
+        _ => "Unknown\0",
+    };
+    name.as_ptr() as *const c_char
 }
 
 /// Check if colorspace is valid
@@ -971,4 +979,13 @@ mod tests {
         // Should always return null for safety
         assert!(fz_colorspace_lookup(0, FZ_COLORSPACE_RGB).is_null());
     }
+
+    #[test]
+    fn test_device_colorspaces() {
+        assert_eq!(fz_device_gray(0), FZ_COLORSPACE_GRAY);
+        assert_eq!(fz_device_rgb(0), FZ_COLORSPACE_RGB);
+        assert_eq!(fz_device_bgr(0), FZ_COLORSPACE_BGR);
+        assert_eq!(fz_device_cmyk(0), FZ_COLORSPACE_CMYK);
+    }
 }
+

@@ -210,7 +210,7 @@ Napi::Object InitImage(Napi::Env env, Napi::Object exports) {
     exports.Set("imageHeight", Napi::Function::New(env, ImageHeight));
     exports.Set("imageColorspace", Napi::Function::New(env, ImageColorspace));
     exports.Set("getPixmapFromImage", Napi::Function::New(env, GetPixmapFromImage));
-    
+
     return exports;
 }
 
