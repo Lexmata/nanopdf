@@ -78,7 +78,7 @@ The NanoPDF Node.js library requires FFI (Foreign Function Interface) bindings t
 
 ### Easy (1-2 hours each module)
 - ✅ Context
-- ✅ Geometry  
+- ✅ Geometry
 - ✅ Buffer Basic
 
 ### Medium (4-8 hours each module)
@@ -147,7 +147,7 @@ Each implemented binding needs:
 
 ### Phase 3: Interactive PDF (Not Started ❌)
 - [ ] Form field reading
-- [ ] Form field writing  
+- [ ] Form field writing
 - [ ] Annotation reading
 - [ ] Annotation creation/modification
 
@@ -196,7 +196,7 @@ Despite the missing bindings, these features work:
 ## Implementation Strategy
 
 ### Option A: Complete All Bindings (Recommended)
-**Effort**: 3-4 weeks full-time  
+**Effort**: 3-4 weeks full-time
 **Result**: 100% API compatibility
 
 1. Implement Form Fields module (3-4 days)
@@ -209,7 +209,7 @@ Despite the missing bindings, these features work:
 8. Testing and fixes (3-5 days)
 
 ### Option B: Prioritize Core Features (Faster)
-**Effort**: 1-2 weeks  
+**Effort**: 1-2 weeks
 **Result**: 80% of common use cases
 
 1. Complete Text operations (2 days)
@@ -222,7 +222,7 @@ Despite the missing bindings, these features work:
 **Result**: ~550/708 tests passing (78%)
 
 ### Option C: Focus on Documentation (Current)
-**Effort**: Completed ✅  
+**Effort**: Completed ✅
 **Result**: Excellent developer experience for implemented features
 
 - [x] Comprehensive JSDoc documentation
@@ -261,19 +261,19 @@ Despite the missing bindings, these features work:
 // In native/form.cc
 Napi::Value FormFieldGetValue(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
-  
+
   // Extract arguments
   auto ctx = GetNativeHandle<fz_context>(info[0]);
   auto field = GetNativeHandle<pdf_form_field>(info[1]);
-  
+
   // Call Rust FFI
   const char* value = pdf_field_get_value(ctx, field);
-  
+
   // Convert result
   if (!value) {
     return env.Null();
   }
-  
+
   return Napi::String::New(env, value);
 }
 

@@ -497,6 +497,9 @@ export class Pixmap {
    * Tint pixmap with a color
    */
   tint(black: number[], white: number[]): void {
+    if (!this._colorspace) {
+      return; // No colorspace, cannot tint
+    }
     if (black.length !== this._colorspace.n || white.length !== this._colorspace.n) {
       return;
     }

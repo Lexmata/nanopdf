@@ -16,11 +16,13 @@ RUN cargo build --release
 # Stage 2: Node.js testing environment
 FROM node:22-bookworm
 
-# Install build dependencies for node-gyp
+# Install build dependencies for node-gyp and git-lfs
 RUN apt-get update && apt-get install -y \
     build-essential \
     python3 \
     pkg-config \
+    git \
+    git-lfs \
     && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm globally
@@ -35,6 +37,9 @@ COPY --from=rust-builder /build/nanopdf-rs/include/ /usr/local/include/
 
 # Copy Node.js project
 COPY nanopdf-js/ ./nanopdf-js/
+
+# Copy test PDFs (Git LFS tracked)
+COPY test-pdfs/ ./test-pdfs/
 
 # Set working directory to Node.js project
 WORKDIR /workspace/nanopdf-js
