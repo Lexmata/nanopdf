@@ -1,78 +1,288 @@
 /**
  * Annot - PDF annotation handling
  *
- * This module provides 100% API compatibility with MuPDF's annotation operations.
- * Supports text notes, highlights, stamps, ink, shapes, and more.
+ * This module provides comprehensive PDF annotation support with 100% API compatibility
+ * with MuPDF's annotation operations. It supports creating, modifying, and managing
+ * various types of PDF annotations including text notes, highlights, stamps, shapes,
+ * ink annotations, and more.
+ *
+ * **Key Features:**
+ * - 28 annotation types (text, highlight, stamp, ink, shapes, etc.)
+ * - Complete annotation properties (color, opacity, borders, etc.)
+ * - Annotation lifecycle management (creation, modification, deletion)
+ * - Dirty tracking for efficient updates
+ * - Reference counting for memory management
+ *
+ * **Supported Annotation Types:**
+ * - **Text Markup**: Highlight, Underline, Squiggly, StrikeOut
+ * - **Note Annotations**: Text, FreeText
+ * - **Shape Annotations**: Square, Circle, Line, Polygon, PolyLine
+ * - **Stamp Annotations**: Stamp (Approved, Draft, etc.)
+ * - **Drawing Annotations**: Ink (freehand drawing)
+ * - **Special Types**: Link, FileAttachment, Sound, Movie, Widget, etc.
+ *
+ * @example Basic usage:
+ * ```typescript
+ * import { Annotation, AnnotationType, AnnotationFlags } from 'nanopdf';
+ *
+ * // Create a text annotation
+ * const textAnnot = Annotation.createText(
+ *   { x0: 100, y0: 100, x1: 150, y1: 120 },
+ *   'This is a note'
+ * );
+ *
+ * // Create a highlight annotation
+ * const highlightAnnot = Annotation.createHighlight(
+ *   { x0: 50, y0: 200, x1: 300, y1: 220 },
+ *   [1, 1, 0] // Yellow
+ * );
+ *
+ * // Modify annotation properties
+ * highlightAnnot.opacity = 0.5;
+ * highlightAnnot.author = 'John Doe';
+ * highlightAnnot.setFlag(AnnotationFlags.Print, true);
+ *
+ * // Check if annotation was modified
+ * if (highlightAnnot.isDirty) {
+ *   // Update appearance
+ *   highlightAnnot.update();
+ * }
+ * ```
+ *
+ * @module annot
  */
 
 import { Rect, Point, type RectLike, type PointLike } from './geometry.js';
 
 /**
- * PDF annotation types
+ * PDF annotation types.
+ *
+ * These correspond to the standard PDF annotation types as defined in the PDF specification.
+ * Each type has specific rendering behavior and properties.
+ *
+ * @enum {number}
  */
 export enum AnnotationType {
+  /** Text note annotation - sticky note icon */
   Text = 0,
+  /** Link annotation - hyperlink to URL or document location */
   Link = 1,
+  /** Free text annotation - text directly on page */
   FreeText = 2,
+  /** Line annotation - straight line with optional endpoints */
   Line = 3,
+  /** Square annotation - rectangle shape */
   Square = 4,
+  /** Circle annotation - circle/ellipse shape */
   Circle = 5,
+  /** Polygon annotation - closed polygon shape */
   Polygon = 6,
+  /** PolyLine annotation - open polyline shape */
   PolyLine = 7,
+  /** Highlight annotation - text markup highlighting */
   Highlight = 8,
+  /** Underline annotation - text markup underlining */
   Underline = 9,
+  /** Squiggly annotation - text markup squiggly underline */
   Squiggly = 10,
+  /** StrikeOut annotation - text markup strikethrough */
   StrikeOut = 11,
+  /** Stamp annotation - rubber stamp (Approved, Draft, etc.) */
   Stamp = 12,
+  /** Caret annotation - text insertion point */
   Caret = 13,
+  /** Ink annotation - freehand drawing paths */
   Ink = 14,
+  /** Popup annotation - popup window for another annotation */
   Popup = 15,
+  /** File attachment annotation - embedded file */
   FileAttachment = 16,
+  /** Sound annotation - embedded sound */
   Sound = 17,
+  /** Movie annotation - embedded video */
   Movie = 18,
+  /** Widget annotation - interactive form field */
   Widget = 19,
+  /** Screen annotation - multimedia screen */
   Screen = 20,
+  /** Printer mark annotation - printing marks */
   PrinterMark = 21,
+  /** Trap net annotation - color separation trapping */
   TrapNet = 22,
+  /** Watermark annotation - page watermark */
   Watermark = 23,
+  /** 3D annotation - 3D artwork */
   ThreeD = 24,
+  /** Redact annotation - content to be redacted */
   Redact = 25
 }
 
 /**
- * Annotation flags (bit flags)
+ * Annotation flags (bit flags).
+ *
+ * These flags control the visibility, behavior, and interaction of annotations.
+ * Multiple flags can be combined using bitwise OR operations.
+ *
+ * @example Using annotation flags:
+ * ```typescript
+ * import { Annotation, AnnotationFlags } from 'nanopdf';
+ *
+ * const annot = Annotation.createText(rect, 'Note');
+ *
+ * // Set multiple flags
+ * annot.setFlags(AnnotationFlags.Print | AnnotationFlags.ReadOnly);
+ *
+ * // Check if a flag is set
+ * if (annot.hasFlag(AnnotationFlags.Print)) {
+ *   console.log('Annotation will be printed');
+ * }
+ *
+ * // Toggle a flag
+ * annot.setFlag(AnnotationFlags.Hidden, true);
+ * ```
+ *
+ * @enum {number}
  */
 export enum AnnotationFlags {
+  /** Annotation is invisible (not displayed or printed) */
   Invisible = 1 << 0,
+  /** Annotation is hidden (not displayed, but may be printed) */
   Hidden = 1 << 1,
+  /** Annotation should be printed */
   Print = 1 << 2,
+  /** Annotation should not scale with zoom */
   NoZoom = 1 << 3,
+  /** Annotation should not rotate with page */
   NoRotate = 1 << 4,
+  /** Annotation should not be viewed (but may be printed) */
   NoView = 1 << 5,
+  /** Annotation is read-only (cannot be modified or deleted) */
   ReadOnly = 1 << 6,
+  /** Annotation is locked (cannot be moved or resized) */
   Locked = 1 << 7,
+  /** Toggle NoView flag based on user actions */
   ToggleNoView = 1 << 8,
+  /** Annotation contents are locked (cannot be edited) */
   LockedContents = 1 << 9
 }
 
 /**
- * Line ending styles for line annotations
+ * Line ending styles for line annotations.
+ *
+ * These styles define the appearance of line endings for Line, PolyLine,
+ * and Polygon annotations.
+ *
+ * @example Using line ending styles:
+ * ```typescript
+ * import { Annotation, LineEndingStyle } from 'nanopdf';
+ *
+ * const lineAnnot = Annotation.createLine(rect, start, end);
+ * lineAnnot.lineStartStyle = LineEndingStyle.OpenArrow;
+ * lineAnnot.lineEndStyle = LineEndingStyle.ClosedArrow;
+ * ```
+ *
+ * @enum {number}
  */
 export enum LineEndingStyle {
+  /** No line ending */
   None = 0,
+  /** Square line ending */
   Square = 1,
+  /** Circle line ending */
   Circle = 2,
+  /** Diamond line ending */
   Diamond = 3,
+  /** Open arrow line ending */
   OpenArrow = 4,
+  /** Closed arrow line ending (filled) */
   ClosedArrow = 5,
+  /** Butt line ending (perpendicular cap) */
   Butt = 6,
+  /** Reverse open arrow */
   ROpenArrow = 7,
+  /** Reverse closed arrow (filled) */
   RClosedArrow = 8,
+  /** Slash line ending (diagonal cap) */
   Slash = 9
 }
 
 /**
- * A PDF annotation
+ * A PDF annotation.
+ *
+ * Represents a single PDF annotation with all its properties and methods.
+ * Annotations can be text notes, highlights, shapes, stamps, ink drawings, and more.
+ *
+ * **Lifecycle:**
+ * 1. Create annotation using static factory methods or constructor
+ * 2. Modify properties (color, opacity, contents, etc.)
+ * 3. Check `isDirty` to see if annotation needs updating
+ * 4. Call `update()` to update appearance
+ * 5. Increment/decrement reference count for memory management
+ * 6. Drop annotation when done (`drop()`)
+ *
+ * **Properties:**
+ * - Type, rectangle, flags
+ * - Contents, author, subject
+ * - Color, opacity, borders
+ * - Line endpoints and styles (for line annotations)
+ * - Modification date
+ * - Popup association
+ *
+ * **Methods:**
+ * - Getters/setters for all properties
+ * - Type checking (`isHighlight()`, `isStamp()`, etc.)
+ * - Dirty tracking (`isDirty`, `markDirty()`, `clearDirty()`)
+ * - Reference counting (`keep()`, `drop()`)
+ * - Appearance updates (`update()`)
+ * - Cloning (`clone()`)
+ *
+ * @example Creating and modifying annotations:
+ * ```typescript
+ * // Create a highlight annotation
+ * const highlight = Annotation.createHighlight(
+ *   { x0: 100, y0: 200, x1: 400, y1: 220 },
+ *   [1, 1, 0] // Yellow
+ * );
+ *
+ * // Modify properties
+ * highlight.opacity = 0.3;
+ * highlight.author = 'John Doe';
+ * highlight.contents = 'Important section';
+ *
+ * // Check if modified
+ * if (highlight.isDirty) {
+ *   highlight.update(); // Update appearance
+ * }
+ *
+ * // Clone annotation
+ * const copy = highlight.clone();
+ *
+ * // Clean up
+ * highlight.drop();
+ * copy.drop();
+ * ```
+ *
+ * @example Working with different annotation types:
+ * ```typescript
+ * // Text note
+ * const note = Annotation.createText(rect, 'Important!');
+ * note.setFlag(AnnotationFlags.ReadOnly, true);
+ *
+ * // Stamp
+ * const stamp = Annotation.createStamp(rect, 'Approved');
+ * stamp.color = [0, 1, 0]; // Green
+ *
+ * // Line with arrows
+ * const line = Annotation.createLine(rect, start, end);
+ * line.lineStartStyle = LineEndingStyle.OpenArrow;
+ * line.lineEndStyle = LineEndingStyle.ClosedArrow;
+ *
+ * // Free text
+ * const freeText = Annotation.createFreeText(rect, 'This is text');
+ * freeText.borderWidth = 2;
+ * ```
+ *
+ * @class
  */
 export class Annotation {
   private _type: AnnotationType;
@@ -90,13 +300,35 @@ export class Annotation {
   private _dirty: boolean = false;
   private _hasPopup: boolean = false;
 
+  /**
+   * Creates a new PDF annotation.
+   *
+   * **Note**: Prefer using static factory methods (e.g., `createHighlight()`, `createStamp()`)
+   * instead of the constructor for better type safety and convenience.
+   *
+   * @param type - The annotation type
+   * @param rect - The annotation rectangle on the page
+   *
+   * @example Using the constructor:
+   * ```typescript
+   * const annot = new Annotation(AnnotationType.Square, {
+   *   x0: 100, y0: 100, x1: 200, y1: 200
+   * });
+   * ```
+   */
   constructor(type: AnnotationType, rect: RectLike) {
     this._type = type;
     this._rect = Rect.from(rect);
   }
 
   /**
-   * Create a new annotation
+   * Create a new annotation (alias for constructor).
+   *
+   * @param type - The annotation type
+   * @param rect - The annotation rectangle
+   * @returns A new annotation instance
+   *
+   * @deprecated Use static factory methods instead (e.g., `createHighlight()`)
    */
   static create(type: AnnotationType, rect: RectLike): Annotation {
     return new Annotation(type, rect);
