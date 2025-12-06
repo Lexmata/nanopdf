@@ -1,6 +1,7 @@
 //! PDF-specific parsing and document handling
 
 pub mod annot;
+pub mod annot_render;
 pub mod cmap;
 pub mod colorspace;
 pub mod crypt;
