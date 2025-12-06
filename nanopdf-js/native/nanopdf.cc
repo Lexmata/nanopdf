@@ -20,6 +20,7 @@ Napi::Object InitLink(Napi::Env env, Napi::Object exports);
 Napi::Object InitCookie(Napi::Env env, Napi::Object exports);
 Napi::Object InitDevice(Napi::Env env, Napi::Object exports);
 Napi::Object InitPath(Napi::Env env, Napi::Object exports);
+Napi::Object InitPixmap(Napi::Env env, Napi::Object exports);
 
 /**
  * Get the NanoPDF library version
@@ -49,6 +50,7 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
     InitCookie(env, exports);
     InitDevice(env, exports);
     InitPath(env, exports);
+    InitPixmap(env, exports);
 
     return exports;
 }

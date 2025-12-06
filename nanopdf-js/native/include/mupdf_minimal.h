@@ -45,7 +45,7 @@ typedef struct {
 typedef int32_t fz_context;
 typedef int32_t fz_document;
 typedef int32_t fz_page;
-typedef int32_t fz_pixmap;
+// fz_pixmap is defined later with specific functions
 typedef int32_t fz_buffer;
 typedef int32_t fz_colorspace;
 typedef int32_t fz_stext_page;
@@ -112,21 +112,10 @@ fz_matrix fz_rotate(float degrees);
 fz_matrix fz_concat(fz_matrix a, fz_matrix b);
 
 // ============================================================================
-// Pixmap Functions
-// ============================================================================
-
-fz_pixmap fz_new_pixmap_from_page(fz_context ctx, fz_page page, fz_matrix ctm, fz_colorspace cs, int alpha);
-void fz_drop_pixmap(fz_context ctx, fz_pixmap pix);
-int fz_pixmap_width(fz_context ctx, fz_pixmap pix);
-int fz_pixmap_height(fz_context ctx, fz_pixmap pix);
-int fz_pixmap_components(fz_context ctx, fz_pixmap pix);
-unsigned char* fz_pixmap_samples(fz_context ctx, fz_pixmap pix);
-
-// ============================================================================
 // Buffer Functions
 // ============================================================================
 
-fz_buffer fz_new_buffer_from_pixmap_as_png(fz_context ctx, fz_pixmap pix, int color_params);
+// fz_new_buffer_from_pixmap_as_png is declared after fz_pixmap typedef
 void fz_drop_buffer(fz_context ctx, fz_buffer buf);
 size_t fz_buffer_storage(fz_context ctx, fz_buffer buf, const unsigned char** data);
 const unsigned char* fz_buffer_data(fz_context ctx, fz_buffer buf, size_t* len);
@@ -216,6 +205,29 @@ void fz_drop_display_list(fz_context ctx, fz_display_list_handle list);
 fz_rect fz_bound_display_list(fz_context ctx, fz_display_list_handle list);
 void fz_run_display_list(fz_context ctx, fz_display_list_handle list, fz_device device, fz_matrix matrix, fz_rect rect);
 fz_display_list_handle fz_new_display_list_from_page(fz_context ctx, fz_page page);
+
+// ============================================================================
+// Pixmap Functions
+// ============================================================================
+
+typedef uint64_t fz_pixmap;
+
+// Legacy page-to-pixmap function (compatibility)
+fz_pixmap fz_new_pixmap_from_page(fz_context ctx, fz_page page, fz_matrix ctm, fz_colorspace cs, int alpha);
+
+// Core pixmap functions
+fz_pixmap fz_new_pixmap(fz_context ctx, uint64_t colorspace, int w, int h, int alpha);
+void fz_drop_pixmap(fz_context ctx, fz_pixmap pixmap);
+int fz_pixmap_width(fz_context ctx, fz_pixmap pixmap);
+int fz_pixmap_height(fz_context ctx, fz_pixmap pixmap);
+void fz_pixmap_samples(fz_context ctx, fz_pixmap pixmap, uint8_t** data, size_t* size);
+unsigned char* fz_pixmap_samples_old(fz_context ctx, fz_pixmap pix);
+size_t fz_pixmap_stride(fz_context ctx, fz_pixmap pixmap);
+int fz_pixmap_components(fz_context ctx, fz_pixmap pixmap);
+void fz_clear_pixmap(fz_context ctx, fz_pixmap pixmap, int value);
+
+// Pixmap-to-buffer conversion
+fz_buffer fz_new_buffer_from_pixmap_as_png(fz_context ctx, fz_pixmap pix, int color_params);
 
 // ============================================================================
 // Path Functions

@@ -59,7 +59,7 @@ pub extern "C" fn fz_moveto(_ctx: Handle, path: Handle, x: c_float, y: c_float) 
     let Ok(mut path_obj) = arc.lock() else {
         return;
     };
-    
+
     path_obj.move_to(Point::new(x, y));
 }
 
@@ -76,7 +76,7 @@ pub extern "C" fn fz_lineto(_ctx: Handle, path: Handle, x: c_float, y: c_float) 
     let Ok(mut path_obj) = arc.lock() else {
         return;
     };
-    
+
     path_obj.line_to(Point::new(x, y));
 }
 
@@ -102,7 +102,7 @@ pub extern "C" fn fz_curveto(
     let Ok(mut path_obj) = arc.lock() else {
         return;
     };
-    
+
     path_obj.curve_to(Point::new(x1, y1), Point::new(x2, y2), Point::new(x3, y3));
 }
 
@@ -119,7 +119,7 @@ pub extern "C" fn fz_closepath(_ctx: Handle, path: Handle) {
     let Ok(mut path_obj) = arc.lock() else {
         return;
     };
-    
+
     path_obj.close();
 }
 
@@ -136,7 +136,7 @@ pub extern "C" fn fz_rectto(_ctx: Handle, path: Handle, x: c_float, y: c_float, 
     let Ok(mut path_obj) = arc.lock() else {
         return;
     };
-    
+
     let rect = Rect::new(x, y, x + w, y + h);
     path_obj.rect(rect);
 }
@@ -155,11 +155,11 @@ pub extern "C" fn fz_bound_path(_ctx: Handle, path: Handle, stroke: Handle) -> f
     let Ok(path_obj) = arc.lock() else {
         return fz_rect { x0: 0.0, y0: 0.0, x1: 0.0, y1: 0.0 };
     };
-    
+
     // For now, just use bounds() regardless of stroke
     // TODO: Implement proper stroke bounds calculation
     let bounds = path_obj.bounds();
-    
+
     fz_rect {
         x0: bounds.x0,
         y0: bounds.y0,

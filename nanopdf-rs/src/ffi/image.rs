@@ -180,7 +180,16 @@ pub extern "C" fn fz_get_pixmap_from_image(
                 Some(cs) => colorspace_to_handle(cs),
                 None => 0,
             };
-            let pixmap = super::pixmap::Pixmap::new(cs_handle, img_w, img_h, true);
+            // Convert handle to Colorspace object
+            let cs = match cs_handle {
+                1 => Some(crate::fitz::colorspace::Colorspace::device_gray()),
+                2 => Some(crate::fitz::colorspace::Colorspace::device_rgb()),
+                4 => Some(crate::fitz::colorspace::Colorspace::device_cmyk()),
+                _ => None,
+            };
+            let Ok(pixmap) = super::pixmap::Pixmap::new(cs, img_w, img_h, true) else {
+                return 0;
+            };
             return PIXMAPS.insert(pixmap);
         }
     }
@@ -205,7 +214,16 @@ pub extern "C" fn fz_decode_image(
                 Some(cs) => colorspace_to_handle(cs),
                 None => 0,
             };
-            let pixmap = super::pixmap::Pixmap::new(cs_handle, img_w, img_h, true);
+            // Convert handle to Colorspace object
+            let cs = match cs_handle {
+                1 => Some(crate::fitz::colorspace::Colorspace::device_gray()),
+                2 => Some(crate::fitz::colorspace::Colorspace::device_rgb()),
+                4 => Some(crate::fitz::colorspace::Colorspace::device_cmyk()),
+                _ => None,
+            };
+            let Ok(pixmap) = super::pixmap::Pixmap::new(cs, img_w, img_h, true) else {
+                return 0;
+            };
             return PIXMAPS.insert(pixmap);
         }
     }
@@ -229,7 +247,16 @@ pub extern "C" fn fz_decode_image_scaled(
                 Some(cs) => colorspace_to_handle(cs),
                 None => 0,
             };
-            let pixmap = super::pixmap::Pixmap::new(cs_handle, w, h, true);
+            // Convert handle to Colorspace object
+            let cs = match cs_handle {
+                1 => Some(crate::fitz::colorspace::Colorspace::device_gray()),
+                2 => Some(crate::fitz::colorspace::Colorspace::device_rgb()),
+                4 => Some(crate::fitz::colorspace::Colorspace::device_cmyk()),
+                _ => None,
+            };
+            let Ok(pixmap) = super::pixmap::Pixmap::new(cs, w, h, true) else {
+                return 0;
+            };
             return PIXMAPS.insert(pixmap);
         }
     }

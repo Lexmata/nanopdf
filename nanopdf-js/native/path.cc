@@ -225,7 +225,7 @@ Napi::Object PathBoundPath(const Napi::CallbackInfo& info) {
     bool lossless;
     uint64_t ctx_handle = info[0].As<Napi::BigInt>().Uint64Value(&lossless);
     uint64_t path_handle = info[1].As<Napi::BigInt>().Uint64Value(&lossless);
-    
+
     uint64_t stroke_handle = 0;
     if (info.Length() > 2 && !info[2].IsNull() && !info[2].IsUndefined()) {
         stroke_handle = info[2].As<Napi::BigInt>().Uint64Value(&lossless);
@@ -253,7 +253,7 @@ Napi::Object InitPath(Napi::Env env, Napi::Object exports) {
     exports.Set("pathClosePath", Napi::Function::New(env, PathClosePath));
     exports.Set("pathRect", Napi::Function::New(env, PathRect));
     exports.Set("pathBoundPath", Napi::Function::New(env, PathBoundPath));
-    
+
     return exports;
 }
 

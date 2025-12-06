@@ -88,7 +88,7 @@ pub extern "C" fn fz_close_device(_ctx: Handle, device: Handle) {
     let Ok(mut dev) = arc.lock() else {
         return;
     };
-    
+
     dev.closed = true;
 }
 
@@ -105,7 +105,7 @@ pub extern "C" fn fz_begin_page(_ctx: Handle, device: Handle, _rect: fz_rect) {
     let Ok(_dev) = arc.lock() else {
         return;
     };
-    
+
     // Mark page begin
 }
 
@@ -122,6 +122,6 @@ pub extern "C" fn fz_end_page(_ctx: Handle, device: Handle) {
     let Ok(_dev) = arc.lock() else {
         return;
     };
-    
+
     // Mark page end
 }
