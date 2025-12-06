@@ -582,6 +582,16 @@ export class Document {
   }
 
   /**
+   * Open a document from a file path
+   */
+  static open(path: string, password?: string): Document {
+    // Read file synchronously
+    const fs = require('fs') as typeof import('fs');
+    const data = fs.readFileSync(path);
+    return Document.fromBuffer(Buffer.fromBuffer(data), password);
+  }
+
+  /**
    * Open a document from a buffer
    */
   static fromBuffer(buffer: Buffer, password?: string): Document {
