@@ -225,6 +225,14 @@ impl Matrix {
             f: self.e * m.b + self.f * m.d + m.f,
         }
     }
+    
+    /// Transform a point by this matrix
+    pub fn transform_point(&self, p: Point) -> Point {
+        Point {
+            x: p.x * self.a + p.y * self.c + self.e,
+            y: p.x * self.b + p.y * self.d + self.f,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]

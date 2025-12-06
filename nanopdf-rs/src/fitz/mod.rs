@@ -20,6 +20,7 @@ pub mod output;
 pub mod page;
 pub mod path;
 pub mod pixmap;
+pub mod render;
 pub mod stream;
 pub mod text;
 
