@@ -313,13 +313,14 @@ Napi::Value GetPageLinks(const Napi::CallbackInfo& info) {
         fz_rect rect = fz_link_rect(ctx, link);
         linkObj.Set("rect", CreateRect(env, rect));
 
-        const char* uri = fz_link_uri(ctx, link);
-        if (uri != nullptr) {
-            linkObj.Set("uri", Napi::String::New(env, uri));
+        char uri_buffer[2048];
+        fz_link_uri(ctx, link, uri_buffer, sizeof(uri_buffer));
+        if (uri_buffer[0] != '\0') {
+            linkObj.Set("uri", Napi::String::New(env, uri_buffer));
         }
 
         links[linkIndex++] = linkObj;
-        link = fz_link_next(ctx, link);
+        link = fz_next_link(ctx, link);
     }
 
     return links;

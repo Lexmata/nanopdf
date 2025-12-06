@@ -11,7 +11,9 @@
         "native/page.cc",
         "native/stext.cc",
         "native/annot.cc",
-        "native/form.cc"
+        "native/form.cc",
+        "native/display_list.cc",
+        "native/link.cc"
       ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",

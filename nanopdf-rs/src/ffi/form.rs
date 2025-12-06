@@ -297,7 +297,7 @@ pub extern "C" fn pdf_widget_is_valid(_ctx: Handle, widget: Handle) -> c_int {
 #[unsafe(no_mangle)]
 pub extern "C" fn pdf_widget_text_format(_ctx: Handle, widget: Handle) -> c_int {
     use crate::pdf::form::TextFormat;
-    
+
     let Some(arc) = WIDGET_STORE.get(widget) else {
         return 0;
     };

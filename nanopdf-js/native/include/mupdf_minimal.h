@@ -51,6 +51,7 @@ typedef int32_t fz_colorspace;
 typedef int32_t fz_stext_page;
 typedef int32_t fz_link;
 typedef int32_t fz_device;
+typedef int32_t fz_display_list;
 typedef int32_t fz_stream;
 typedef int32_t fz_output;
 typedef int32_t fz_font;
@@ -140,16 +141,6 @@ fz_buffer fz_new_buffer_from_stext_page(fz_context ctx, fz_stext_page stext);
 fz_rect fz_bound_stext_page(fz_context ctx, fz_stext_page stext);
 
 // ============================================================================
-// Link Functions
-// ============================================================================
-
-fz_link fz_load_links(fz_context ctx, fz_page page);
-void fz_drop_link(fz_context ctx, fz_link link);
-fz_rect fz_link_rect(fz_context ctx, fz_link link);
-const char* fz_link_uri(fz_context ctx, fz_link link);
-fz_link fz_link_next(fz_context ctx, fz_link link);
-
-// ============================================================================
 // Search Functions
 // ============================================================================
 
@@ -213,6 +204,33 @@ int pdf_update_annot(fz_context ctx, pdf_annot annot);
 
 pdf_annot pdf_clone_annot(fz_context ctx, pdf_annot annot);
 int pdf_annot_is_valid(fz_context ctx, pdf_annot annot);
+
+// ============================================================================
+// Display List Functions
+// ============================================================================
+
+typedef uint64_t fz_display_list_handle;
+
+fz_display_list_handle fz_new_display_list(fz_context ctx, fz_rect rect);
+void fz_drop_display_list(fz_context ctx, fz_display_list_handle list);
+fz_rect fz_bound_display_list(fz_context ctx, fz_display_list_handle list);
+void fz_run_display_list(fz_context ctx, fz_display_list_handle list, fz_device device, fz_matrix matrix, fz_rect rect);
+fz_display_list_handle fz_new_display_list_from_page(fz_context ctx, fz_page page);
+
+// ============================================================================
+// Link Functions
+// ============================================================================
+
+typedef uint64_t fz_link_handle;
+
+fz_link_handle fz_load_links(fz_context ctx, fz_page page);
+fz_link_handle fz_next_link(fz_context ctx, fz_link_handle link);
+void fz_drop_link(fz_context ctx, fz_link_handle link);
+fz_rect fz_link_rect(fz_context ctx, fz_link_handle link);
+void fz_link_uri(fz_context ctx, fz_link_handle link, char* buf, int size);
+int fz_link_is_external(fz_context ctx, fz_link_handle link);
+int fz_resolve_link_page(fz_context ctx, fz_document doc, fz_link_handle link);
+int fz_link_is_valid(fz_context ctx, fz_link_handle link);
 
 // ============================================================================
 // Form Widget Functions
