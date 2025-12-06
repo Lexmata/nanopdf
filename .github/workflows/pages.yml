@@ -38,9 +38,22 @@ jobs:
         working-directory: ./pages
         run: pnpm install
 
+      - name: Install Node.js docs dependencies
+        working-directory: ./nanopdf-js
+        run: pnpm install
+
+      - name: Generate TypeDoc documentation
+        working-directory: ./nanopdf-js
+        run: pnpm run docs
+
       - name: Build Angular app
         working-directory: ./pages
         run: pnpm build
+
+      - name: Copy API docs to dist
+        run: |
+          mkdir -p ./pages/dist/browser/api
+          cp -r ./docs/api/* ./pages/dist/browser/api/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
