@@ -40,7 +40,7 @@ impl Colorspace {
     pub fn n(&self) -> u8 {
         self.n
     }
-    
+
     /// Get the color type
     pub fn color_type(&self) -> ColorType {
         match self.name.as_str() {
@@ -50,7 +50,7 @@ impl Colorspace {
             _ => ColorType::Other,
         }
     }
-    
+
     /// Check if colorspace has alpha channel
     pub fn has_alpha(&self) -> bool {
         // Most colorspaces don't have alpha by default

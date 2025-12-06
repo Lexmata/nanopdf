@@ -225,7 +225,7 @@ impl Matrix {
             f: self.e * m.b + self.f * m.d + m.f,
         }
     }
-    
+
     /// Transform a point by this matrix
     pub fn transform_point(&self, p: Point) -> Point {
         Point {
