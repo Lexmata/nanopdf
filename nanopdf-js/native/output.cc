@@ -223,7 +223,7 @@ Napi::Object InitOutput(Napi::Env env, Napi::Object exports) {
     exports.Set("writeByte", Napi::Function::New(env, WriteByte));
     exports.Set("closeOutput", Napi::Function::New(env, CloseOutput));
     exports.Set("tellOutput", Napi::Function::New(env, TellOutput));
-    
+
     return exports;
 }
 

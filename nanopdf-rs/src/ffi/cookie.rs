@@ -54,7 +54,7 @@ pub extern "C" fn fz_abort_cookie(_ctx: Handle, cookie: Handle) {
     let Ok(cookie_obj) = arc.lock() else {
         return;
     };
-    
+
     cookie_obj.abort();
 }
 
@@ -82,7 +82,7 @@ pub unsafe extern "C" fn fz_cookie_progress(
     let Ok(cookie_obj) = arc.lock() else {
         return;
     };
-    
+
     unsafe {
         *progress = cookie_obj.progress();
         *progress_max = cookie_obj.progress_max();
@@ -103,7 +103,7 @@ pub extern "C" fn fz_cookie_is_aborted(_ctx: Handle, cookie: Handle) -> c_int {
     let Ok(cookie_obj) = arc.lock() else {
         return 0;
     };
-    
+
     if cookie_obj.should_abort() { 1 } else { 0 }
 }
 
@@ -120,6 +120,6 @@ pub extern "C" fn fz_reset_cookie(_ctx: Handle, cookie: Handle) {
     let Ok(cookie_obj) = arc.lock() else {
         return;
     };
-    
+
     cookie_obj.reset_abort();
 }
