@@ -407,7 +407,7 @@ func TestPerformanceBufferOperations(t *testing.T) {
 	// Test buffer creation
 	start := time.Now()
 	for i := 0; i < iterations; i++ {
-		buf := nanopdf.NewBufferWithCapacity(bufferSize)
+		buf := nanopdf.NewBuffer(bufferSize)
 		if buf == nil {
 			t.Fatal("Failed to create buffer")
 		}

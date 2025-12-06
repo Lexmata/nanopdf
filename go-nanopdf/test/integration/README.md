@@ -98,6 +98,22 @@ These tests verify the Go bindings work correctly with real PDFs and complex wor
 
 **Coverage**: Robustness and error recovery
 
+### 8. **NEW:** Advanced Features (`advanced_features_test.go`)
+**Tests**: Complex PDF features and real-world scenarios
+
+- Password-protected PDFs (encryption/decryption)
+- Linearized PDFs (web-optimized)
+- Embedded images (JPEG, grayscale)
+- Annotations (highlights, shapes, notes)
+- Document outline/bookmarks
+- File attachments/embedded files
+- High-resolution image rendering
+- 100-page document handling
+- Corrupted PDF graceful degradation
+- Mixed feature workflows
+
+**Coverage**: Advanced PDF features and real-world complexity
+
 ## Running Tests
 
 ### Run All Integration Tests
@@ -124,6 +140,12 @@ go test -tags=integration ./test/integration/ -run TestPerformance -v
 
 # Error handling tests
 go test -tags=integration ./test/integration/ -run TestError -v
+
+# Advanced features tests
+go test -tags=integration ./test/integration/ -run TestEncrypted -v
+go test -tags=integration ./test/integration/ -run TestLinearized -v
+go test -tags=integration ./test/integration/ -run TestPDFWith -v
+go test -tags=integration ./test/integration/ -run Test100Page -v
 ```
 
 ### Run with Coverage
@@ -154,11 +176,22 @@ Integration tests use PDFs from `../../../test-pdfs/`:
 | PDF | Description | Size | Used By |
 |-----|-------------|------|---------|
 | `minimal/empty.pdf` | Minimal valid PDF | 343 B | Error tests |
+| `minimal/corrupted.pdf` | Malformed PDF | 213 B | Error tests |
 | `simple/hello-world.pdf` | Single page with text | 583 B | Most tests |
 | `simple/multi-page.pdf` | 3 pages | 1.1 KB | Multi-page tests |
 | `medium/with-metadata.pdf` | Rich metadata | 1.3 KB | Metadata tests |
 | `medium/with-links.pdf` | Internal links | 1.2 KB | Link tests |
+| `medium/with-outline.pdf` | Bookmarks | 1.5 KB | Advanced tests |
+| `medium/with-attachments.pdf` | File attachments | 967 B | Advanced tests |
 | `complex/with-forms.pdf` | Form fields | 1.4 KB | Form tests |
+| `complex/with-images.pdf` | Embedded images | 1.9 KB | Advanced tests |
+| `complex/with-annotations.pdf` | Annotations | 1.4 KB | Advanced tests |
+| `complex/encrypted.pdf` | Password-protected | 877 B | Advanced tests |
+| `complex/linearized.pdf` | Web-optimized | 829 B | Advanced tests |
+| `large/multi-page-100.pdf` | 100 pages | 25 KB | Performance tests |
+| `large/high-resolution-images.pdf` | High-res images | 1.4 KB | Advanced tests |
+
+**Total**: 15 test PDFs covering all core PDF features
 
 If test PDFs are not found, tests are skipped automatically.
 
@@ -188,10 +221,10 @@ Shared helpers in test files:
 
 | Metric | Value |
 |--------|-------|
-| **Total Test Files** | 7 |
-| **Total Test Functions** | 50+ |
-| **Lines of Test Code** | ~1,500 lines |
-| **Test PDFs** | 6 |
+| **Total Test Files** | 8 |
+| **Total Test Functions** | 60+ |
+| **Lines of Test Code** | ~2,100 lines |
+| **Test PDFs** | 15 |
 | **Coverage** | ~85% of public API |
 
 ### Test Breakdown
@@ -205,6 +238,7 @@ Shared helpers in test files:
 | **Concurrent** | **8** | **~400** | **Thread safety** |
 | **Performance** | **10** | **~600** | **Benchmarks** |
 | **Error** | **15** | **~400** | **Robustness** |
+| **Advanced** | **10** | **~500** | **Complex features** |
 
 ## Performance Expectations
 
@@ -462,6 +496,8 @@ func TestMyFeature(t *testing.T) {
 
 **Last Updated**: 2025-01-05  
 **Test Coverage**: 85%  
-**Total Tests**: 50+  
-**Lines**: ~1,500
+**Total Tests**: 60+  
+**Test Files**: 8  
+**Test PDFs**: 15  
+**Lines**: ~2,100
 

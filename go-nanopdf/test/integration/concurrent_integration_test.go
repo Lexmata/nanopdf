@@ -138,7 +138,7 @@ func TestConcurrentPageRendering(t *testing.T) {
 
 	t.Logf("Results: %d success, %d failures", successCount, failCount)
 
-	if successCount < int32(numRenders*0.8) {
+	if successCount < int32(float64(numRenders)*0.8) {
 		t.Errorf("Too many failures: %d/%d succeeded", successCount, numRenders)
 	}
 }
@@ -198,7 +198,7 @@ func TestConcurrentTextExtraction(t *testing.T) {
 
 	t.Logf("Successfully extracted text %d/%d times", successCount, numExtractions)
 
-	if successCount < int32(numExtractions*0.9) {
+	if successCount < int32(float64(numExtractions)*0.9) {
 		t.Errorf("Too many extraction failures: %d/%d", successCount, numExtractions)
 	}
 }
@@ -308,7 +308,7 @@ func TestConcurrentContextCreation(t *testing.T) {
 			defer ctx.Drop()
 
 			// Perform a simple operation
-			buf := nanopdf.NewBufferWithCapacity(1024)
+			buf := nanopdf.NewBuffer(1024)
 			if buf == nil {
 				t.Errorf("Goroutine %d: Failed to create buffer", id)
 				return
@@ -336,7 +336,7 @@ func TestConcurrentContextCreation(t *testing.T) {
 
 	t.Logf("Successfully created %d/%d contexts", successCount, numContexts)
 
-	if successCount < int32(numContexts*0.95) {
+	if successCount < int32(float64(numContexts)*0.95) {
 		t.Errorf("Too many context creation failures: %d/%d", successCount, numContexts)
 	}
 }
@@ -414,7 +414,7 @@ func TestConcurrentBufferOperations(t *testing.T) {
 		go func(id int) {
 			defer wg.Done()
 
-			buf := nanopdf.NewBufferWithCapacity(1024)
+			buf := nanopdf.NewBuffer(1024)
 			if buf == nil {
 				t.Errorf("Goroutine %d: Failed to create buffer", id)
 				return
@@ -453,7 +453,7 @@ func TestConcurrentBufferOperations(t *testing.T) {
 
 	t.Logf("Successfully completed %d/%d buffer operations", successCount, numBuffers)
 
-	if successCount < int32(numBuffers*0.95) {
+	if successCount < int32(float64(numBuffers)*0.95) {
 		t.Errorf("Too many buffer operation failures: %d/%d", successCount, numBuffers)
 	}
 }
@@ -525,7 +525,7 @@ func TestConcurrentPixmapAccess(t *testing.T) {
 
 	t.Logf("Successfully completed %d/%d pixmap operations", successCount, numGoroutines)
 
-	if successCount < int32(numGoroutines*0.9) {
+	if successCount < int32(float64(numGoroutines)*0.9) {
 		t.Errorf("Too many pixmap operation failures: %d/%d", successCount, numGoroutines)
 	}
 }

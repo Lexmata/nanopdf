@@ -265,7 +265,7 @@ func TestErrorEmptyPDF(t *testing.T) {
 // TestErrorInvalidBufferOperations tests buffer error conditions
 func TestErrorInvalidBufferOperations(t *testing.T) {
 	// Test buffer with zero capacity
-	buf := nanopdf.NewBufferWithCapacity(0)
+	buf := nanopdf.NewBuffer(0)
 	if buf == nil {
 		t.Error("Buffer with zero capacity should still be created")
 	} else {
@@ -278,7 +278,7 @@ func TestErrorInvalidBufferOperations(t *testing.T) {
 	}
 
 	// Test appending empty data
-	buf2 := nanopdf.NewBufferWithCapacity(1024)
+	buf2 := nanopdf.NewBuffer(1024)
 	if buf2 == nil {
 		t.Fatal("Failed to create buffer")
 	}
