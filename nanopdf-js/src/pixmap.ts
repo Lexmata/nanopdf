@@ -1,15 +1,153 @@
 /**
- * Pixmap - Raster image handling
+ * Pixmap - Raster image handling and pixel manipulation
+ *
+ * This module provides comprehensive support for working with raster images (pixmaps)
+ * in PDF documents. Pixmaps represent pixel-based images with support for various
+ * colorspaces, alpha channels, and pixel-level manipulation.
  *
  * This module provides 100% API compatibility with MuPDF's pixmap operations.
- * Handles pixel-based images, conversions, and manipulations.
+ *
+ * @module pixmap
+ * @example
+ * ```typescript
+ * import { Pixmap, Colorspace, Rect } from 'nanopdf';
+ *
+ * // Create a pixmap from a page
+ * const page = doc.loadPage(0);
+ * const pixmap = page.toPixmap(Matrix.identity());
+ *
+ * // Create an empty pixmap
+ * const empty = Pixmap.create(Colorspace.deviceRGB(), 100, 100, true);
+ *
+ * // Get pixel data
+ * const width = pixmap.width;
+ * const height = pixmap.height;
+ * const data = pixmap.samples;
+ *
+ * // Manipulate pixels
+ * for (let y = 0; y < height; y++) {
+ *   for (let x = 0; x < width; x++) {
+ *     const pixel = pixmap.getPixel(x, y);
+ *     // Modify pixel...
+ *     pixmap.setPixel(x, y, [r, g, b, a]);
+ *   }
+ * }
+ *
+ * // Convert colorspace
+ * const gray = pixmap.convert(Colorspace.deviceGray());
+ *
+ * // Scale
+ * const thumbnail = pixmap.scale(50, 50);
+ *
+ * // Clean up
+ * pixmap.drop();
+ * gray.drop();
+ * thumbnail.drop();
+ * ```
  */
 
 import { Rect, IRect, type IRectLike } from './geometry.js';
 import { Colorspace } from './colorspace.js';
 
 /**
- * A raster image (pixmap)
+ * A raster image with pixel-level manipulation capabilities.
+ *
+ * Pixmap represents a rectangular array of pixels with an associated colorspace
+ * and optional alpha channel. Pixmaps are used for rendering PDF pages, working
+ * with images, and performing pixel-level image processing.
+ *
+ * **Key Features:**
+ * - Multiple colorspace support (Gray, RGB, CMYK, etc.)
+ * - Optional alpha channel for transparency
+ * - Pixel-level read/write access
+ * - Colorspace conversion
+ * - Scaling and transformation
+ * - Tinting and color manipulation
+ *
+ * **Memory Layout**: Pixels are stored row-by-row, left-to-right, with components
+ * interleaved. For RGB with alpha, the order is: R₁G₁B₁A₁, R₂G₂B₂A₂, ...
+ *
+ * **Reference Counting**: Pixmaps use manual reference counting. Call `keep()` to
+ * increment the reference count and `drop()` to decrement it.
+ *
+ * @class Pixmap
+ * @example
+ * ```typescript
+ * // Render a PDF page to a pixmap
+ * const doc = Document.open('document.pdf');
+ * const page = doc.loadPage(0);
+ * const matrix = Matrix.scale(2, 2); // 2x zoom
+ * const pixmap = page.toPixmap(matrix, Colorspace.deviceRGB(), true);
+ *
+ * console.log(`Size: ${pixmap.width} x ${pixmap.height}`);
+ * console.log(`Components: ${pixmap.n}`); // 4 for RGBA
+ * console.log(`Has alpha: ${pixmap.alpha}`);
+ *
+ * // Access pixel data
+ * const samples = pixmap.samples; // Uint8Array
+ * const pixel = pixmap.getPixel(10, 10); // [r, g, b, a]
+ *
+ * // Modify a pixel
+ * pixmap.setPixel(10, 10, [255, 0, 0, 255]); // Red pixel
+ *
+ * // Convert to grayscale
+ * const gray = pixmap.convert(Colorspace.deviceGray());
+ *
+ * // Create thumbnail
+ * const thumb = pixmap.scale(100, 100);
+ *
+ * // Clean up
+ * pixmap.drop();
+ * gray.drop();
+ * thumb.drop();
+ * page.drop();
+ * doc.close();
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Create a blank red image
+ * const pixmap = Pixmap.create(
+ *   Colorspace.deviceRGB(),
+ *   200,
+ *   200,
+ *   false // No alpha
+ * );
+ *
+ * // Fill with red
+ * for (let y = 0; y < pixmap.height; y++) {
+ *   for (let x = 0; x < pixmap.width; x++) {
+ *     pixmap.setPixel(x, y, [255, 0, 0]); // Red
+ *   }
+ * }
+ *
+ * // Convert to RGBA
+ * const rgba = pixmap.toRGBA();
+ * console.log(rgba.length); // 200 * 200 * 4 = 160,000 bytes
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Load from raw sample data
+ * const width = 2, height = 2;
+ * const samples = new Uint8Array([
+ *   255, 0, 0, 255,  // Red pixel
+ *   0, 255, 0, 255,  // Green pixel
+ *   0, 0, 255, 255,  // Blue pixel
+ *   255, 255, 0, 255 // Yellow pixel
+ * ]);
+ *
+ * const pixmap = Pixmap.fromSamples(
+ *   Colorspace.deviceRGB(),
+ *   width,
+ *   height,
+ *   true,
+ *   samples
+ * );
+ *
+ * // Tint with red and white
+ * pixmap.tint([255, 0, 0], [255, 255, 255]);
+ * ```
  */
 export class Pixmap {
   private _width: number;

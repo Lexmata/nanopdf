@@ -1,9 +1,95 @@
 /**
- * NanoPDF - Node.js bindings for the NanoPDF PDF library
+ * NanoPDF - High-performance PDF manipulation library for Node.js
  *
- * This library provides 100% API compatibility with the Rust NanoPDF library.
+ * NanoPDF provides comprehensive PDF manipulation capabilities with a clean, type-safe
+ * API. Built on top of MuPDF, it offers excellent performance and extensive PDF support.
+ *
+ * This library provides 100% API compatibility with the Rust NanoPDF library and includes
+ * native N-API bindings for optimal performance.
+ *
+ * ## Features
+ *
+ * - **PDF Reading & Writing**: Open, modify, and save PDF documents
+ * - **Page Rendering**: Render pages to images with custom resolution and colorspace
+ * - **Text Extraction**: Extract text with layout information, search capabilities
+ * - **Annotations**: Read and modify PDF annotations
+ * - **Forms**: Interactive form field support
+ * - **Security**: Password protection and permission checking
+ * - **Metadata**: Read and write document metadata
+ * - **Vector Graphics**: Path construction and manipulation
+ * - **Image Processing**: Pixmap manipulation and colorspace conversion
+ *
+ * ## Quick Start
+ *
+ * ```typescript
+ * import { Document, Matrix } from 'nanopdf';
+ *
+ * // Open a PDF
+ * const doc = Document.open('document.pdf');
+ *
+ * // Get basic info
+ * console.log(`Pages: ${doc.pageCount}`);
+ * console.log(`Title: ${doc.getMetadata('Title')}`);
+ *
+ * // Render first page
+ * const page = doc.loadPage(0);
+ * const matrix = Matrix.scale(2, 2); // 2x zoom
+ * const pixmap = page.toPixmap(matrix);
+ *
+ * // Extract text
+ * const text = page.extractText();
+ * console.log(text);
+ *
+ * // Search for text
+ * const hits = page.searchText('hello');
+ * console.log(`Found ${hits.length} occurrences`);
+ *
+ * // Clean up
+ * page.drop();
+ * doc.close();
+ * ```
+ *
+ * ## Core Modules
+ *
+ * - {@link document} - PDF document handling and page access
+ * - {@link geometry} - 2D geometry primitives (Point, Rect, Matrix)
+ * - {@link buffer} - Binary data handling
+ * - {@link path} - Vector graphics path construction
+ * - {@link pixmap} - Raster image manipulation
+ * - {@link text} - Text layout and glyph rendering
+ * - {@link colorspace} - Color space management
+ *
+ * ## Resource Management
+ *
+ * NanoPDF uses manual resource management for optimal performance. Objects that
+ * allocate native resources (Document, Page, Pixmap, etc.) must be explicitly
+ * freed using `drop()` or `close()` methods.
+ *
+ * ```typescript
+ * // Always clean up resources
+ * const doc = Document.open('document.pdf');
+ * try {
+ *   // Work with document
+ * } finally {
+ *   doc.close();
+ * }
+ * ```
+ *
+ * ## Type Safety
+ *
+ * NanoPDF is written in TypeScript and provides comprehensive type definitions
+ * for excellent IDE support and compile-time type checking.
+ *
+ * ## Performance
+ *
+ * - Native C bindings to MuPDF for optimal performance
+ * - Zero-copy operations where possible
+ * - Efficient memory management
+ * - Suitable for production workloads
  *
  * @packageDocumentation
+ * @module nanopdf
+ * @preferred
  */
 
 // ============================================================================

@@ -1,67 +1,285 @@
 /**
- * Text - PDF text object handling
+ * Text - PDF text object handling and layout
+ *
+ * This module provides comprehensive support for working with text in PDF documents,
+ * including text layout, glyph positioning, font management, and structured text extraction.
  *
  * This module provides 100% API compatibility with MuPDF's text operations.
- * Handles text layout, glyph rendering, and text extraction.
+ *
+ * @module text
+ * @example
+ * ```typescript
+ * import { Text, Language, Matrix } from 'nanopdf';
+ *
+ * // Create a text object
+ * const text = Text.create();
+ *
+ * // Set language for text processing
+ * text.setLanguage(Language.en);
+ *
+ * // Add glyphs (from font)
+ * text.showGlyph('Arial', 12, Matrix.identity(), 65, 0x0041, 0); // 'A'
+ *
+ * // Get bounding box
+ * const bounds = text.getBounds();
+ * console.log(`Text spans ${bounds.width} x ${bounds.height}`);
+ *
+ * // Walk through text structure
+ * text.walk({
+ *   beginSpan(font, size, wmode, trm) {
+ *     console.log(`Span: ${font} @ ${size}pt`);
+ *   },
+ *   showGlyph(x, y, glyph, unicode) {
+ *     console.log(`Glyph ${glyph} at (${x}, ${y})`);
+ *   }
+ * });
+ *
+ * // Clean up
+ * text.drop();
+ * ```
  */
 
 import { Rect, Matrix, type MatrixLike } from './geometry.js';
 
 /**
- * Language codes for text handling
- * Maps language codes to numeric identifiers
+ * Language codes for text handling.
+ *
+ * These language codes are used to assist with text extraction, hyphenation,
+ * and language-specific text processing in PDF documents.
+ *
+ * @enum {number}
+ * @example
+ * ```typescript
+ * const text = Text.create();
+ *
+ * // Set English
+ * text.setLanguage(Language.en);
+ *
+ * // Set Spanish
+ * text.setLanguage(Language.es);
+ *
+ * // Set Chinese
+ * text.setLanguage(Language.zh);
+ *
+ * // Check current language
+ * if (text.getLanguage() === Language.ja) {
+ *   console.log('Japanese text');
+ * }
+ * ```
  */
 export enum Language {
+  /** No language set or unknown language */
   UNSET = 0,
+
+  /** English (en) */
   en = 1,
+
+  /** Spanish (es) */
   es = 2,
+
+  /** Chinese (zh) */
   zh = 3,
+
+  /** French (fr) */
   fr = 4,
+
+  /** German (de) */
   de = 5,
+
+  /** Japanese (ja) */
   ja = 6,
+
+  /** Korean (ko) */
   ko = 7,
+
+  /** Russian (ru) */
   ru = 8,
+
+  /** Arabic (ar) */
   ar = 9,
+
+  /** Portuguese (pt) */
   pt = 10,
+
+  /** Italian (it) */
   it = 11,
+
+  /** Dutch (nl) */
   nl = 12,
+
+  /** Swedish (sv) */
   sv = 13,
+
+  /** Polish (pl) */
   pl = 14,
+
+  /** Turkish (tr) */
   tr = 15
 }
 
 /**
- * Text span - a run of text with consistent formatting
+ * A text span representing a run of text with consistent formatting.
+ *
+ * Text spans group glyphs that share the same font, size, and rendering properties.
+ * They are the basic unit of text layout in PDF documents.
+ *
+ * @interface TextSpan
+ * @example
+ * ```typescript
+ * const span: TextSpan = {
+ *   font: 'Arial',
+ *   size: 12,
+ *   wmode: 0, // Horizontal
+ *   trm: Matrix.identity(),
+ *   items: [
+ *     { x: 10, y: 20, glyph: 65, unicode: 0x0041 }, // 'A'
+ *     { x: 20, y: 20, glyph: 66, unicode: 0x0042 }  // 'B'
+ *   ]
+ * };
+ * ```
  */
 export interface TextSpan {
+  /** The font name (e.g., "Arial", "Times-Roman") */
   font: string;
+
+  /** The font size in points */
   size: number;
-  wmode: number; // 0 = horizontal, 1 = vertical
-  trm: Matrix; // text rendering matrix
+
+  /** Writing mode: 0 = horizontal, 1 = vertical */
+  wmode: number;
+
+  /** Text rendering matrix for transformations */
+  trm: Matrix;
+
+  /** Individual glyphs/characters in this span */
   items: TextItem[];
 }
 
 /**
- * Text item - a single glyph or character
+ * A text item representing a single glyph or character.
+ *
+ * Text items contain the glyph identifier, Unicode codepoint, and position
+ * information for individual characters.
+ *
+ * @interface TextItem
+ * @example
+ * ```typescript
+ * const item: TextItem = {
+ *   x: 100.5,
+ *   y: 200.3,
+ *   glyph: 65,      // Glyph ID in the font
+ *   unicode: 0x0041 // Unicode codepoint for 'A'
+ * };
+ * ```
  */
 export interface TextItem {
+  /** X-coordinate of the glyph position */
   x: number;
+
+  /** Y-coordinate of the glyph position */
   y: number;
+
+  /** Glyph identifier in the font */
   glyph: number;
+
+  /** Unicode codepoint of the character */
   unicode: number;
 }
 
 /**
- * Text walker interface for iterating through text
+ * Text walker interface for iterating through text structure.
+ *
+ * Text walkers provide a callback-based API for traversing the hierarchical
+ * structure of text objects. This is useful for custom text processing,
+ * analysis, and rendering.
+ *
+ * @interface TextWalker
+ * @example
+ * ```typescript
+ * const walker: TextWalker = {
+ *   beginSpan(font, size, wmode, trm) {
+ *     console.log(`Begin span: ${font} @ ${size}pt`);
+ *   },
+ *   endSpan() {
+ *     console.log('End span');
+ *   },
+ *   showGlyph(x, y, glyph, unicode) {
+ *     const char = String.fromCodePoint(unicode);
+ *     console.log(`Glyph '${char}' at (${x}, ${y})`);
+ *   }
+ * };
+ *
+ * text.walk(walker);
+ * ```
  */
 export interface TextWalker {
+  /**
+   * Called when entering a new text span.
+   * @param font - The font name
+   * @param size - The font size in points
+   * @param wmode - Writing mode (0=horizontal, 1=vertical)
+   * @param trm - Text rendering matrix
+   */
   beginSpan?(font: string, size: number, wmode: number, trm: Matrix): void;
+
+  /**
+   * Called when leaving a text span.
+   */
   endSpan?(): void;
+
+  /**
+   * Called for each glyph in the text.
+   * @param x - X-coordinate
+   * @param y - Y-coordinate
+   * @param glyph - Glyph ID
+   * @param unicode - Unicode codepoint
+   */
   showGlyph(x: number, y: number, glyph: number, unicode: number): void;
 }
 
 /**
- * A PDF text object
+ * A PDF text object for structured text layout and rendering.
+ *
+ * Text objects provide low-level control over text positioning, font selection,
+ * and glyph rendering. They maintain a structured representation of text with
+ * spans and items for precise layout control.
+ *
+ * **Reference Counting**: Text objects use manual reference counting. Call `keep()`
+ * to increment the reference count and `drop()` to decrement it.
+ *
+ * @class Text
+ * @example
+ * ```typescript
+ * // Create and configure text object
+ * const text = Text.create();
+ * text.setLanguage(Language.en);
+ *
+ * // Add text with font and positioning
+ * const font = 'Arial';
+ * const size = 12;
+ * const matrix = Matrix.translate(100, 200);
+ *
+ * // Show individual glyphs
+ * 'Hello'.split('').forEach((char, i) => {
+ *   const glyph = char.charCodeAt(0);
+ *   const unicode = char.codePointAt(0)!;
+ *   text.showGlyph(font, size, matrix, glyph, unicode);
+ * });
+ *
+ * // Get bounding box
+ * const bounds = text.getBounds();
+ * console.log(`Text size: ${bounds.width} x ${bounds.height}`);
+ *
+ * // Walk through structure
+ * text.walk({
+ *   showGlyph(x, y, glyph, unicode) {
+ *     console.log(`Character: ${String.fromCodePoint(unicode)}`);
+ *   }
+ * });
+ *
+ * // Clean up
+ * text.drop();
+ * ```
  */
 export class Text {
   private _spans: TextSpan[] = [];
