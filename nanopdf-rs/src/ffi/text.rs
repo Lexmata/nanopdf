@@ -635,3 +635,34 @@ pub extern "C" fn fz_search_stext_page(
 
     hit_count
 }
+
+/// Get the bounding box for a structured text page.
+///
+/// # Safety
+/// Caller must ensure `stext` is a valid handle.
+#[unsafe(no_mangle)]
+pub extern "C" fn fz_bound_stext_page(
+    _ctx: Handle,
+    stext: Handle,
+) -> super::geometry::fz_rect {
+    let Some(stext_ref) = STEXT_PAGES.get(stext) else {
+        return super::geometry::fz_rect {
+            x0: 0.0,
+            y0: 0.0,
+            x1: 0.0,
+            y1: 0.0,
+        };
+    };
+
+    let guard = match stext_ref.lock() {
+        Ok(g) => g,
+        Err(_) => return super::geometry::fz_rect {
+            x0: 0.0,
+            y0: 0.0,
+            x1: 0.0,
+            y1: 0.0,
+        },
+    };
+
+    guard.bounds
+}

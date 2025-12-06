@@ -137,6 +137,7 @@ const unsigned char* fz_buffer_data(fz_context ctx, fz_buffer buf, size_t* len);
 fz_stext_page fz_new_stext_page_from_page(fz_context ctx, fz_page page, const void* options);
 void fz_drop_stext_page(fz_context ctx, fz_stext_page stext);
 fz_buffer fz_new_buffer_from_stext_page(fz_context ctx, fz_stext_page stext);
+fz_rect fz_bound_stext_page(fz_context ctx, fz_stext_page stext);
 
 // ============================================================================
 // Link Functions
