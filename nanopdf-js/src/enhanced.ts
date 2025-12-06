@@ -2,7 +2,74 @@
  * Enhanced - NanoPDF high-level convenience API
  *
  * This module provides NanoPDF-specific high-level functions for common PDF operations.
- * These are convenience wrappers that simplify complex workflows.
+ * These are convenience wrappers that simplify complex workflows and provide a more
+ * user-friendly API for common tasks.
+ *
+ * The Enhanced API includes operations like:
+ * - Adding blank pages
+ * - Adding watermarks
+ * - Drawing shapes (rectangles, circles, lines)
+ * - Merging and splitting PDFs
+ * - Optimizing and linearizing PDFs
+ *
+ * @module enhanced
+ * @example
+ * ```typescript
+ * import { Enhanced, Document } from 'nanopdf';
+ *
+ * const enhanced = new Enhanced();
+ * const doc = Document.open('document.pdf');
+ *
+ * // Add a blank page
+ * enhanced.addBlankPage(doc, 612, 792); // US Letter size
+ *
+ * // Add a watermark
+ * enhanced.addWatermark(
+ *   doc,
+ *   'CONFIDENTIAL',
+ *   { x: 300, y: 400 },
+ *   12,
+ *   0.3 // 30% opacity
+ * );
+ *
+ * // Draw shapes
+ * enhanced.drawRectangle(
+ *   doc,
+ *   0, // page index
+ *   { x0: 100, y0: 100, x1: 200, y1: 200 },
+ *   [255, 0, 0], // red
+ *   0.5, // opacity
+ *   2, // line width
+ *   true // fill
+ * );
+ *
+ * // Save
+ * doc.save('output.pdf');
+ * doc.close();
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Merge multiple PDFs
+ * const enhanced = new Enhanced();
+ * enhanced.mergePdfs(
+ *   ['doc1.pdf', 'doc2.pdf', 'doc3.pdf'],
+ *   'merged.pdf'
+ * );
+ *
+ * // Split a PDF
+ * enhanced.splitPdf(
+ *   'document.pdf',
+ *   'output-dir',
+ *   { startPage: 0, endPage: 10 }
+ * );
+ *
+ * // Optimize a PDF
+ * enhanced.optimizePdf('large.pdf', 'optimized.pdf');
+ *
+ * // Linearize for web viewing
+ * enhanced.linearizePdf('document.pdf', 'web-optimized.pdf');
+ * ```
  */
 
 import { Context, getDefaultContext } from './context.js';
@@ -12,7 +79,31 @@ import { native } from './native.js';
 import type { NativeContext, NativeDocument, NativePage } from './native.js';
 
 /**
- * Enhanced NanoPDF API
+ * Enhanced NanoPDF API for high-level PDF operations.
+ *
+ * Provides convenient methods for common PDF manipulation tasks that would
+ * otherwise require multiple lower-level API calls.
+ *
+ * @class Enhanced
+ * @example
+ * ```typescript
+ * const enhanced = new Enhanced();
+ * const doc = Document.open('document.pdf');
+ *
+ * // Add a watermark to all pages
+ * for (let i = 0; i < doc.pageCount; i++) {
+ *   enhanced.addWatermark(
+ *     doc,
+ *     'DRAFT',
+ *     { x: 300, y: 400 },
+ *     48,
+ *     0.2
+ *   );
+ * }
+ *
+ * doc.save('watermarked.pdf');
+ * doc.close();
+ * ```
  */
 export class Enhanced {
   private _ctx: Context;

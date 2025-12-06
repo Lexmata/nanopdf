@@ -1,28 +1,163 @@
 /**
- * Colorspace - PDF color space handling
+ * Colorspace - PDF color space handling and color conversion
+ *
+ * This module provides comprehensive support for PDF color spaces including device
+ * color spaces (Gray, RGB, CMYK), indexed colors, ICC profiles, Lab, and more.
  *
  * This module provides 100% API compatibility with MuPDF's colorspace operations.
- * Handles color spaces, conversion, and color manipulation.
+ *
+ * @module colorspace
+ * @example
+ * ```typescript
+ * import { Colorspace, ColorspaceType } from 'nanopdf';
+ *
+ * // Use device colorspaces
+ * const rgb = Colorspace.deviceRGB();
+ * const gray = Colorspace.deviceGray();
+ * const cmyk = Colorspace.deviceCMYK();
+ *
+ * console.log(rgb.n);  // 3 (components)
+ * console.log(gray.n); // 1 (component)
+ * console.log(cmyk.n); // 4 (components)
+ *
+ * // Convert colors between colorspaces
+ * const rgbColor = [255, 0, 0]; // Red in RGB (0-255)
+ * const normalizedRgb = rgbColor.map(c => c / 255); // Normalize to 0-1
+ * const grayColor = rgb.convertColor(gray, normalizedRgb);
+ *
+ * console.log(grayColor); // [~0.3] (approximately 30% gray)
+ *
+ * // Create indexed colorspace
+ * const palette = new Uint8Array([
+ *   255, 0, 0,    // Red
+ *   0, 255, 0,    // Green
+ *   0, 0, 255     // Blue
+ * ]);
+ * const indexed = Colorspace.createIndexed(rgb, 2, palette);
+ * ```
  */
 
 /**
- * Colorspace types
+ * PDF colorspace types.
+ *
+ * Colorspace types determine how color values are interpreted and rendered.
+ * Each type has a specific number of components and color model.
+ *
+ * @enum {number}
+ * @example
+ * ```typescript
+ * const cs = Colorspace.deviceRGB();
+ *
+ * if (cs.type === ColorspaceType.RGB) {
+ *   console.log('RGB colorspace with 3 components');
+ * }
+ *
+ * // Check colorspace type
+ * const isGray = cs.type === ColorspaceType.Gray;
+ * const isCMYK = cs.type === ColorspaceType.CMYK;
+ * ```
  */
 export enum ColorspaceType {
+  /** No colorspace / undefined */
   None = 0,
+
+  /** Grayscale (1 component: luminance) */
   Gray = 1,
+
+  /** RGB color (3 components: red, green, blue) */
   RGB = 2,
+
+  /** BGR color (3 components: blue, green, red) - reverse of RGB */
   BGR = 3,
+
+  /** CMYK color (4 components: cyan, magenta, yellow, black) - used in printing */
   CMYK = 4,
+
+  /** Lab color (3 components: L*, a*, b*) - perceptual uniformity */
   Lab = 5,
+
+  /** Indexed color (palette-based, 1 component: index) */
   Indexed = 6,
+
+  /** Separation color (spot colors, 1 component per colorant) */
   Separation = 7,
+
+  /** DeviceN color (multiple spot colors) */
   DeviceN = 8,
+
+  /** ICC profile-based color (variable components) */
   ICC = 9
 }
 
 /**
- * A PDF colorspace
+ * A PDF colorspace defining how colors are interpreted.
+ *
+ * Colorspaces determine the color model and number of components used to represent
+ * colors in a PDF. They handle color conversion between different color models and
+ * provide color manipulation capabilities.
+ *
+ * **Device Colorspaces**: Use the singleton factory methods (`deviceGray()`,
+ * `deviceRGB()`, `deviceCMYK()`) for standard device colorspaces.
+ *
+ * **Reference Counting**: Colorspaces use manual reference counting. Call `keep()`
+ * to increment the reference count and `drop()` to decrement it.
+ *
+ * @class Colorspace
+ * @example
+ * ```typescript
+ * // Use device colorspaces (recommended)
+ * const rgb = Colorspace.deviceRGB();
+ * const gray = Colorspace.deviceGray();
+ *
+ * // Create a pixmap with RGB colorspace
+ * const pixmap = Pixmap.create(rgb, 100, 100, true);
+ *
+ * // Convert RGB to grayscale
+ * const rgbColor = [1.0, 0.0, 0.0]; // Red (normalized 0-1)
+ * const grayValue = rgb.convertColor(gray, rgbColor);
+ * console.log(grayValue); // [~0.3] (30% gray)
+ *
+ * // Get colorspace info
+ * console.log(rgb.name);  // "DeviceRGB"
+ * console.log(rgb.n);     // 3 (components)
+ * console.log(rgb.type);  // ColorspaceType.RGB
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Create indexed colorspace for palette-based colors
+ * const base = Colorspace.deviceRGB();
+ * const palette = new Uint8Array([
+ *   255, 0, 0,      // Index 0: Red
+ *   0, 255, 0,      // Index 1: Green
+ *   0, 0, 255,      // Index 2: Blue
+ *   255, 255, 0,    // Index 3: Yellow
+ * ]);
+ *
+ * const indexed = Colorspace.createIndexed(base, 3, palette);
+ * console.log(indexed.n); // 1 (index component)
+ *
+ * // Use index 0 (red), 1 (green), 2 (blue), or 3 (yellow)
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Color conversion between colorspaces
+ * const rgb = Colorspace.deviceRGB();
+ * const cmyk = Colorspace.deviceCMYK();
+ * const gray = Colorspace.deviceGray();
+ *
+ * // Red in RGB
+ * const red = [1.0, 0.0, 0.0];
+ *
+ * // Convert RGB to CMYK
+ * const cmykRed = rgb.convertColor(cmyk, red);
+ * console.log(cmykRed); // [0, 1, 1, 0] (cyan=0, magenta=100%, yellow=100%, black=0)
+ *
+ * // Convert RGB to grayscale
+ * const grayRed = rgb.convertColor(gray, red);
+ * console.log(grayRed); // [~0.3] (30% gray - perceptual luminance)
+ * ```
  */
 export class Colorspace {
   private _type: ColorspaceType;
