@@ -1,15 +1,16 @@
-# NanoPDF for Node.js
+# NanoPDF for Node.js & Deno
 
 <div align="center">
 
-**High-performance PDF manipulation library for Node.js**
+**High-performance PDF manipulation library for Node.js and Deno**
 
 [![NPM Version](https://img.shields.io/npm/v/nanopdf.svg)](https://www.npmjs.com/package/nanopdf)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
+[![Deno](https://img.shields.io/badge/deno-compatible-brightgreen.svg)](https://deno.land/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
-[Features](#features) • [Installation](#installation) • [Quick Start](#quick-start) • [Documentation](#documentation) • [Examples](#examples) • [API Reference](#api-reference)
+[Features](#features) • [Installation](#installation) • [Quick Start](#quick-start) • [Deno](#deno-support) • [Documentation](#documentation) • [Examples](#examples)
 
 </div>
 
@@ -96,6 +97,53 @@ The package will automatically download prebuilt binaries for your platform. If 
 | macOS | x64 | ✅ Supported |
 | macOS | ARM64 (M1/M2) | ✅ Supported |
 | Windows | x64 | ✅ Supported |
+
+---
+
+## Deno Support
+
+NanoPDF now supports Deno with native FFI bindings! 🦕
+
+### Quick Start with Deno
+
+```typescript
+import { Context, Document, Pixmap, MatrixHelper } from "jsr:@nanopdf/deno";
+
+// Extract text
+using ctx = new Context();
+using doc = Document.open(ctx, "document.pdf");
+using page = doc.loadPage(0);
+const text = page.extractText();
+console.log(text);
+
+// Render to PNG
+const matrix = MatrixHelper.dpi(300);
+using pixmap = Pixmap.fromPage(ctx, page, matrix);
+await pixmap.savePng("output.png");
+```
+
+### Run Examples
+
+```bash
+# Extract text
+deno run --allow-all examples/deno/basic.ts sample.pdf text
+
+# Render to PNG
+deno run --allow-all examples/deno/basic.ts sample.pdf render
+
+# Run tests
+deno test --allow-all examples/deno/test.ts
+```
+
+### Features
+
+- ✅ Native Deno FFI (no Node.js required)
+- ✅ Zero external dependencies
+- ✅ Full TypeScript support
+- ✅ Automatic resource cleanup with `using` keyword
+- ✅ Same API as Node.js version
+
+See [DENO.md](DENO.md) for complete Deno documentation.
 
 ---
 

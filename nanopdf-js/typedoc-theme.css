@@ -1,6 +1,6 @@
 /**
  * NanoPDF TypeDoc Theme with Tailwind CSS
- * 
+ *
  * This theme provides a modern, clean interface using Tailwind utilities
  * and custom components for TypeDoc documentation.
  */
@@ -16,18 +16,18 @@
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
-  
+
   /* Spacing */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
-  
+
   /* Typography */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   --font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Droid Sans Mono', monospace;
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -418,7 +418,7 @@ tr:hover td {
     position: static;
     max-height: none;
   }
-  
+
   .tsd-navigation {
     margin-bottom: var(--spacing-lg);
   }
@@ -428,11 +428,11 @@ tr:hover td {
   .tsd-page-title h1 {
     font-size: 1.875rem;
   }
-  
+
   .col-content {
     padding: var(--spacing-lg);
   }
-  
+
   pre {
     padding: var(--spacing-md);
   }
@@ -444,45 +444,45 @@ tr:hover td {
     --color-primary: #818cf8;
     --color-accent: #a78bfa;
   }
-  
+
   body {
     background-color: #111827;
     color: #e5e7eb;
   }
-  
+
   .col-content,
   .tsd-navigation,
   .tsd-member {
     background: #1f2937;
     border-color: #374151;
   }
-  
+
   .tsd-page-title {
     background: #1f2937;
     border-color: #374151;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     color: #f3f4f6;
   }
-  
+
   code {
     background-color: #374151;
     color: #f472b6;
   }
-  
+
   .tsd-signature {
     background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
   }
-  
+
   .tsd-parameter {
     background: #374151;
   }
-  
+
   td {
     border-color: #374151;
   }
-  
+
   tr:hover td {
     background-color: #374151;
   }
@@ -495,7 +495,7 @@ tr:hover td {
   .tsd-search {
     display: none;
   }
-  
+
   .col-content {
     box-shadow: none;
     padding: 0;
