@@ -46,6 +46,20 @@ jobs:
         working-directory: ./nanopdf-js
         run: pnpm run docs
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python docs dependencies
+        run: |
+          pip install sphinx sphinx-rtd-theme
+
+      - name: Generate Sphinx documentation
+        working-directory: ./nanopdf-py/docs
+        run: |
+          sphinx-build -b html . ../../docs/api/python
+
       - name: Build Angular app
         working-directory: ./pages
         run: pnpm build
