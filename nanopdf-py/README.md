@@ -64,21 +64,21 @@ with EasyPDF.open('document.pdf') as pdf:
     # Get info
     print(f"Pages: {pdf.page_count()}")
     print(f"Metadata: {pdf.get_metadata()}")
-    
+
     # Extract text from all pages
     all_text = pdf.extract_all_text()
-    
+
     # Extract text from specific page
     page_text = pdf.extract_page_text(0)
-    
+
     # Search across all pages
     results = pdf.search_all('keyword')
     for result in results:
         print(f"Found on page {result['page_num']}: {result['bbox']}")
-    
+
     # Render pages
     pdf.render_page(0, 'page0.png', dpi=300)
-    
+
     # Render all pages
     paths = pdf.render_all_pages('output_dir', dpi=150)
     print(f"Generated {len(paths)} images")
@@ -95,21 +95,21 @@ with Context() as ctx:
     with Document.open(ctx, 'document.pdf') as doc:
         print(f"Pages: {doc.page_count()}")
         print(f"Title: {doc.get_metadata('Title')}")
-        
+
         # Load page
         with doc.load_page(0) as page:
             # Get page bounds
             bounds = page.bounds()
             print(f"Size: {bounds.width()} x {bounds.height()}")
-            
+
             # Extract text
             text = page.extract_text()
             print(text[:100])
-            
+
             # Render to pixmap
             matrix = Matrix.scale(2.0, 2.0)  # 2x scale = 144 DPI
             colorspace = Colorspace.device_rgb(ctx)
-            
+
             with Pixmap.from_page(ctx, page, matrix, colorspace) as pix:
                 print(f"Image: {pix.width()}x{pix.height()}")
                 pix.save_png('output.png')
@@ -139,18 +139,18 @@ with EasyPDF.open('file.pdf') as pdf:
     encrypted = pdf.is_encrypted()
     metadata = pdf.get_metadata()
     info = pdf.get_info()
-    
+
     # Text extraction
     all_text = pdf.extract_all_text()
     page_text = pdf.extract_page_text(0)
-    
+
     # Search
     results = pdf.search_all('keyword')
-    
+
     # Rendering
     pdf.render_page(0, 'page.png', dpi=300)
     paths = pdf.render_all_pages('output_dir', dpi=150)
-    
+
     # Page info
     bounds = pdf.get_page_bounds(0)
 ```
@@ -299,7 +299,7 @@ from nanopdf import EasyPDF
 
 with EasyPDF.open('document.pdf') as pdf:
     results = pdf.search_all('Python')
-    
+
     for result in results:
         page_num = result['page_num']
         bbox = result['bbox']
@@ -329,7 +329,7 @@ with Context() as ctx:
             scale = dpi / 72.0
             matrix = Matrix.scale(scale, scale)
             colorspace = Colorspace.device_rgb(ctx)
-            
+
             with Pixmap.from_page(ctx, page, matrix, colorspace) as pix:
                 pix.save_png('high_res.png')
 ```

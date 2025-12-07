@@ -49,7 +49,7 @@ export class Pixmap {
     alpha = false
   ): Pixmap {
     const colorspace = fz_device_rgb(ctx.getHandle());
-    
+
     // Create matrix buffer
     const matrixBuffer = new Float32Array([
       matrix.a,
@@ -110,7 +110,7 @@ export class Pixmap {
 
   toPng(): Uint8Array {
     const ctxHandle = this.ctx.getHandle();
-    
+
     // Create PNG buffer
     const bufferHandle = fz_new_buffer_from_pixmap_as_png(ctxHandle, this.handle, 0);
     if (bufferHandle === 0n) {
@@ -121,7 +121,7 @@ export class Pixmap {
       // Get buffer data
       const sizePtr = Buffer.alloc(8);
       const dataPtr = fz_buffer_data(ctxHandle, bufferHandle, ptr(sizePtr));
-      
+
       if (!dataPtr) {
         return new Uint8Array(0);
       }

@@ -7,11 +7,11 @@ from .ffi import ffi, lib
 
 class Point:
     """2D point with x and y coordinates.
-    
+
     Args:
         x: X coordinate
         y: Y coordinate
-        
+
     Example:
         >>> p = Point(10, 20)
         >>> p.x, p.y
@@ -46,13 +46,13 @@ class Point:
 
 class Rect:
     """Rectangle defined by two corners (x0, y0) and (x1, y1).
-    
+
     Args:
         x0: Left edge
         y0: Top edge
         x1: Right edge
         y1: Bottom edge
-        
+
     Example:
         >>> r = Rect(0, 0, 612, 792)  # US Letter
         >>> r.width(), r.height()
@@ -99,10 +99,10 @@ class Rect:
         y0 = max(self.y0, other.y0)
         x1 = min(self.x1, other.x1)
         y1 = min(self.y1, other.y1)
-        
+
         if x0 >= x1 or y0 >= y1:
             return None
-        
+
         return Rect(x0, y0, x1, y1)
 
     def union(self, other: Rect) -> Rect:
@@ -111,7 +111,7 @@ class Rect:
             return other
         if other.is_empty():
             return self
-        
+
         return Rect(
             min(self.x0, other.x0),
             min(self.y0, other.y0),
@@ -128,11 +128,11 @@ class Rect:
             Point(self.x0, self.y1).transform(matrix),
             Point(self.x1, self.y1).transform(matrix),
         ]
-        
+
         # Find bounding box
         xs = [p.x for p in corners]
         ys = [p.y for p in corners]
-        
+
         return Rect(min(xs), min(ys), max(xs), max(ys))
 
     def __repr__(self) -> str:
@@ -165,7 +165,7 @@ class Rect:
 
 class IRect:
     """Integer rectangle (for pixel operations).
-    
+
     Args:
         x0: Left edge (integer)
         y0: Top edge (integer)
@@ -193,15 +193,15 @@ class IRect:
 
 class Matrix:
     """2D transformation matrix.
-    
+
     Matrix is represented as [a, b, c, d, e, f] where:
         [ a  c  e ]
         [ b  d  f ]
         [ 0  0  1 ]
-        
+
     Args:
         a, b, c, d, e, f: Matrix coefficients
-        
+
     Example:
         >>> m = Matrix.scale(2, 2)  # 2x scale
         >>> m = Matrix.rotate(90)   # 90 degree rotation
@@ -293,9 +293,9 @@ class Matrix:
 
 class Quad:
     """Quadrilateral defined by four corner points.
-    
+
     Used for rotated text bounding boxes.
-    
+
     Args:
         ul: Upper-left point
         ur: Upper-right point

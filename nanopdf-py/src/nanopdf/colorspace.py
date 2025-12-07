@@ -7,10 +7,10 @@ from .context import Context
 
 class Colorspace:
     """PDF colorspace (color model).
-    
+
     Colorspaces define how colors are represented in the PDF.
     Common colorspaces: DeviceGray, DeviceRGB, DeviceCMYK.
-    
+
     Example:
         >>> ctx = Context()
         >>> rgb = Colorspace.device_rgb(ctx)
@@ -48,7 +48,7 @@ class Colorspace:
 
     def components(self) -> int:
         """Get number of color components.
-        
+
         Returns:
             1 for Gray, 3 for RGB/BGR, 4 for CMYK
         """
@@ -56,7 +56,7 @@ class Colorspace:
 
     def name(self) -> str:
         """Get colorspace name.
-        
+
         Returns:
             Name like "DeviceGray", "DeviceRGB", "DeviceCMYK"
         """

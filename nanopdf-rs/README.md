@@ -120,7 +120,7 @@ Complete documentation is available in multiple formats:
   - Inline examples for common operations
   - Type-level documentation
   - 11,000+ lines of documented code
-  
+
 - **[crates.io/crates/nanopdf](https://crates.io/crates/nanopdf)** - Package information
   - Version history and changelog
   - Feature flags and dependencies
@@ -133,7 +133,7 @@ Complete documentation is available in multiple formats:
   - Cross-compilation instructions
   - Static library generation
   - Integration with C/C++ projects
-  
+
 - **[Makefile Targets](Makefile)** - 40+ build, test, and install targets
   - Quick reference for common tasks
   - CI/CD integration helpers
@@ -155,7 +155,7 @@ NanoPDF provides bindings for multiple languages:
   - TypeScript definitions included
   - Easy and Simple APIs for common tasks
   - 20 comprehensive examples
-  
+
 - **[Go](../go-nanopdf/README.md)** - CGO bindings with pure-Go mock
   - Idiomatic Go API
   - 90.5% test coverage

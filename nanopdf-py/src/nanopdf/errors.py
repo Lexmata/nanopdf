@@ -18,12 +18,12 @@ class ErrorCode(IntEnum):
 
 class NanoPDFError(Exception):
     """Base exception for all NanoPDF errors.
-    
+
     Args:
         code: Error code indicating the type of error
         message: Human-readable error message
         cause: Optional underlying exception
-        
+
     Attributes:
         code (ErrorCode): The error code
         message (str): Error message

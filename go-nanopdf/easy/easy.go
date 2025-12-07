@@ -98,12 +98,19 @@ type PDF struct {
 //	}
 //	defer pdf.Close()
 func Open(path string) (*PDF, error) {
-	doc, err := nanopdf.OpenDocument(path, "")
+	ctx := nanopdf.NewContext()
+	if ctx == nil {
+		return nil, nanopdf.NewError(nanopdf.ErrCodeGeneric, "failed to create context")
+	}
+
+	doc, err := nanopdf.OpenDocument(ctx, path)
 	if err != nil {
+		ctx.Drop()
 		return nil, err
 	}
 
 	return &PDF{
+		ctx:       ctx,
 		doc:       doc,
 		autoClose: true,
 	}, nil
@@ -111,12 +118,28 @@ func Open(path string) (*PDF, error) {
 
 // OpenWithPassword opens a password-protected PDF document
 func OpenWithPassword(path, password string) (*PDF, error) {
-	doc, err := nanopdf.OpenDocument(path, password)
+	ctx := nanopdf.NewContext()
+	if ctx == nil {
+		return nil, nanopdf.NewError(nanopdf.ErrCodeGeneric, "failed to create context")
+	}
+
+	doc, err := nanopdf.OpenDocument(ctx, path)
 	if err != nil {
+		ctx.Drop()
 		return nil, err
 	}
 
+	// Authenticate if needed
+	if needs, _ := doc.NeedsPassword(); needs {
+		if ok, _ := doc.Authenticate(password); !ok {
+			doc.Drop()
+			ctx.Drop()
+			return nil, nanopdf.NewError(nanopdf.ErrCodeArgument, "invalid password")
+		}
+	}
+
 	return &PDF{
+		ctx:       ctx,
 		doc:       doc,
 		autoClose: true,
 	}, nil
@@ -124,12 +147,19 @@ func OpenWithPassword(path, password string) (*PDF, error) {
 
 // FromBytes opens a PDF from byte data
 func FromBytes(data []byte) (*PDF, error) {
-	doc, err := nanopdf.OpenDocumentFromMemory(data, "")
+	ctx := nanopdf.NewContext()
+	if ctx == nil {
+		return nil, nanopdf.NewError(nanopdf.ErrCodeGeneric, "failed to create context")
+	}
+
+	doc, err := nanopdf.OpenDocumentFromBytes(ctx, data, ".pdf")
 	if err != nil {
+		ctx.Drop()
 		return nil, err
 	}
 
 	return &PDF{
+		ctx:       ctx,
 		doc:       doc,
 		autoClose: true,
 	}, nil
@@ -335,32 +365,39 @@ func QuickSummary(path string) (string, error) {
 
 // PageCount returns the number of pages
 func (p *PDF) PageCount() int {
-	return p.doc.PageCount()
+	count, _ := p.doc.PageCount()
+	return count
 }
 
 // IsEncrypted returns whether the document is encrypted
 func (p *PDF) IsEncrypted() bool {
-	return p.doc.NeedsPassword()
+	needs, _ := p.doc.NeedsPassword()
+	return needs
 }
 
 // GetMetadata returns PDF metadata
 func (p *PDF) GetMetadata() *Metadata {
+	getMeta := func(key string) string {
+		val, _ := p.doc.GetMetadata(key)
+		return val
+	}
+
 	meta := &Metadata{
-		Title:    p.doc.GetMetadata("Title"),
-		Author:   p.doc.GetMetadata("Author"),
-		Subject:  p.doc.GetMetadata("Subject"),
-		Keywords: p.doc.GetMetadata("Keywords"),
-		Creator:  p.doc.GetMetadata("Creator"),
-		Producer: p.doc.GetMetadata("Producer"),
+		Title:    getMeta("Title"),
+		Author:   getMeta("Author"),
+		Subject:  getMeta("Subject"),
+		Keywords: getMeta("Keywords"),
+		Creator:  getMeta("Creator"),
+		Producer: getMeta("Producer"),
 	}
 
 	// Parse dates if present
-	if creationDate := p.doc.GetMetadata("CreationDate"); creationDate != "" {
+	if creationDate := getMeta("CreationDate"); creationDate != "" {
 		if t, err := parsePDFDate(creationDate); err == nil {
 			meta.CreationDate = &t
 		}
 	}
-	if modDate := p.doc.GetMetadata("ModDate"); modDate != ""{
+	if modDate := getMeta("ModDate"); modDate != "" {
 		if t, err := parsePDFDate(modDate); err == nil {
 			meta.ModDate = &t
 		}

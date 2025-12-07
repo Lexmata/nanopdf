@@ -198,7 +198,7 @@ def _find_library() -> Optional[str]:
     """Find the NanoPDF shared library."""
     # Possible library names
     lib_names = ["libnanopdf.so", "libnanopdf.dylib", "nanopdf.dll", "libnanopdf.a"]
-    
+
     # Search paths
     search_paths = [
         # Relative to this file
@@ -209,18 +209,18 @@ def _find_library() -> Optional[str]:
         "/usr/lib",
         os.path.expanduser("~/.local/lib"),
     ]
-    
+
     # Platform-specific additions
     if sys.platform == "darwin":
         search_paths.append("/opt/homebrew/lib")
-    
+
     # Search for library
     for path in search_paths:
         for lib_name in lib_names:
             lib_path = os.path.join(path, lib_name)
             if os.path.exists(lib_path):
                 return lib_path
-    
+
     return None
 
 

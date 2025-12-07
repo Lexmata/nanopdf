@@ -5,13 +5,13 @@ PDF operations with automatic resource management.
 
 Example:
     >>> from nanopdf import EasyPDF
-    >>> 
+    >>>
     >>> # Extract text (single line!)
     >>> text = EasyPDF.extract_text('document.pdf')
-    >>> 
+    >>>
     >>> # Render to PNG
     >>> EasyPDF.render_to_png('document.pdf', 'output.png', page=0, dpi=300)
-    >>> 
+    >>>
     >>> # Fluent API with context manager
     >>> with EasyPDF.open('document.pdf') as pdf:
     ...     info = pdf.get_info()
@@ -45,9 +45,9 @@ class DocumentInfo:
 
 class EasyPDF:
     """Simplified, fluent API for common PDF operations.
-    
+
     Provides automatic resource management and intuitive method chaining.
-    
+
     Example:
         >>> with EasyPDF.open('document.pdf') as pdf:
         ...     print(f"Pages: {pdf.page_count()}")
@@ -63,13 +63,13 @@ class EasyPDF:
     @staticmethod
     def open(path: str) -> "EasyPDF":
         """Open a PDF document.
-        
+
         Args:
             path: Path to PDF file
-            
+
         Returns:
             EasyPDF instance with automatic cleanup
-            
+
         Example:
             >>> with EasyPDF.open('file.pdf') as pdf:
             ...     print(pdf.page_count())
@@ -81,32 +81,32 @@ class EasyPDF:
     @staticmethod
     def open_with_password(path: str, password: str) -> "EasyPDF":
         """Open a password-protected PDF.
-        
+
         Args:
             path: Path to PDF file
             password: Password for decryption
-            
+
         Returns:
             EasyPDF instance
         """
         ctx = Context()
         doc = Document.open(ctx, path)
-        
+
         if doc.needs_password():
             if not doc.authenticate(password):
                 doc.drop()
                 ctx.drop()
                 raise argument_error("Invalid password")
-        
+
         return EasyPDF(ctx, doc)
 
     @staticmethod
     def from_bytes(data: bytes) -> "EasyPDF":
         """Open a PDF from bytes.
-        
+
         Args:
             data: PDF data as bytes
-            
+
         Returns:
             EasyPDF instance
         """
@@ -124,7 +124,7 @@ class EasyPDF:
 
     def get_metadata(self) -> Dict[str, str]:
         """Get all document metadata.
-        
+
         Returns:
             Dictionary with metadata keys and values
         """
@@ -133,7 +133,7 @@ class EasyPDF:
 
     def get_info(self) -> DocumentInfo:
         """Get comprehensive document information.
-        
+
         Returns:
             DocumentInfo object with all available information
         """
@@ -150,7 +150,7 @@ class EasyPDF:
 
     def extract_all_text(self) -> str:
         """Extract text from all pages.
-        
+
         Returns:
             All text content concatenated with page breaks
         """
@@ -162,10 +162,10 @@ class EasyPDF:
 
     def extract_page_text(self, page_num: int) -> str:
         """Extract text from a specific page.
-        
+
         Args:
             page_num: Page number (0-based)
-            
+
         Returns:
             Text content of the page
         """
@@ -174,10 +174,10 @@ class EasyPDF:
 
     def search_all(self, needle: str) -> List[Dict]:
         """Search for text across all pages.
-        
+
         Args:
             needle: Text to search for
-            
+
         Returns:
             List of dicts with page_num and bbox keys
         """
@@ -200,7 +200,7 @@ class EasyPDF:
         alpha: bool = False
     ) -> None:
         """Render a page to PNG file.
-        
+
         Args:
             page_num: Page number (0-based)
             output_path: Output PNG file path
@@ -210,7 +210,7 @@ class EasyPDF:
         scale = dpi / 72.0
         matrix = Matrix.scale(scale, scale)
         colorspace = Colorspace.device_rgb(self._ctx)
-        
+
         with self._doc.load_page(page_num) as page:
             with Pixmap.from_page(self._ctx, page, matrix, colorspace, alpha) as pix:
                 pix.save_png(output_path)
@@ -222,32 +222,32 @@ class EasyPDF:
         dpi: float = 72.0
     ) -> List[str]:
         """Render all pages to PNG files.
-        
+
         Args:
             output_dir: Directory for output files
             prefix: Filename prefix (default: "page")
             dpi: Dots per inch (default: 72)
-            
+
         Returns:
             List of generated file paths
         """
         import os
         os.makedirs(output_dir, exist_ok=True)
-        
+
         paths = []
         for i in range(self.page_count()):
             output_path = os.path.join(output_dir, f"{prefix}_{i:04d}.png")
             self.render_page(i, output_path, dpi)
             paths.append(output_path)
-        
+
         return paths
 
     def get_page_bounds(self, page_num: int) -> Rect:
         """Get bounds of a specific page.
-        
+
         Args:
             page_num: Page number (0-based)
-            
+
         Returns:
             Rectangle representing page dimensions
         """
@@ -279,14 +279,14 @@ class EasyPDF:
     @staticmethod
     def extract_text(path: str, page: Optional[int] = None) -> str:
         """Extract text from a PDF (static helper).
-        
+
         Args:
             path: Path to PDF file
             page: Optional specific page (0-based), or None for all pages
-            
+
         Returns:
             Extracted text
-            
+
         Example:
             >>> text = EasyPDF.extract_text('document.pdf')
             >>> text = EasyPDF.extract_text('document.pdf', page=0)
@@ -304,13 +304,13 @@ class EasyPDF:
         dpi: float = 72.0
     ) -> None:
         """Render a page to PNG (static helper).
-        
+
         Args:
             path: Path to PDF file
             output_path: Output PNG file path
             page: Page number (0-based, default: 0)
             dpi: Dots per inch (default: 72)
-            
+
         Example:
             >>> EasyPDF.render_to_png('in.pdf', 'out.png', page=0, dpi=300)
         """
@@ -320,10 +320,10 @@ class EasyPDF:
     @staticmethod
     def get_page_count(path: str) -> int:
         """Get page count (static helper).
-        
+
         Args:
             path: Path to PDF file
-            
+
         Returns:
             Number of pages
         """
@@ -333,10 +333,10 @@ class EasyPDF:
     @staticmethod
     def get_info(path: str) -> DocumentInfo:
         """Get document info (static helper).
-        
+
         Args:
             path: Path to PDF file
-            
+
         Returns:
             DocumentInfo object
         """

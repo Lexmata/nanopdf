@@ -7,18 +7,18 @@ from .errors import system_error
 
 class Context:
     """Rendering context for PDF operations.
-    
+
     The context manages memory allocation and error handling.
     It must be created before any other PDF operations.
-    
+
     Args:
         max_store: Maximum size of resource store in bytes (default: 256MB)
-        
+
     Example:
         >>> ctx = Context()
         >>> # ... perform operations ...
         >>> ctx.drop()
-        
+
     Or use as context manager:
         >>> with Context() as ctx:
         ...     # ... perform operations ...
@@ -27,17 +27,17 @@ class Context:
     def __init__(self, max_store: int = FZ_STORE_DEFAULT) -> None:
         self._handle: Optional[int] = None
         self._dropped = False
-        
+
         # Create context
         handle = lib.fz_new_context(ffi.NULL, ffi.NULL, max_store)
         if handle == 0:
             raise system_error("Failed to create context")
-        
+
         self._handle = int(handle)
 
     def drop(self) -> None:
         """Free the context and all associated resources.
-        
+
         After calling drop(), the context must not be used.
         """
         if not self._dropped and self._handle is not None and self._handle != 0:
@@ -47,22 +47,22 @@ class Context:
 
     def clone(self) -> "Context":
         """Create a new reference to the context.
-        
+
         The cloned context shares the same underlying resources.
-        
+
         Returns:
             A new Context instance sharing the same resources
-            
+
         Raises:
             NanoPDFError: If context is dropped or clone fails
         """
         if self._dropped or self._handle is None:
             raise system_error("Cannot clone dropped context")
-        
+
         handle = lib.fz_clone_context(self._handle)
         if handle == 0:
             raise system_error("Failed to clone context")
-        
+
         ctx = Context.__new__(Context)
         ctx._handle = int(handle)
         ctx._dropped = False

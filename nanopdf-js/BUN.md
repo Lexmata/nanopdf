@@ -214,7 +214,7 @@ const matrix = MatrixHelper.dpi(150);
 for (let i = 0; i < doc.pageCount(); i++) {
   using page = doc.loadPage(i);
   using pixmap = Pixmap.fromPage(ctx, page, matrix);
-  
+
   const filename = `page_${i + 1}.png`;
   await pixmap.savePng(filename);
   console.log(`Saved: ${filename}`);
